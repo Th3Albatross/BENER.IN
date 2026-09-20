@@ -7,7 +7,7 @@
     <title>@yield('title', 'Dashboard') - BENER.IN</title>
     <meta name="description" content="@yield('meta_description', 'BENER.IN facility reporting dashboard')">
 
-    @vite('resources/css/dashboard.css')
+    @vite('resources/css/layouts/app.css')
     @stack('styles')
 </head>
 <body>
