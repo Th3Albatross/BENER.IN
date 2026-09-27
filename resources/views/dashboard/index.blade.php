@@ -103,95 +103,16 @@
                     </thead>
 
                     <tbody>
-                        <tr>
-                            <td class="report-id">REP-4029</td>
-                            <td class="facility-name">Main Lobby Elevator</td>
-                            <td>Cab shakes, stops short of Floor 4</td>
-                            <td><span class="status-badge status-progress">In Progress</span></td>
-                            <td>Today, 10:15 AM</td>
-                            <td><a href="#" class="report-action">Edit</a></td>
-                        </tr>
-
-                        <tr>
-                            <td class="report-id">REP-4028</td>
-                            <td class="facility-name">North Wing Bathrooms</td>
-                            <td>Leaking pipe under sink #3</td>
-                            <td><span class="status-badge status-pending">Pending</span></td>
-                            <td>Yesterday</td>
-                            <td><a href="#" class="report-action">Edit</a></td>
-                        </tr>
-
-                        <tr>
-                            <td class="report-id">REP-4025</td>
-                            <td class="facility-name">Server Room AC Unit B</td>
-                            <td>Faulty temperature controller</td>
-                            <td><span class="status-badge status-progress">In Progress</span></td>
-                            <td>Oct 24, 2026</td>
-                            <td><a href="#" class="report-action">Edit</a></td>
-                        </tr>
-
-                        <tr>
-                            <td class="report-id">REP-4021</td>
-                            <td class="facility-name">Conference Room 4C</td>
-                            <td>Damaged door frame / won't lock</td>
-                            <td><span class="status-badge status-resolved">Resolved</span></td>
-                            <td>Oct 22, 2026</td>
-                            <td><a href="#" class="report-action">View</a></td>
-                        </tr>
-
-                        <tr>
-                            <td class="report-id">REP-4019</td>
-                            <td class="facility-name">Parking Garage Level 2</td>
-                            <td>Flickering overhead LED fixture</td>
-                            <td><span class="status-badge status-pending">Pending</span></td>
-                            <td>Oct 20, 2026</td>
-                            <td><a href="#" class="report-action">Edit</a></td>
-                        </tr>
-
-                        <tr>
-                            <td class="report-id">REP-4018</td>
-                            <td class="facility-name">Cafeteria Scullery</td>
-                            <td>Clogged main floor drain</td>
-                            <td><span class="status-badge status-resolved">Resolved</span></td>
-                            <td>Oct 19, 2026</td>
-                            <td><a href="#" class="report-action">View</a></td>
-                        </tr>
-
-                        <tr>
-                            <td class="report-id">REP-4017</td>
-                            <td class="facility-name">West Lobby Restroom</td>
-                            <td>Loose faucet handle</td>
-                            <td><span class="status-badge status-progress">In Progress</span></td>
-                            <td>Oct 18, 2026</td>
-                            <td><a href="#" class="report-action">Edit</a></td>
-                        </tr>
-
-                        <tr>
-                            <td class="report-id">REP-4015</td>
-                            <td class="facility-name">Loading Bay Door</td>
-                            <td>Sensor intermittently fails</td>
-                            <td><span class="status-badge status-pending">Pending</span></td>
-                            <td>Oct 17, 2026</td>
-                            <td><a href="#" class="report-action">Edit</a></td>
-                        </tr>
-
-                        <tr>
-                            <td class="report-id">REP-4013</td>
-                            <td class="facility-name">Roof Access Stairwell</td>
-                            <td>Handrail paint peeling</td>
-                            <td><span class="status-badge status-completed">Completed</span></td>
-                            <td>Oct 15, 2026</td>
-                            <td><a href="#" class="report-action">View</a></td>
-                        </tr>
-
-                        <tr>
-                            <td class="report-id">REP-4012</td>
-                            <td class="facility-name">IT Closet 2A</td>
-                            <td>Rack cooling fan noise</td>
-                            <td><span class="status-badge status-progress">In Progress</span></td>
-                            <td>Oct 14, 2026</td>
-                            <td><a href="#" class="report-action">Edit</a></td>
-                        </tr>
+                        @foreach ($_reports as $report)
+                            <tr>
+                                <td class="report-id">{{ $report->id }}</td>
+                                <td class="facility-name">{{ App\Models\Facility::where('id', $report->facilities_id)->get('name')[0]['name'] }}</td>
+                                <td>Cab shakes, stops short of Floor 4</td>
+                                <td><span class="status-badge status-progress">In Progress</span></td>
+                                <td>Today, 10:15 AM</td>
+                                <td><a href="#" class="report-action">Edit</a></td>
+                            </tr>
+                        @endforeach
                     </tbody>
                 </table>
             </div>

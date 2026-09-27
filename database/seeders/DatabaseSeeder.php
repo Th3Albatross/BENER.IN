@@ -2,9 +2,16 @@
 
 namespace Database\Seeders;
 
+use App\Models\Category;
+use App\Models\Facility;
+use App\Models\Report;
 use App\Models\User;
+use Database\Factories\FacilityFactory;
+use Database\Factories\UserFactory;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
@@ -17,9 +24,26 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        //User::factory()->create([
+        //    'name' => 'Test User',
+        //    'email' => 'test@example.com',
+        //]);
+        User::create([
+            'name' => 'admin',
+            'email' => 'admin@example.com',
+            'role' => 'admin',
+            'password' => Hash::make('maybeimamazed'),
+            'remember_token' => Str::random(10)
         ]);
+
+        $users = User::factory(10);
+        $categories = Category::factory(10);
+        $facilities = Facility::factory(10);
+
+        Report::factory(10)
+            ->recycle($users)
+            ->recycle($categories)
+            ->recycle($facilities)
+            ->create();
     }
 }

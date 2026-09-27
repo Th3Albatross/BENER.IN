@@ -63,7 +63,7 @@
                 {{ auth()->user()->name ?? 'User' }}
             </div>
             <div class="user-info__role">
-                Petugas
+                {{ auth()->user()->role }}
             </div>
         </div>
     </div>

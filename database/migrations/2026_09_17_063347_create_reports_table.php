@@ -1,5 +1,8 @@
 <?php
 
+use App\Models\Category;
+use App\Models\Facility;
+use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -24,14 +27,14 @@ return new class extends Migration
                 'High',
                 'Critical'
             ]);
-            $table->foreignId('users_id');
-            $table->foreignId('facility_id');
-            $table->foreignId('responses_id');
+            $table->foreignIdFor(Category::class, 'categories_id')->constrained()->nullable()->default(null);
+            $table->foreignIdFor(User::class, 'users_id')->constrained()->default(0);
+            $table->foreignIdFor(Facility::class, 'facilities_id')->constrained()->default(0);
             $table->string('title', 255);
-            $table->text('description');
+            $table->text('description')->nullable();
             $table->date('created_at')->useCurrent();
             $table->date('updated_at')->useCurrent()->useCurrentOnUpdate();
-            $table->integer('edit_count', unsigned: true);
+            $table->integer('edit_count', unsigned: true)->default(0);
         });
     }
 

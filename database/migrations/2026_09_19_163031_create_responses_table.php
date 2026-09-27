@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Report;
+use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,8 +15,8 @@ return new class extends Migration
     {
         Schema::create('responses', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('users_id');
-            $table->foreignId('reports_id');
+            $table->foreignIdFor(User::class, 'users_id')->constrained();
+            $table->foreignIdFor(Report::class, 'reports_id')->constrained();
             $table->text('message');
             $table->date('created_at')->useCurrent();
             $table->date('updated_at')->useCurrent()->useCurrentOnUpdate();
