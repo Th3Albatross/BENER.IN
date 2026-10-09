@@ -18,6 +18,8 @@ class Report extends Model
         'facilities_id',
         'title',
         'description',
+        'created_at',
+        'updated_at',
         'edit_count'
     ];
 }

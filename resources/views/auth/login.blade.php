@@ -67,20 +67,16 @@
                                     type="email"
                                     name="email"
                                     value="{{ old('email') }}"
-                                    placeholder="e.g., 2024-000123"
+                                    placeholder="Enter your email"
                                     autocomplete="username"
                                     required
                                 >
                             </div>
-                            @error('email')
-                                <p class="field-error">{{ $message }}</p>
-                            @enderror
                         </div>
 
                         <div class="field-group">
                             <div class="field-label-row">
                                 <label for="password">Password</label>
-                                <a href="#" class="inline-link">Forgot password?</a>
                             </div>
 
                             <div class="input-wrap">
@@ -108,7 +104,7 @@
                                     </svg>
                                 </button>
                             </div>
-                            @error('password')
+                            @error('loginFailure')
                                 <p class="field-error">{{ $message }}</p>
                             @enderror
                         </div>
@@ -122,7 +118,6 @@
                         </div>
 
                         <div class="form-actions">
-                            <a href="#" class="secondary-action">Forgot password</a>
                             <button type="submit" class="primary-action">
                                 <span>Submit</span>
                                 <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">

@@ -105,12 +105,16 @@
                     <tbody>
                         @foreach ($_reports as $report)
                             <tr>
-                                <td class="report-id">{{ $report->id }}</td>
-                                <td class="facility-name">{{ App\Models\Facility::where('id', $report->facilities_id)->get('name')[0]['name'] }}</td>
-                                <td>Cab shakes, stops short of Floor 4</td>
-                                <td><span class="status-badge status-progress">In Progress</span></td>
-                                <td>Today, 10:15 AM</td>
-                                <td><a href="#" class="report-action">Edit</a></td>
+                                <td class="report-id">{{ $report['id'] }}</td>
+                                <td class="facility-name">{{ $report['facilities_name'] }}</td>
+                                <td>{{ $report['categories_name'] }}</td>
+                                <td><span class="status-badge status-progress">{{ $report['status'] }}</span></td>
+                                <td>{{ $report['created_at'] }}</td>
+                                @if ($report['status'] == 'Pending')
+                                    <td><a href="#" class="report-action">Edit</a></td>
+                                @else
+                                    <td><a href="#" class="report-action">No</a></td>
+                                @endif
                             </tr>
                         @endforeach
                     </tbody>
@@ -118,11 +122,41 @@
             </div>
 
             <div class="reports-footer">
-                <span>Showing 10 of 24 reports</span>
+                <span>Showing {{ count($_reports) }} of {{ $_totalReports }} reports</span>
 
+                <!--
                 <div class="pagination">
+                    <form method="GET" action="{{ url()->current() }}">
+                        @csrf
+                        <input type="hidden" name="page" value="{{ intval(url()->query('page') ?? 0, 10) + 1}}">
+                        <input type="submit" class="pagination-button" value="Previous">
+                        <input type="submit" class="pagination-button" value="Next">
+                    </form>
                     <button type="button" class="pagination-button" disabled>Previous</button>
                     <button type="button" class="pagination-button">Next</button>
+                </div>
+                -->
+
+                <div class="pagination">
+                    <form method="GET" action="{{ url()->current() }}">
+                        @if (request()->integer('page') >= 1)
+                            <button
+                                type="submit"
+                                name="page"
+                                value="{{ request()->integer('page', 1) - 1 }}"
+                                class="pagination-button">
+                                Previous
+                            </button>
+                        @endif
+
+                        <button
+                            type="submit"
+                            name="page"
+                            value="{{ request()->integer('page', 1) + 1 }}"
+                            class="pagination-button">
+                            Next
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
