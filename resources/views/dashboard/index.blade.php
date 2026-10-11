@@ -111,9 +111,17 @@
                                 <td><span class="status-badge status-progress">{{ $report['status'] }}</span></td>
                                 <td>{{ $report['created_at'] }}</td>
                                 @if ($report['status'] == 'Pending')
-                                    <td><a href="#" class="report-action">Edit</a></td>
+                                    <td>
+                                        <a href="#" class="report-action">Edit</a>
+                                    </td>
                                 @else
-                                    <td><a href="#" class="report-action">No</a></td>
+                                    <td>
+                                        <a
+                                            href="{{ url('/reports/' . $report['id']) }}"
+                                            class="report-action">
+                                            View
+                                        </a>
+                                    </td>
                                 @endif
                             </tr>
                         @endforeach
@@ -122,7 +130,7 @@
             </div>
 
             <div class="reports-footer">
-                <span>Showing {{ count($_reports) }} of {{ $_totalReports }} reports</span>
+                <span>Showing {{ $_indexedReports }} of {{ $_totalReports }} reports</span>
 
                 <!--
                 <div class="pagination">
@@ -149,6 +157,7 @@
                             </button>
                         @endif
 
+                        @if (count($_reports) == 10)
                         <button
                             type="submit"
                             name="page"
@@ -156,6 +165,7 @@
                             class="pagination-button">
                             Next
                         </button>
+                        @endif
                     </form>
                 </div>
             </div>
