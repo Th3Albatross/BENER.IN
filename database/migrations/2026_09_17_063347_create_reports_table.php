@@ -16,6 +16,7 @@ return new class extends Migration
     {
         Schema::create('reports', function (Blueprint $table) {
             $table->id();
+            $table->uuid('identifier')->unique();
             $table->enum('status', [
                 'Resolved',
                 'Rejected',
@@ -28,12 +29,14 @@ return new class extends Migration
                 'Critical'
             ]);
             $table->foreignIdFor(Category::class, 'categories_id')->constrained()->nullable()->default(null);
-            $table->foreignIdFor(User::class, 'users_id')->constrained()->default(0);
-            $table->foreignIdFor(Facility::class, 'facilities_id')->constrained()->default(0);
+            $table->foreignIdFor(User::class, 'users_id')->constrained();
+            $table->foreignIdFor(Facility::class, 'facilities_id')->constrained();
             $table->string('title', 255);
+            $table->string('location_description', 255);
             $table->text('description')->nullable();
-            $table->date('created_at')->useCurrent();
-            $table->date('updated_at')->useCurrent()->useCurrentOnUpdate();
+            $table->date('incident_date')->useCurrent();
+            $table->dateTime('created_at')->useCurrent();
+            $table->dateTime('updated_at')->useCurrent()->useCurrentOnUpdate();
             $table->integer('edit_count', unsigned: true)->default(0);
         });
     }

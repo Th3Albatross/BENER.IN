@@ -42,11 +42,17 @@
     <form
         class="report-create-form"
         id="facilityReportForm"
-        action="{{ url('/reports') }}"
+        action="{{ url('/reports/create') }}"
         method="POST"
         enctype="multipart/form-data"
     >
         @csrf
+
+        <input
+            type="hidden"
+            name="identifier"
+            value="{{ $identifier }}"
+        >
 
         <div class="report-create-grid">
             <section class="report-card report-details-card" aria-labelledby="reportDetailsTitle">
@@ -84,14 +90,14 @@
 
                     <div class="report-field-row">
                         <div class="report-field">
-                            <label for="reportCategory">Kategori Fasilitas <span class="report-required">*</span></label>
-                            <select id="reportCategory" name="categories_id" required @error('categories_id') aria-invalid="true" @enderror>
-                                <option value="">Pilih kategori</option>
+                            <label for="reportCategory">Kategori Laporan <span class="report-optional">(opsional)</span></label>
+                            <select id="reportCategory" name="categories_id" @error('categories_id') aria-invalid="true" @enderror>
+                                <option value="">Tanpa kategori</option>
                                 @forelse ($reportCategories as $category)
                                     <option
                                         value="{{ data_get($category, 'id') }}"
                                         @selected((string) old('categories_id') === (string) data_get($category, 'id'))
-                                    >{{ data_get($category, 'name', data_get($category, 'categories_name', 'Kategori')) }}</option>
+                                    >{{ data_get($category, 'name', data_get($category, 'categories_name', data_get($category, 'category_name', 'Kategori'))) }}</option>
                                 @empty
                                     {{-- Opsi akan terisi saat koleksi kategori diberikan oleh controller. --}}
                                 @endforelse
@@ -100,7 +106,7 @@
                                 <small class="report-field-error">{{ $message }}</small>
                             @enderror
                             @if (count($reportCategories) === 0)
-                                <small class="report-field-hint">Data kategori belum tersedia di halaman ini.</small>
+                                <small class="report-field-hint">Data kategori belum tersedia. Laporan tetap dapat dikirim tanpa kategori.</small>
                             @endif
                         </div>
 
@@ -120,7 +126,7 @@
                     </div>
 
                     <div class="report-field">
-                        <label for="reportFacility">Fasilitas / Lokasi <span class="report-required">*</span></label>
+                        <label for="reportFacility">Fasilitas yang Dilaporkan <span class="report-required">*</span></label>
                         <select id="reportFacility" name="facilities_id" required @error('facilities_id') aria-invalid="true" @enderror>
                             <option value="">Pilih fasilitas yang bermasalah</option>
                             @forelse ($reportFacilities as $facility)
@@ -138,6 +144,42 @@
                         @if (count($reportFacilities) === 0)
                             <small class="report-field-hint">Data fasilitas belum tersedia di halaman ini.</small>
                         @endif
+                    </div>
+
+                    <div class="report-field-row">
+                        <div class="report-field">
+                            <label for="reportLocationDescription">Detail Lokasi <span class="report-required">*</span></label>
+                            <input
+                                id="reportLocationDescription"
+                                name="location_description"
+                                type="text"
+                                value="{{ old('location_description') }}"
+                                maxlength="255"
+                                placeholder="Contoh: Gedung A, lantai 2, dekat ruang 204"
+                                autocomplete="off"
+                                required
+                                @error('location_description') aria-invalid="true" @enderror
+                            >
+                            @error('location_description')
+                                <small class="report-field-error">{{ $message }}</small>
+                            @enderror
+                        </div>
+
+                        <div class="report-field">
+                            <label for="reportIncidentDate">Tanggal Kejadian <span class="report-optional">(opsional)</span></label>
+                            <input
+                                id="reportIncidentDate"
+                                name="incident_date"
+                                type="date"
+                                value="{{ old('incident_date') ?? now()->toDateString() }}"
+                                max="{{ now()->toDateString() }}"
+                                @error('incident_date') aria-invalid="true" @enderror
+                            >
+                            <small class="report-field-hint">Jika dikosongkan, tanggal hari ini akan digunakan.</small>
+                            @error('incident_date')
+                                <small class="report-field-error">{{ $message }}</small>
+                            @enderror
+                        </div>
                     </div>
 
                     <div class="report-field">
@@ -172,8 +214,8 @@
                             type="file"
                             accept="image/jpeg,image/png,image/webp"
                             multiple
-                            aria-describedby="reportPhotoHelp reportPhotoError"
-                            @if ($errors->has('photos') || $errors->has('photos.0')) aria-invalid="true" @endif
+                            aria-describedby="reportPhotoHelp"
+                            @if ($errors->has('photos') || $errors->has('photos.0') || $errors->has('photos.1') || $errors->has('photos.2')) aria-invalid="true" @endif
                         >
                         <label class="report-upload-area" for="reportPhotos" id="reportUploadArea">
                             <span class="report-upload-icon" aria-hidden="true">
@@ -207,7 +249,7 @@
                             Kirim Laporan
                         </button>
                         <button type="reset" class="report-reset-button" id="resetReportForm">Batal &amp; Reset</button>
-                        <p class="report-submit-note">Pilih fasilitas yang sesuai dan lampirkan foto jika tersedia. Kamu dapat memantau status laporan setelah dikirim.</p>
+                        <p class="report-submit-note">Pilih fasilitas dan isi detail lokasi dengan jelas. Kategori laporan bersifat opsional; lampirkan foto jika tersedia.</p>
                     </div>
                 </section>
 

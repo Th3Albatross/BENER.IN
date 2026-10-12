@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
         //    'name' => 'Test User',
         //    'email' => 'test@example.com',
         //]);
-        User::create([
+        $admin = User::create([
             'name' => 'admin',
             'email' => 'admin@example.com',
             'role' => 'admin',
@@ -36,14 +36,17 @@ class DatabaseSeeder extends Seeder
             'remember_token' => Str::random(10)
         ]);
 
-        $users = User::factory(10);
+        //$users = User::factory(10);
         $categories = Category::factory(10);
         $facilities = Facility::factory(10);
 
-        Report::factory(10)
-            ->recycle($users)
+        $categories->create();
+        $facilities->create();
+
+        /*Report::factory(72)
+            ->recycle($admin)
             ->recycle($categories)
             ->recycle($facilities)
-            ->create();
+            ->create();*/
     }
 }

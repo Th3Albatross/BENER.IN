@@ -10,8 +10,9 @@ use App\Http\Controllers\DashboardController;
 Route::middleware('auth')->group(function() {
     Route::get('/dashboard', [DashboardController::class, 'show']);
     Route::controller(ReportController::class)->group(function() {
-        Route::get('/reports', 'create');
-        Route::get('/reports/{id}', 'show');
+        Route::post('/reports/create', 'create');
+        Route::get('/reports/create', 'show');
+        Route::get('/reports/{id}', 'showReport');
     });
 });
 

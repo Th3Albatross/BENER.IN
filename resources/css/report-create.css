@@ -24,8 +24,9 @@
 .report-field > label:not(.report-upload-area) { display: block; margin-bottom: 7px; color: #424b59; font-size: 12px; font-weight: 600; line-height: 1.45; }
 .report-required { color: #d45555; }
 .report-optional { color: var(--color-muted, #747f8d); font-size: 11px; font-weight: 400; }
-.report-field input[type="text"], .report-field select, .report-field textarea { display: block; width: 100%; min-height: 41px; padding: 10px 12px; color: var(--color-text, #2e3338); background: #fff; border: 1px solid #d9dee7; border-radius: 7px; outline: none; font-size: 12px; line-height: 1.45; transition: border-color 150ms ease, box-shadow 150ms ease; }
+.report-field input[type="text"], .report-field input[type="date"], .report-field select, .report-field textarea { display: block; width: 100%; min-height: 41px; padding: 10px 12px; color: var(--color-text, #2e3338); background: #fff; border: 1px solid #d9dee7; border-radius: 7px; outline: none; font-size: 12px; line-height: 1.45; transition: border-color 150ms ease, box-shadow 150ms ease; }
 .report-field select { padding-right: 32px; cursor: pointer; }
+.report-field input[type="date"] { min-height: 41px; color-scheme: light; }
 .report-field textarea { min-height: 128px; resize: vertical; }
 .report-field input::placeholder, .report-field textarea::placeholder { color: #9aa2af; opacity: 1; }
 .report-field input:focus, .report-field select:focus, .report-field textarea:focus { border-color: #6682d0; box-shadow: 0 0 0 3px rgba(58, 92, 184, .12); }
