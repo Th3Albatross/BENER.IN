@@ -6,7 +6,6 @@ use App\Models\Category;
 use App\Models\Facility;
 use App\Models\Report;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class ReportController
@@ -122,7 +121,18 @@ class ReportController
         return redirect()->to('dashboard');
     }
 
-    public function showReport(int $id) {}
+    public function showReport(Request $request, string $uuid) {
+        $report = Report::where('users_id', $request->user()->id)
+                    ->where('identifier', $uuid)
+                    ->join('facilities', 'reports.facilities_id', '=', 'facilities.id')
+                    ->join('categories', 'reports.categories_id', '=', 'categories.id')
+                    ->select('reports.*', 'facilities.name as facilities_name', 'categories.name as categories_name')
+                    ->firstOrFail();
+
+        return view('report.show', [
+            'report' => $report,
+        ]);
+    }
 
     public function show()
     {

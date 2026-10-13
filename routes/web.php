@@ -12,7 +12,7 @@ Route::middleware('auth')->group(function() {
     Route::controller(ReportController::class)->group(function() {
         Route::post('/reports/create', 'create');
         Route::get('/reports/create', 'show');
-        Route::get('/reports/{id}', 'showReport');
+        Route::get('/reports/{uuid}', 'showReport');
     });
 });
 

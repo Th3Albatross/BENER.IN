@@ -18,8 +18,8 @@ return new class extends Migration
             $table->foreignIdFor(User::class, 'users_id')->constrained();
             $table->foreignIdFor(Report::class, 'reports_id')->constrained();
             $table->text('message');
-            $table->date('created_at')->useCurrent();
-            $table->date('updated_at')->useCurrent()->useCurrentOnUpdate();
+            $table->dateTime('created_at')->useCurrent();
+            $table->dateTime('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
     }
 
