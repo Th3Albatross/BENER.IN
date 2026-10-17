@@ -5,11 +5,17 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Facility;
 use App\Models\Report;
+use App\Services\ImageLoaderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class ReportController
 {
+
+    public function __construct(
+        protected ImageLoaderService $imageLoaderService
+    ) {}
     public function create(Request $request)
     {
         $validated = $request->validate([
@@ -125,12 +131,16 @@ class ReportController
         $report = Report::where('users_id', $request->user()->id)
                     ->where('identifier', $uuid)
                     ->join('facilities', 'reports.facilities_id', '=', 'facilities.id')
-                    ->join('categories', 'reports.categories_id', '=', 'categories.id')
+                    ->leftJoin('categories', 'reports.categories_id', '=', 'categories.id')
                     ->select('reports.*', 'facilities.name as facilities_name', 'categories.name as categories_name')
                     ->firstOrFail();
 
+        $photos = [];
+
+        $this->imageLoaderService->loadImages($report);
         return view('report.show', [
-            'report' => $report,
+            '_report' => $report,
+            '_photos' => $photos
         ]);
     }
 
@@ -141,5 +151,14 @@ class ReportController
             'facilities' => Facility::all(),
             'identifier' => (string) Str::uuid7(),
         ]);
+    }
+
+    public function serveImage(string $uuid, string $filename) {
+        $path = 'temporary/'.$uuid.'/'.$filename;
+        $disk = Storage::disk('public');
+
+        abort_unless($disk->exists($path), 404);
+
+        return response()->file($disk->path($path));
     }
 }

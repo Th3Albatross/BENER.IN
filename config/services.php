@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'scramblr' => [
+        'key' => env('SCRAMBLR_KEY')
+    ],
+
 ];

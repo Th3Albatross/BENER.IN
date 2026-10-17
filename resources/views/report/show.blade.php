@@ -10,30 +10,50 @@
 
 @section('content')
 @php
-    $reportStatus = strtolower($report->status ?? 'pending');
-    $reportSeverity = strtolower($report->severity ?? 'low');
+    // Support both view-data keys: $_report and $report.
+    // The controller snippet shared earlier uses the $report key.
+    $reportData = $_report ?? $report ?? null;
 
-    // Relationship names are checked so this view stays safe if a relationship
-    // has not been defined yet. The controller should eager-load these relations.
-    $category = method_exists($report, 'category') ? $report->category : null;
-    $facility = method_exists($report, 'facility') ? $report->facility : null;
-    $reporter = method_exists($report, 'user') ? $report->user : null;
+    if (!$reportData) {
+        abort(404);
+    }
 
-    $categoryName = data_get($category, 'name')
-        ?: data_get($category, 'categories_name')
-        ?: data_get($category, 'title');
-    $facilityName = data_get($facility, 'name')
-        ?: data_get($facility, 'facilities_name')
-        ?: data_get($facility, 'title');
-    $reporterName = data_get($reporter, 'name')
-        ?: data_get($reporter, 'username');
+    $reportStatus = strtolower((string) ($reportData->status ?? 'pending'));
+    $reportSeverity = strtolower((string) ($reportData->severity ?? 'low'));
 
-    $photos = collect($photos ?? []);
-    $responses = isset($responses)
-        ? collect($responses)
-        : (method_exists($report, 'responses') ? collect($report->responses) : collect());
+    // The controller's JOIN aliases supply these names; no relationship is required here.
+    $categoryName = data_get($reportData, 'categories_name');
+    $facilityName = data_get($reportData, 'facilities_name');
 
-    $reportIdentifier = $report->identifier ?? null;
+    // The supplied showReport query only returns reports owned by the signed-in user,
+    // so their authenticated name is used as the reporter label unless a name alias is passed.
+    $reporterName = data_get($reportData, 'users_name')
+        ?: data_get($reportData, 'reporter_name')
+        ?: (auth()->user()->name ?? null);
+
+    $photosSource = $photos ?? $_photos ?? null;
+    if ($photosSource === null) {
+        // Uploaded files are stored under reports/{internal report id} on the default disk.
+        // Images are still served through the private endpoint below, never with Storage::url().
+        try {
+            $photosSource = \Illuminate\Support\Facades\Storage::files('reports/' . $reportData->id);
+        } catch (\Throwable $exception) {
+            $photosSource = [];
+        }
+    }
+    $photos = collect($photosSource);
+
+    // Forms and private image URLs are built relative to the current detail URL,
+    // so the frontend does not assume whether the route prefix is /report or /reports.
+    $reportShowUrl = url()->current();
+
+    $responsesSource = $responses ?? $_responses ?? null;
+    if ($responsesSource === null && method_exists($reportData, 'responses')) {
+        $responsesSource = $reportData->responses;
+    }
+    $responses = collect($responsesSource ?? []);
+
+    $reportIdentifier = $reportData->identifier ?? null;
 @endphp
 
 <div class="report-show">
@@ -59,20 +79,20 @@
     <section class="report-show-hero" aria-labelledby="report-show-title">
         <div class="report-show-hero-copy">
             <div class="report-show-eyebrow">LAPORAN FASILITAS</div>
-            <h2 id="report-show-title">{{ $report->title }}</h2>
+            <h2 id="report-show-title">{{ $reportData->title }}</h2>
             <p class="report-show-subtitle">
                 Dibuat pada
-                {{ $report->created_at ? \Illuminate\Support\Carbon::parse($report->created_at)->format('d M Y, H:i') : 'tanggal tidak tersedia' }}
+                {{ $reportData->created_at ? \Illuminate\Support\Carbon::parse($reportData->created_at)->format('d M Y, H:i') : 'tanggal tidak tersedia' }}
             </p>
         </div>
 
         <div class="report-show-badges" aria-label="Status dan tingkat urgensi laporan">
             <span class="report-show-badge report-show-badge--status report-show-badge--{{ $reportStatus }}">
                 <span class="report-show-badge-dot" aria-hidden="true"></span>
-                {{ $report->status ?? 'Pending' }}
+                {{ $reportData->status ?? 'Pending' }}
             </span>
             <span class="report-show-badge report-show-badge--severity report-show-badge--{{ $reportSeverity }}">
-                Urgensi: {{ $report->severity ?? 'Low' }}
+                Urgensi: {{ $reportData->severity ?? 'Low' }}
             </span>
         </div>
     </section>
@@ -113,19 +133,19 @@
                         </div>
                         <div class="report-show-info-item">
                             <dt>Lokasi / Ruangan</dt>
-                            <dd>{{ $report->location_description ?: 'Tidak dicantumkan' }}</dd>
+                            <dd>{{ $reportData->location_description ?: 'Tidak dicantumkan' }}</dd>
                         </div>
                         <div class="report-show-info-item">
                             <dt>Tanggal Kejadian</dt>
-                            <dd>{{ $report->incident_date ? \Illuminate\Support\Carbon::parse($report->incident_date)->format('d M Y') : '—' }}</dd>
+                            <dd>{{ $reportData->incident_date ? \Illuminate\Support\Carbon::parse($reportData->incident_date)->format('d M Y') : '—' }}</dd>
                         </div>
                         <div class="report-show-info-item">
                             <dt>Tanggal dibuat</dt>
-                            <dd>{{ $report->created_at ? \Illuminate\Support\Carbon::parse($report->created_at)->format('d M Y, H:i') : '—' }}</dd>
+                            <dd>{{ $reportData->created_at ? \Illuminate\Support\Carbon::parse($reportData->created_at)->format('d M Y, H:i') : '—' }}</dd>
                         </div>
                         <div class="report-show-info-item">
                             <dt>Terakhir diperbarui</dt>
-                            <dd>{{ $report->updated_at ? \Illuminate\Support\Carbon::parse($report->updated_at)->format('d M Y, H:i') : '—' }}</dd>
+                            <dd>{{ $reportData->updated_at ? \Illuminate\Support\Carbon::parse($reportData->updated_at)->format('d M Y, H:i') : '—' }}</dd>
                         </div>
                     </dl>
                 </div>
@@ -145,8 +165,8 @@
                     </div>
                 </header>
                 <div class="report-show-card-body">
-                    @if (filled($report->description))
-                        <p class="report-show-description">{{ $report->description }}</p>
+                    @if (filled($reportData->description))
+                        <p class="report-show-description">{{ $reportData->description }}</p>
                     @else
                         <div class="report-show-empty-state">Belum ada deskripsi untuk laporan ini.</div>
                     @endif
@@ -180,7 +200,7 @@
                             @endif
                         </span>
                         <div>
-                            <strong>{{ $report->status ?? 'Pending' }}</strong>
+                            <strong>{{ $reportData->status ?? 'Pending' }}</strong>
                             <p>
                                 @if ($reportStatus === 'resolved')
                                     Laporan ini telah diselesaikan.
@@ -196,11 +216,11 @@
                     <div class="report-show-side-metadata">
                         <div class="report-show-side-metadata-row">
                             <span>Tingkat urgensi</span>
-                            <strong class="report-show-severity-text report-show-severity-text--{{ $reportSeverity }}">{{ $report->severity ?? 'Low' }}</strong>
+                            <strong class="report-show-severity-text report-show-severity-text--{{ $reportSeverity }}">{{ $reportData->severity ?? 'Low' }}</strong>
                         </div>
                         <div class="report-show-side-metadata-row">
                             <span>Jumlah perubahan</span>
-                            <strong>{{ $report->edit_count ?? 0 }} kali</strong>
+                            <strong>{{ $reportData->edit_count ?? 0 }} kali</strong>
                         </div>
                     </div>
                 </div>
@@ -248,7 +268,7 @@
                                 : (data_get($photo, 'path') ?? data_get($photo, 'filename') ?? data_get($photo, 'name') ?? '');
                             $photoName = basename((string) $photoPath);
                             $photoUrl = data_get($photo, 'url')
-                                ?: ($photoName !== '' ? url('/reports/' . rawurlencode((string) $reportIdentifier) . '/photos/' . rawurlencode($photoName)) : null);
+                                ?: ($photoName !== '' ? $reportShowUrl . '/photos/' . rawurlencode($photoName) : null);
                         @endphp
                         @if ($photoUrl)
                             <button
@@ -322,7 +342,7 @@
                             @if ($isOwnResponse)
                                 <form
                                     class="report-show-edit-form"
-                                    action="{{ url('/reports/' . rawurlencode((string) $reportIdentifier) . '/responses/' . $response->id) }}"
+                                    action="{{ $reportShowUrl . '/responses/' . $response->id }}"
                                     method="POST"
                                     hidden>
                                     @csrf
@@ -348,7 +368,7 @@
                 @endforelse
             </div>
 
-            <form class="report-show-composer" action="{{ url('/reports/' . rawurlencode((string) $reportIdentifier) . '/responses') }}" method="POST">
+            <form class="report-show-composer" action="{{ $reportShowUrl . '/responses' }}" method="POST">
                 @csrf
                 <label for="new-response-message">Tulis pesan</label>
                 <textarea id="new-response-message" name="message" rows="3" maxlength="5000" placeholder="Tulis pesan untuk pelapor atau petugas..." required>{{ old('message') }}</textarea>
