@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Services\ScramblrService;
-use Illuminate\Support\Facades\Storage;
 use Exception;
+use Illuminate\Support\Facades\Storage;
 
 class AttendantController
 {
@@ -15,18 +15,24 @@ class AttendantController
     public function serve(string $scrambldToken)
     {
         try {
-            $tokenData = $this->scramblrService->Descramble($scrambldToken);
-            if (!$tokenData[0]) {
-                return abort(410);
-            }
-
-            if (!Storage::disk('local')->exists($tokenData[1])) {
-                return abort(404);
-            }
-
-            return response()->file(Storage::disk('local')->path($tokenData[1]));
+            [$valid, $path] = $this->scramblrService->Descramble($scrambldToken);
         } catch (Exception $e) {
             return abort(401);
         }
+
+        if (! $valid) {
+            return abort(410);
+        }
+
+        $disk = Storage::disk('local');
+        if (! $disk->exists($path)) {
+            return abort(404);
+        }
+
+        return response()->file($disk->path($path), [
+            'Cache-Control' => 'private, no-store, max-age=0',
+            'Pragma' => 'no-cache',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
     }
 }

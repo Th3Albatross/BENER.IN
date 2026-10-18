@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class ReportController
 {
@@ -17,122 +18,52 @@ class ReportController
         protected ScramblrService $scramblrService
     ) {}
 
-    public function create(Request $request)
+    public function show()
+    {
+        return view('report.create', [
+            'categories' => Category::all(),
+            'facilities' => Facility::all(),
+            'identifier' => (string) Str::uuid7(),
+        ]);
+    }
+
+    public function createReport(Request $request)
     {
         $validated = $request->validate([
-            'identifier' => [
-                'required',
-                'uuid:7',
-                'unique:reports,identifier',
-            ],
-            'title' => [
-                'required',
-                'string',
-                'max:255',
-            ],
-            'categories_id' => [
-                'nullable',
-                'integer',
-                'exists:categories,id',
-            ],
-            'severity' => [
-                'required',
-                'in:Low,Medium,High,Critical',
-            ],
-            'facilities_id' => [
-                'required',
-                'integer',
-                'exists:facilities,id',
-            ],
-            'location_description' => [
-                'required',
-                'string',
-                'max:255',
-            ],
-            'incident_date' => [
-                'nullable',
-                'date',
-                'before_or_equal:today',
-            ],
-            'description' => [
-                'required',
-                'string',
-                'max:3000',
-            ],
-            'photos' => [
-                'nullable',
-                'array',
-                'max:3',
-            ],
-            'photos.*' => [
-                'required',
-                'image',
-                'mimes:jpg,jpeg,png,webp',
-                'max:5120',
-            ],
-        ], [
-            // Identifier
-            'identifier.required' => 'Token identifikasi laporan wajib disertakan.',
-            'identifier.uuid' => 'Token identifikasi laporan tidak valid.',
-            'identifier.unique' => 'Token sudah digunakan untuk membuat laporan.',
-
-            // Title
-            'title.required' => 'Judul laporan wajib diisi.',
-            'title.string' => 'Judul laporan harus berupa teks.',
-            'title.max' => 'Judul laporan maksimal 255 karakter.',
-
-            // Category
-            'categories_id.integer' => 'Kategori laporan tidak valid.',
-            'categories_id.exists' => 'Kategori laporan tidak ditemukan.',
-
-            // Severity
-            'severity.required' => 'Tingkat urgensi wajib dipilih.',
-            'severity.in' => 'Tingkat urgensi tidak valid.',
-
-            // Facility
-            'facilities_id.required' => 'Fasilitas wajib dipilih.',
-            'facilities_id.integer' => 'Fasilitas yang dipilih tidak valid.',
-            'facilities_id.exists' => 'Fasilitas yang dipilih tidak ditemukan.',
-
-            // Location
-            'location_description.required' => 'Detail lokasi wajib diisi.',
-            'location_description.string' => 'Detail lokasi harus berupa teks.',
-            'location_description.max' => 'Detail lokasi maksimal 255 karakter.',
-
-            // Incident date
-            'incident_date.date' => 'Tanggal kejadian tidak valid.',
-            'incident_date.before_or_equal' => 'Tanggal kejadian tidak boleh melebihi hari ini.',
-
-            // Description
-            'description.required' => 'Deskripsi laporan wajib diisi.',
-            'description.string' => 'Deskripsi laporan harus berupa teks.',
-            'description.max' => 'Deskripsi laporan maksimal 3000 karakter.',
-
-            // Photos
-            'photos.array' => 'Format data foto tidak valid.',
-            'photos.max' => 'Maksimal 3 foto untuk setiap laporan.',
-            'photos.*.required' => 'Setiap file foto wajib diisi.',
-            'photos.*.image' => 'Setiap file harus berupa gambar.',
-            'photos.*.mimes' => 'Foto harus berformat JPG, JPEG, PNG, atau WEBP.',
-            'photos.*.max' => 'Ukuran setiap foto maksimal 5 MB.',
+            'identifier' => ['required', 'uuid:7', 'unique:reports,identifier'],
+            'title' => ['required', 'string', 'max:255'],
+            'categories_id' => ['nullable', 'integer', 'exists:categories,id'],
+            'severity' => ['required', 'in:Low,Medium,High,Critical'],
+            'facilities_id' => ['required', 'integer', 'exists:facilities,id'],
+            'location_description' => ['required', 'string', 'max:255'],
+            'incident_date' => ['nullable', 'date', 'before_or_equal:today'],
+            'description' => ['required', 'string', 'max:3000'],
+            'photos' => ['nullable', 'array', 'max:3'],
+            'photos.*' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
+
+        $photos = $request->file('photos', []);
+        unset($validated['photos']);
 
         $validated['incident_date'] ??= now()->toDateString();
         $validated['users_id'] = $request->user()->id;
-
         $report = Report::create($validated);
-        foreach ($request->files->all('photos') as $idx => $_) {
-            $file = $request->file('photos')[$idx];
-            $file->storeAs('reports/'.$report->id, Str::random(10).'.'.$file->extension());
+
+        foreach ($photos as $photo) {
+            $photo->storeAs(
+                'reports/' . $report->id,
+                Str::random(10) . '.' . $photo->extension(),
+                'local'
+            );
         }
 
-        return redirect()->to('dashboard');
+        return redirect('/dashboard')->with('success', 'Laporan berhasil dikirim.');
     }
 
     public function showReport(Request $request, string $uuid)
     {
-        $report = Report::where('users_id', $request->user()->id)
-            ->where('identifier', $uuid)
+        $report = Report::where('reports.users_id', $request->user()->id)
+            ->where('reports.identifier', $uuid)
             ->join('users', 'reports.users_id', '=', 'users.id')
             ->join('facilities', 'reports.facilities_id', '=', 'facilities.id')
             ->leftJoin('categories', 'reports.categories_id', '=', 'categories.id')
@@ -144,33 +75,129 @@ class ReportController
             )
             ->firstOrFail();
 
-        $photoTokens = Cache::remember(
-            'photos'.$report->identifier,
-            $this->scramblrService->expiration,
-            function () use ($report) {
-                $photos = [];
-                if (Storage::disk('local')->exists('reports/'.$report->id)) {
-                    foreach (Storage::disk('local')->allFiles('reports/'.$report->id) as $files) {
-                        array_push($photos, $this->scramblrService->Scramble($files));
-                    }
-                }
+        $photos = Cache::remember('photos' . $report->identifier, $this->scramblrService->expiration, function () use ($report) {
+            $directory = 'reports/' . $report->id;
+            $files = Storage::disk('local')->exists($directory)
+                ? Storage::disk('local')->allFiles($directory)
+                : [];
 
-                return $photos;
-            }
-        );
+            return array_map(fn ($file) => $this->scramblrService->Scramble($file), $files);
+        });
 
         return view('report.show', [
             '_report' => $report,
-            '_photos' => $photoTokens
+            '_photos' => $photos,
         ]);
     }
 
-    public function show()
+    public function editReport(Request $request, string $uuid)
     {
-        return view('report.create', [
+        $report = Report::where('users_id', $request->user()->id)
+            ->where('identifier', $uuid)
+            ->firstOrFail();
+
+        abort_unless($report->status === 'Pending', 403);
+
+        $photos = Cache::remember('photos' . $report->identifier, $this->scramblrService->expiration, function () use ($report) {
+            $directory = 'reports/' . $report->id;
+            $files = Storage::disk('local')->exists($directory)
+                ? Storage::disk('local')->allFiles($directory)
+                : [];
+
+            return array_map(fn ($file) => $this->scramblrService->Scramble($file), $files);
+        });
+
+        return view('report.edit', [
+            'report' => $report,
             'categories' => Category::all(),
             'facilities' => Facility::all(),
-            'identifier' => (string) Str::uuid7(),
+            'existingPhotos' => $photos,
         ]);
+    }
+
+    public function updateReport(Request $request, string $uuid)
+    {
+        $report = Report::where('users_id', $request->user()->id)
+            ->where('identifier', $uuid)
+            ->firstOrFail();
+
+        abort_unless($report->status === 'Pending', 403);
+
+        $validated = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'categories_id' => ['nullable', 'integer', 'exists:categories,id'],
+            'severity' => ['required', 'in:Low,Medium,High,Critical'],
+            'facilities_id' => ['required', 'integer', 'exists:facilities,id'],
+            'location_description' => ['required', 'string', 'max:255'],
+            'incident_date' => ['nullable', 'date', 'before_or_equal:today'],
+            'description' => ['required', 'string', 'max:3000'],
+            'photos' => ['nullable', 'array', 'max:3'],
+            'photos.*' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'remove_photos' => ['nullable', 'array', 'max:3'],
+            'remove_photos.*' => ['required', 'string', 'max:4096'],
+        ]);
+
+        $newPhotos = $request->file('photos', []);
+        $removeTokens = $validated['remove_photos'] ?? [];
+        unset($validated['photos'], $validated['remove_photos']);
+
+        $disk = Storage::disk('local');
+        $directory = 'reports/' . $report->id;
+        $currentPaths = $disk->exists($directory) ? $disk->allFiles($directory) : [];
+        $removePaths = [];
+
+        foreach ($removeTokens as $token) {
+            try {
+                [$valid, $path] = $this->scramblrService->Descramble($token);
+            } catch (\Throwable $e) {
+                throw ValidationException::withMessages([
+                    'remove_photos' => 'Token foto tidak valid. Muat ulang halaman lalu coba lagi.',
+                ]);
+            }
+
+            if (!$valid || !Str::startsWith($path, $directory . '/') || !in_array($path, $currentPaths, true)) {
+                throw ValidationException::withMessages([
+                    'remove_photos' => 'Foto yang dipilih tidak valid. Muat ulang halaman lalu coba lagi.',
+                ]);
+            }
+
+            $removePaths[] = $path;
+        }
+
+        $removePaths = array_values(array_unique($removePaths));
+        $remainingPaths = array_diff($currentPaths, $removePaths);
+
+        if (count($remainingPaths) + count($newPhotos) > 3) {
+            throw ValidationException::withMessages([
+                'photos' => 'Jumlah foto setelah perubahan maksimal 3.',
+            ]);
+        }
+
+        $validated['incident_date'] ??= now()->toDateString();
+        $report->fill($validated);
+        $report->edit_count++;
+        $report->save();
+
+        foreach ($newPhotos as $photo) {
+            $photo->storeAs(
+                $directory,
+                Str::random(10) . '.' . $photo->extension(),
+                'local'
+            );
+        }
+
+        if ($removePaths) {
+            $disk->delete($removePaths);
+        }
+
+        Cache::forget('photos' . $report->identifier);
+
+        return redirect()
+            ->route('reports.show', ['uuid' => $report->identifier])
+            ->with('success', 'Perubahan laporan berhasil disimpan.');
+    }
+
+    public function createComment()
+    {
     }
 }

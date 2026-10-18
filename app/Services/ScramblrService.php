@@ -14,6 +14,7 @@ class ScramblrService {
         $this->_key = base64_decode(config('services.scramblr.key', ''));
         $this->_key = !$this->_key ? random_bytes(32) : $this->_key;
     }
+
     public function Scramble(string $text, ?string $key = null): string {
         $nonce = random_bytes(SODIUM_CRYPTO_AEAD_CHACHA20POLY1305_NPUBBYTES);
 

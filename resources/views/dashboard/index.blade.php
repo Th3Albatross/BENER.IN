@@ -111,24 +111,13 @@
                                 <td><span class="status-badge status-progress">{{ $report['status'] }}</span></td>
                                 <td>{{ $report['created_at'] }}</td>
                                 @if ($report['status'] == 'Pending')
-                                    <td><a href="#" class="report-action">Edit</a></td>
+                                    <td>
+                                        <a href="{{ url('/reports/' . $report['identifier'] . '/edit') }}" class="report-action">Edit</a>
+                                    </td>
                                 @else
-                                    @if (!empty($report['identifier']))
-                                        <td>
-                                            <a
-                                                href="{{ url('/reports/' . $report['identifier']) }}"
-                                                class="report-action"
-                                                aria-label="View details for report {{ $report['identifier'] }}">
-                                                View
-                                            </a>
-                                        </td>
-                                    @else
-                                        <td>
-                                            <span class="report-action" title="UUID laporan belum tersedia pada data dashboard">
-                                                View
-                                            </span>
-                                        </td>
-                                    @endif
+                                    <td>
+                                        <a href="{{ url('/reports/' . $report['identifier']) }}" class="report-action">View</a>
+                                    </td>
                                 @endif
                             </tr>
                         @endforeach
