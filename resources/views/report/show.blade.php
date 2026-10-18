@@ -10,8 +10,7 @@
 
 @section('content')
 @php
-    // Support both view-data keys: $_report and $report.
-    // The controller snippet shared earlier uses the $report key.
+    // The current ReportController sends these exact view-data keys.
     $reportData = $_report ?? $report ?? null;
 
     if (!$reportData) {
@@ -21,39 +20,30 @@
     $reportStatus = strtolower((string) ($reportData->status ?? 'pending'));
     $reportSeverity = strtolower((string) ($reportData->severity ?? 'low'));
 
-    // The controller's JOIN aliases supply these names; no relationship is required here.
+    // These aliases are supplied directly by the controller's JOIN query.
     $categoryName = data_get($reportData, 'categories_name');
     $facilityName = data_get($reportData, 'facilities_name');
+    $reporterName = data_get($reportData, 'user_name');
 
-    // The supplied showReport query only returns reports owned by the signed-in user,
-    // so their authenticated name is used as the reporter label unless a name alias is passed.
-    $reporterName = data_get($reportData, 'users_name')
-        ?: data_get($reportData, 'reporter_name')
-        ?: (auth()->user()->name ?? null);
+    // $_photos contains Scramblr tokens, not file paths. Do not inspect storage from Blade.
+    $photoTokens = collect($_photos ?? $photos ?? [])
+        ->filter(fn ($token) => is_string($token) && $token !== '')
+        ->values();
 
-    $photosSource = $photos ?? $_photos ?? null;
-    if ($photosSource === null) {
-        // Uploaded files are stored under reports/{internal report id} on the default disk.
-        // Images are still served through the private endpoint below, never with Storage::url().
-        try {
-            $photosSource = \Illuminate\Support\Facades\Storage::files('reports/' . $reportData->id);
-        } catch (\Throwable $exception) {
-            $photosSource = [];
-        }
-    }
-    $photos = collect($photosSource);
-
-    // Forms and private image URLs are built relative to the current detail URL,
-    // so the frontend does not assume whether the route prefix is /report or /reports.
+    // The controller currently resolves the report through /reports/{uuid}.
     $reportShowUrl = url()->current();
+    $reportIdentifier = $reportData->identifier ?? null;
 
-    $responsesSource = $responses ?? $_responses ?? null;
+    // This view can display responses passed by the controller, or use an existing
+    // Report::responses() relationship if the model already defines one.
+    $responsesSource = $_responses ?? $responses ?? null;
     if ($responsesSource === null && method_exists($reportData, 'responses')) {
         $responsesSource = $reportData->responses;
     }
     $responses = collect($responsesSource ?? []);
 
-    $reportIdentifier = $reportData->identifier ?? null;
+    // Prefer a named route if configured. Otherwise assume GET /blob/{scrambldToken}.
+    $hasAttendantServeRoute = \Illuminate\Support\Facades\Route::has('blob.serve');
 @endphp
 
 <div class="report-show">
@@ -243,7 +233,7 @@
         </aside>
     </div>
 
-    {{-- Foto dikirim sebagai nama file atau objek berisi path/filename/name/url dari controller. --}}
+    {{-- $_photos berisi token Scramblr yang dibuat oleh ReportController. --}}
     <section class="report-show-card" aria-labelledby="reportPhotosTitle">
         <header class="report-show-card-header">
             <span class="report-show-card-icon report-show-card-icon--photos" aria-hidden="true">
@@ -255,32 +245,32 @@
             </span>
             <div>
                 <h3 id="reportPhotosTitle">Bukti Foto</h3>
-                <p>{{ $photos->count() }} foto bukti terlampir pada laporan ini.</p>
+                <p>{{ $photoTokens->count() }} foto bukti terlampir pada laporan ini.</p>
             </div>
         </header>
         <div class="report-show-card-body">
-            @if ($photos->isNotEmpty())
+            @if ($photoTokens->isNotEmpty())
                 <div class="report-show-photo-grid">
-                    @foreach ($photos as $photo)
+                    @foreach ($photoTokens as $photoToken)
                         @php
-                            $photoPath = is_string($photo)
-                                ? $photo
-                                : (data_get($photo, 'path') ?? data_get($photo, 'filename') ?? data_get($photo, 'name') ?? '');
-                            $photoName = basename((string) $photoPath);
-                            $photoUrl = data_get($photo, 'url')
-                                ?: ($photoName !== '' ? $reportShowUrl . '/photos/' . rawurlencode($photoName) : null);
+                            $photoUrl = $hasAttendantServeRoute
+                                ? route('blob.serve', ['scrambldToken' => $photoToken])
+                                : url('/blob/' . rawurlencode($photoToken));
                         @endphp
-                        @if ($photoUrl)
-                            <button
-                                type="button"
-                                class="report-show-photo"
-                                data-photo-src="{{ $photoUrl }}"
-                                data-photo-alt="Bukti foto {{ $loop->iteration }} untuk laporan {{ $reportIdentifier }}"
-                                aria-label="Perbesar bukti foto {{ $loop->iteration }}">
-                                <img src="{{ $photoUrl }}" alt="Bukti foto {{ $loop->iteration }}" loading="lazy" decoding="async" referrerpolicy="no-referrer">
-                                <span class="report-show-photo-overlay"><span>Lihat foto</span></span>
-                            </button>
-                        @endif
+                        <button
+                            type="button"
+                            class="report-show-photo"
+                            data-photo-src="{{ $photoUrl }}"
+                            data-photo-alt="Bukti foto {{ $loop->iteration }} untuk laporan {{ $reportIdentifier }}"
+                            aria-label="Perbesar bukti foto {{ $loop->iteration }}">
+                            <img
+                                src="{{ $photoUrl }}"
+                                alt="Bukti foto {{ $loop->iteration }}"
+                                loading="lazy"
+                                decoding="async"
+                                referrerpolicy="no-referrer">
+                            <span class="report-show-photo-overlay"><span>Lihat foto</span></span>
+                        </button>
                     @endforeach
                 </div>
             @else
@@ -315,7 +305,9 @@
             <div class="report-show-chat-frame" id="reportChatFrame" aria-label="Riwayat diskusi" aria-live="polite">
                 @forelse ($responses as $response)
                     @php
-                        $responseUser = method_exists($response, 'user') ? $response->user : data_get($response, 'user');
+                        $responseUser = is_object($response) && method_exists($response, 'user')
+                            ? $response->user
+                            : data_get($response, 'user');
                         $isOwnResponse = auth()->check() && (int) data_get($response, 'users_id') === (int) auth()->id();
                         $senderName = data_get($responseUser, 'name') ?: data_get($responseUser, 'username') ?: ($isOwnResponse ? (auth()->user()->name ?? 'Kamu') : 'Pengguna');
                         $senderRole = data_get($responseUser, 'role') ?: ($isOwnResponse ? (auth()->user()->role ?? 'Pengguna') : '');

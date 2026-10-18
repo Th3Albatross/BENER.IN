@@ -5,24 +5,25 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Facility;
 use App\Models\Report;
-use App\Services\ImageLoaderService;
+use App\Services\ScramblrService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ReportController
 {
-
     public function __construct(
-        protected ImageLoaderService $imageLoaderService
+        protected ScramblrService $scramblrService
     ) {}
+
     public function create(Request $request)
     {
         $validated = $request->validate([
             'identifier' => [
                 'required',
                 'uuid:7',
-                'unique:reports,identifier'
+                'unique:reports,identifier',
             ],
             'title' => [
                 'required',
@@ -121,26 +122,46 @@ class ReportController
 
         $report = Report::create($validated);
         foreach ($request->files->all('photos') as $idx => $_) {
-            $request->file('photos')[$idx]->store('reports/'.$report->id);
+            $file = $request->file('photos')[$idx];
+            $file->storeAs('reports/'.$report->id, Str::random(10).'.'.$file->extension());
         }
 
         return redirect()->to('dashboard');
     }
 
-    public function showReport(Request $request, string $uuid) {
+    public function showReport(Request $request, string $uuid)
+    {
         $report = Report::where('users_id', $request->user()->id)
-                    ->where('identifier', $uuid)
-                    ->join('facilities', 'reports.facilities_id', '=', 'facilities.id')
-                    ->leftJoin('categories', 'reports.categories_id', '=', 'categories.id')
-                    ->select('reports.*', 'facilities.name as facilities_name', 'categories.name as categories_name')
-                    ->firstOrFail();
+            ->where('identifier', $uuid)
+            ->join('users', 'reports.users_id', '=', 'users.id')
+            ->join('facilities', 'reports.facilities_id', '=', 'facilities.id')
+            ->leftJoin('categories', 'reports.categories_id', '=', 'categories.id')
+            ->select(
+                'reports.*',
+                'users.name as user_name',
+                'facilities.name as facilities_name',
+                'categories.name as categories_name'
+            )
+            ->firstOrFail();
 
-        $photos = [];
+        $photoTokens = Cache::remember(
+            'photos'.$report->identifier,
+            $this->scramblrService->expiration,
+            function () use ($report) {
+                $photos = [];
+                if (Storage::disk('local')->exists('reports/'.$report->id)) {
+                    foreach (Storage::disk('local')->allFiles('reports/'.$report->id) as $files) {
+                        array_push($photos, $this->scramblrService->Scramble($files));
+                    }
+                }
 
-        $this->imageLoaderService->loadImages($report);
+                return $photos;
+            }
+        );
+
         return view('report.show', [
             '_report' => $report,
-            '_photos' => $photos
+            '_photos' => $photoTokens
         ]);
     }
 
@@ -151,14 +172,5 @@ class ReportController
             'facilities' => Facility::all(),
             'identifier' => (string) Str::uuid7(),
         ]);
-    }
-
-    public function serveImage(string $uuid, string $filename) {
-        $path = 'temporary/'.$uuid.'/'.$filename;
-        $disk = Storage::disk('public');
-
-        abort_unless($disk->exists($path), 404);
-
-        return response()->file($disk->path($path));
     }
 }

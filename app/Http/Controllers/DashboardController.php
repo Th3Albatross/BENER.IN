@@ -31,7 +31,7 @@ class DashboardController
                     ->join('facilities', 'reports.facilities_id', '=', 'facilities.id')
                     ->join('categories', 'reports.categories_id', '=', 'categories.id')
                     ->select('reports.*', 'facilities.name as facilities_name', 'categories.name as categories_name')
-                    ->orderBy('updated_at')
+                    ->orderBy('updated_at', 'desc')
                     ->get();
 
         return view('dashboard.index', [

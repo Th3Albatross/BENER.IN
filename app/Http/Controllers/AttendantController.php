@@ -12,25 +12,21 @@ class AttendantController
         protected ScramblrService $scramblrService
     ) {}
 
-    public function serveImage(string $scrambldToken)
+    public function serve(string $scrambldToken)
     {
         try {
-            $tokenData = $this->scramblrService->DescrambleV2($scrambldToken);
+            $tokenData = $this->scramblrService->Descramble($scrambldToken);
             if (!$tokenData[0]) {
-                return response(status: 410);
+                return abort(410);
             }
 
             if (!Storage::disk('local')->exists($tokenData[1])) {
-                return response(status: 404);
+                return abort(404);
             }
 
             return response()->file(Storage::disk('local')->path($tokenData[1]));
         } catch (Exception $e) {
-            return response('Unauthorized Access!', 401);
+            return abort(401);
         }
-    }
-
-    public function test() {
-        return response($this->scramblrService->ScrambleV2('reports/2/yt1QC6rD2wIyU7ZxxCbcXjwF5F8TO8DnWJfw5sJZ.png'));
     }
 }
