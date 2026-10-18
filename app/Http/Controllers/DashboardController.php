@@ -29,7 +29,6 @@ class DashboardController
             ->selectRaw("COALESCE(categories.name, ?) as category_name, COUNT(reports.id) as total", ['Belum dikategorikan'])
             ->groupBy('categories.id', 'categories.name')
             ->orderByDesc('total')
-            ->limit(5)
             ->get();
 
         $facilityStats = (clone $baseQuery)
@@ -37,7 +36,6 @@ class DashboardController
             ->selectRaw('facilities.id, facilities.name as facility_name, COUNT(reports.id) as total')
             ->groupBy('facilities.id', 'facilities.name')
             ->orderByDesc('total')
-            ->limit(4)
             ->get();
 
         $filteredQuery = clone $baseQuery;

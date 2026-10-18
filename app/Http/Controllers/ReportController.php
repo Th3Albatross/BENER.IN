@@ -18,7 +18,7 @@ class ReportController
         protected ScramblrService $scramblrService
     ) {}
 
-    public function show()
+    public function showCreateReportPage()
     {
         return view('report.create', [
             'categories' => Category::all(),
@@ -60,7 +60,7 @@ class ReportController
         return redirect('/dashboard')->with('success', 'Laporan berhasil dikirim.');
     }
 
-    public function showReport(Request $request, string $uuid)
+    public function showReportDetailPage(Request $request, string $uuid)
     {
         $report = Report::where('reports.users_id', $request->user()->id)
             ->where('reports.identifier', $uuid)
@@ -90,7 +90,7 @@ class ReportController
         ]);
     }
 
-    public function editReport(Request $request, string $uuid)
+    public function showEditReportPage(Request $request, string $uuid)
     {
         $report = Report::where('users_id', $request->user()->id)
             ->where('identifier', $uuid)

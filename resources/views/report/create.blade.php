@@ -12,7 +12,7 @@
     @include('report._form', [
         'isEdit' => false,
         'reportRecord' => null,
-        'formAction' => url('/reports'),
+        'formAction' => url('/reports/create'),
         'identifier' => $identifier ?? old('identifier'),
         'existingPhotos' => [],
     ])

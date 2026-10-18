@@ -142,12 +142,16 @@
                                     {{ \Illuminate\Support\Carbon::parse($report->created_at)->locale('id')->translatedFormat('d M Y, H:i') }}
                                 </td>
                                 <td>
-                                    <div class="report-actions">
+                                    <select
+                                        class="report-action-select"
+                                        aria-label="Aksi untuk laporan {{ $report->title }}"
+                                        onchange="if (this.value) window.location.href = this.value">
+                                        <option value="" selected disabled>Aksi ▾</option>
                                         @if ($report->status === 'Pending')
-                                            <a href="{{ route('reports.edit', ['uuid' => $report->identifier]) }}" class="report-action report-action-edit">Edit</a>
+                                            <option value="{{ route('reports.edit', ['uuid' => $report->identifier]) }}">Edit laporan</option>
                                         @endif
-                                        <a href="{{ route('reports.show', ['uuid' => $report->identifier]) }}" class="report-action report-action-view">Lihat</a>
-                                    </div>
+                                        <option value="{{ route('reports.show', ['uuid' => $report->identifier]) }}">Lihat detail</option>
+                                    </select>
                                 </td>
                             </tr>
                         @empty
@@ -212,23 +216,25 @@
                         <p class="dashboard-card-subtitle">Kategori yang paling sering dipilih</p>
                     </div>
                 </div>
-                @if ($_categoryStats->isNotEmpty())
-                    <div class="category-list">
-                        @foreach ($_categoryStats as $categoryStat)
-                            <div class="category-item">
-                                <div class="category-info">
-                                    <span title="{{ $categoryStat->category_name }}">{{ $categoryStat->category_name }}</span>
-                                    <strong>{{ $categoryStat->total }}</strong>
+                <div class="widget-list-viewport category-viewport">
+                    @if ($_categoryStats->isNotEmpty())
+                        <div class="category-list">
+                            @foreach ($_categoryStats as $categoryStat)
+                                <div class="category-item">
+                                    <div class="category-info">
+                                        <span title="{{ $categoryStat->category_name }}">{{ $categoryStat->category_name }}</span>
+                                        <strong>{{ $categoryStat->total }}</strong>
+                                    </div>
+                                    <div class="category-progress" role="progressbar" aria-label="Jumlah laporan kategori {{ $categoryStat->category_name }}" aria-valuemin="0" aria-valuemax="{{ $_maxCategoryReports }}" aria-valuenow="{{ $categoryStat->total }}">
+                                        <div class="category-progress-fill" style="width: {{ max(5, (int) round(($categoryStat->total / $_maxCategoryReports) * 100)) }}%"></div>
+                                    </div>
                                 </div>
-                                <div class="category-progress" role="progressbar" aria-label="Jumlah laporan kategori {{ $categoryStat->category_name }}" aria-valuemin="0" aria-valuemax="{{ $_maxCategoryReports }}" aria-valuenow="{{ $categoryStat->total }}">
-                                    <div class="category-progress-fill" style="width: {{ max(5, (int) round(($categoryStat->total / $_maxCategoryReports) * 100)) }}%"></div>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                @else
-                    <p class="widget-empty">Belum ada data kategori untuk ditampilkan.</p>
-                @endif
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="widget-empty">Belum ada data kategori untuk ditampilkan.</p>
+                    @endif
+                </div>
             </div>
 
             <div class="dashboard-card facilities-card">
@@ -238,21 +244,23 @@
                         <p class="dashboard-card-subtitle">Berdasarkan laporan yang kamu buat</p>
                     </div>
                 </div>
-                @if ($_facilityStats->isNotEmpty())
-                    <div class="facility-list">
-                        @foreach ($_facilityStats as $index => $facilityStat)
-                            <div class="facility-item">
-                                <div class="facility-rank">{{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}</div>
-                                <div class="facility-details">
-                                    <span class="facility-title" title="{{ $facilityStat->facility_name }}">{{ $facilityStat->facility_name }}</span>
-                                    <span class="facility-count">{{ $facilityStat->total }} laporan</span>
+                <div class="widget-list-viewport facility-viewport">
+                    @if ($_facilityStats->isNotEmpty())
+                        <div class="facility-list">
+                            @foreach ($_facilityStats as $index => $facilityStat)
+                                <div class="facility-item">
+                                    <div class="facility-rank">{{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}</div>
+                                    <div class="facility-details">
+                                        <span class="facility-title" title="{{ $facilityStat->facility_name }}">{{ $facilityStat->facility_name }}</span>
+                                        <span class="facility-count">{{ $facilityStat->total }} laporan</span>
+                                    </div>
                                 </div>
-                            </div>
-                        @endforeach
-                    </div>
-                @else
-                    <p class="widget-empty">Belum ada data fasilitas untuk ditampilkan.</p>
-                @endif
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="widget-empty">Belum ada data fasilitas untuk ditampilkan.</p>
+                    @endif
+                </div>
             </div>
         </aside>
     </section>

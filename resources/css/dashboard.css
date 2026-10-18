@@ -309,33 +309,33 @@
     font-size: 11px !important;
 }
 
-.report-actions {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-.report-action {
-    display: inline-flex;
-    align-items: center;
-    min-height: 28px;
+.report-action-select {
+    width: 100%;
+    min-width: 108px;
+    min-height: 30px;
+    padding: 5px 27px 5px 11px;
+    appearance: none;
     color: #3559a8;
-    font-size: 12px;
+    background-color: #f7f9ff;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%233559a8' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 9px center;
+    border: 1px solid #d6def3;
+    border-radius: 999px;
+    font: inherit;
+    font-size: 11px;
     font-weight: 700;
-    text-decoration: none;
+    cursor: pointer;
 }
 
-.report-action:hover {
-    text-decoration: underline;
+.report-action-select:hover {
+    background-color: #edf3ff;
+    border-color: #b8c8eb;
 }
 
-.report-action-edit {
-    color: #a15c07;
-}
-
-.report-action-view {
-    color: #3559a8;
+.report-action-select:focus-visible {
+    outline: 2px solid #4a90e2;
+    outline-offset: 2px;
 }
 
 .status-badge {
@@ -492,6 +492,37 @@
     color: #7b8491;
 }
 
+.widget-list-viewport {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f8fafc;
+    padding-right: 5px;
+}
+
+.widget-list-viewport::-webkit-scrollbar {
+    width: 6px;
+}
+
+.widget-list-viewport::-webkit-scrollbar-track {
+    background: #f8fafc;
+    border-radius: 999px;
+}
+
+.widget-list-viewport::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 999px;
+}
+
+.category-viewport {
+    height: 238px;
+}
+
+.facility-viewport {
+    height: 282px;
+}
+
 .category-list {
     display: flex;
     flex-direction: column;
@@ -602,8 +633,11 @@
 }
 
 .widget-empty {
+    min-height: 100%;
     margin: 0;
-    padding: 12px 0 2px;
+    padding: 12px 4px;
+    display: flex;
+    align-items: flex-start;
     color: #7b8491;
     font-size: 12px;
     line-height: 1.6;
