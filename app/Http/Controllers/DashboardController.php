@@ -2,42 +2,78 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Category;
-use App\Models\Facility;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Http\Request;
 use App\Models\Report;
+use Illuminate\Http\Request;
 
 class DashboardController
 {
+    public function show(Request $request)
+    {
+        $userId = $request->user()->id;
+        $statuses = ['Pending', 'Rejected', 'Resolved'];
+        $statusFilter = $request->query('status');
 
-    // single page contains 10 entries
-    public function show(Request $request) {
-        $reqPage = $request->integer('page');
-        $totalReports = Report::where('users_id', $request->user()->id)
-                            ->count();
-        $pageCount = ceil($totalReports / 10);
+        if (!in_array($statusFilter, $statuses, true)) {
+            $statusFilter = null;
+        }
 
-        if ($reqPage > $pageCount || $reqPage < 0)
-            return redirect()->to(
-                request()->url() . '?page=' . max(0, min($reqPage, $pageCount))
-            );
+        $baseQuery = Report::query()->where('reports.users_id', $userId);
 
-        // stuff to cap the max page
-        $page = min($reqPage, max(0, $pageCount - 1));
-        $reports = Report::where('users_id', $request->user()->id)
-                    ->offset(10 * $page)
-                    ->limit(10)
-                    ->join('facilities', 'reports.facilities_id', '=', 'facilities.id')
-                    ->join('categories', 'reports.categories_id', '=', 'categories.id')
-                    ->select('reports.*', 'facilities.name as facilities_name', 'categories.name as categories_name')
-                    ->orderBy('updated_at', 'desc')
-                    ->get();
+        $statusCounts = (clone $baseQuery)
+            ->selectRaw('status, COUNT(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $categoryStats = (clone $baseQuery)
+            ->leftJoin('categories', 'reports.categories_id', '=', 'categories.id')
+            ->selectRaw("COALESCE(categories.name, ?) as category_name, COUNT(reports.id) as total", ['Belum dikategorikan'])
+            ->groupBy('categories.id', 'categories.name')
+            ->orderByDesc('total')
+            ->limit(5)
+            ->get();
+
+        $facilityStats = (clone $baseQuery)
+            ->join('facilities', 'reports.facilities_id', '=', 'facilities.id')
+            ->selectRaw('facilities.id, facilities.name as facility_name, COUNT(reports.id) as total')
+            ->groupBy('facilities.id', 'facilities.name')
+            ->orderByDesc('total')
+            ->limit(4)
+            ->get();
+
+        $filteredQuery = clone $baseQuery;
+
+        if ($statusFilter !== null) {
+            $filteredQuery->where('reports.status', $statusFilter);
+        }
+
+        $filteredTotal = (clone $filteredQuery)->count('reports.id');
+        $lastPage = $filteredTotal > 0 ? intdiv($filteredTotal - 1, 10) : 0;
+        $page = min(max($request->integer('page', 0), 0), $lastPage);
+
+        $reports = $filteredQuery
+            ->join('facilities', 'reports.facilities_id', '=', 'facilities.id')
+            ->leftJoin('categories', 'reports.categories_id', '=', 'categories.id')
+            ->select(
+                'reports.*',
+                'facilities.name as facilities_name',
+                'categories.name as categories_name'
+            )
+            ->orderByDesc('reports.created_at')
+            ->offset($page * 10)
+            ->limit(10)
+            ->get();
 
         return view('dashboard.index', [
             '_reports' => $reports,
-            '_totalReports' => $totalReports,
-            '_indexedReports' => count($reports) + $page * 10
+            '_totalReports' => $filteredTotal,
+            '_indexedReports' => $filteredTotal === 0 ? 0 : ($page * 10) + $reports->count(),
+            '_currentPage' => $page,
+            '_statusFilter' => $statusFilter,
+            '_statusCounts' => $statusCounts,
+            '_allReportsCount' => (clone $baseQuery)->count(),
+            '_categoryStats' => $categoryStats,
+            '_facilityStats' => $facilityStats,
+            '_maxCategoryReports' => max(1, (int) $categoryStats->max('total')),
         ]);
     }
 }

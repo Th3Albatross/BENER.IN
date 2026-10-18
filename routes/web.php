@@ -9,8 +9,10 @@ use App\Http\Controllers\DashboardController;
 Route::middleware('auth')->group(function() {
     Route::get('/dashboard', [DashboardController::class, 'show']);
     Route::controller(ReportController::class)->group(function() {
-        Route::post('/reports/create', 'create');
-        Route::get('/reports/create', 'show');
+        Route::post('/reports/create', 'create')
+            ->name('reports.create');
+        Route::get('/reports/create', 'show')
+            ->name('reports.show');
         Route::get('/reports/{uuid}/edit', 'editReport')
             ->name('reports.edit');
         Route::put('/reports/{uuid}', 'updateReport')
