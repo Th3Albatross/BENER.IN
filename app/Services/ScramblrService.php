@@ -11,7 +11,7 @@ class ScramblrService {
     private string $_key;
 
     public function __construct() {
-        $this->_key = base64_decode(config('services.scramblr.key', ''));
+        $this->_key = base64_decode((string)config('services.scramblr.key', ''));
         $this->_key = !$this->_key ? random_bytes(32) : $this->_key;
     }
 

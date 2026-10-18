@@ -207,35 +207,62 @@
                     </div>
 
                     <div class="report-field report-photo-field">
-                        @if ($isEdit && count($existingPhotos) > 0)
+                        @if ($isEdit)
                             <div class="report-existing-photos">
-                                <p class="report-existing-photos-title">Foto yang sudah tersimpan</p>
-                                <p class="report-field-hint">Foto lama tetap dipertahankan kecuali kamu menandainya untuk dihapus saat menyimpan.</p>
-                                <div class="report-existing-photo-grid">
-                                    @foreach ($existingPhotos as $photoIndex => $photoToken)
-                                        <div class="report-existing-photo">
-                                            <img
-                                                src="{{ url('/blob/' . $photoToken) }}"
-                                                alt="Foto bukti tersimpan {{ $photoIndex + 1 }}"
-                                                loading="lazy"
-                                            >
-                                            <span class="report-existing-photo-caption">Foto {{ $photoIndex + 1 }}</span>
-                                            <label class="report-existing-photo-remove" for="removePhoto{{ $photoIndex }}">
-                                                <input
-                                                    id="removePhoto{{ $photoIndex }}"
-                                                    type="checkbox"
-                                                    name="remove_photos[]"
-                                                    value="{{ $photoToken }}"
-                                                    data-remove-existing-photo
-                                                >
-                                                Hapus saat menyimpan
-                                            </label>
-                                        </div>
-                                    @endforeach
+                                <div class="report-existing-photos-heading">
+                                    <div>
+                                        <p class="report-existing-photos-title">Foto yang sudah tersimpan</p>
+                                        <p class="report-field-hint">Foto lama tetap digunakan kecuali kamu menandainya untuk dihapus.</p>
+                                    </div>
+                                    <span class="report-existing-photos-count">{{ count($existingPhotos) }} foto</span>
                                 </div>
+
+                                @if (count($existingPhotos) > 0)
+                                    <div class="report-existing-photo-grid">
+                                        @foreach ($existingPhotos as $photoIndex => $photoToken)
+                                            @php
+                                                $existingPhotoUrl = route('blob.serve', ['scrambldToken' => $photoToken]);
+                                            @endphp
+                                            <article class="report-existing-photo">
+                                                <button
+                                                    type="button"
+                                                    class="report-existing-photo-preview"
+                                                    data-existing-photo-src="{{ $existingPhotoUrl }}"
+                                                    data-existing-photo-alt="Foto bukti tersimpan {{ $photoIndex + 1 }}"
+                                                    aria-label="Perbesar foto bukti {{ $photoIndex + 1 }}">
+                                                    <img
+                                                        src="{{ $existingPhotoUrl }}"
+                                                        alt="Foto bukti tersimpan {{ $photoIndex + 1 }}"
+                                                        loading="lazy"
+                                                        decoding="async"
+                                                        referrerpolicy="no-referrer">
+                                                    <span class="report-existing-photo-overlay">Lihat foto</span>
+                                                </button>
+                                                <div class="report-existing-photo-footer">
+                                                    <span class="report-existing-photo-caption">Foto {{ $photoIndex + 1 }}</span>
+                                                    <label class="report-existing-photo-remove" for="removePhoto{{ $photoIndex }}">
+                                                        <input
+                                                            id="removePhoto{{ $photoIndex }}"
+                                                            type="checkbox"
+                                                            name="remove_photos[]"
+                                                            value="{{ $photoToken }}"
+                                                            data-remove-existing-photo>
+                                                        <span>Hapus saat menyimpan</span>
+                                                    </label>
+                                                </div>
+                                            </article>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <div class="report-existing-photos-empty">
+                                        <span class="report-existing-photos-empty-icon" aria-hidden="true">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="m5 17 5-5 3 3 2.5-2.5L19 16"/></svg>
+                                        </span>
+                                        <strong>Belum ada foto bukti</strong>
+                                        <span>Foto yang ditambahkan akan muncul di sini setelah laporan disimpan.</span>
+                                    </div>
+                                @endif
                             </div>
-                        @elseif ($isEdit)
-                            <p class="report-field-hint">Belum ada foto bukti tersimpan untuk laporan ini.</p>
                         @endif
 
                         <div class="report-photo-heading">
@@ -334,6 +361,11 @@
             </aside>
         </div>
     </form>
+
+    <div class="report-photo-lightbox" id="reportPhotoLightbox" hidden role="dialog" aria-modal="true" aria-label="Pratinjau foto bukti">
+        <button type="button" class="report-photo-lightbox-close" id="reportPhotoLightboxClose" aria-label="Tutup pratinjau foto">&times;</button>
+        <img src="" alt="" id="reportPhotoLightboxImage">
+    </div>
 </div>
 
 @push('scripts')
@@ -350,6 +382,9 @@
         const description = document.getElementById('reportDescription');
         const descriptionCounter = document.getElementById('reportDescriptionCounter');
         const existingPhotoInputs = Array.from(form.querySelectorAll('[data-remove-existing-photo]'));
+        const photoLightbox = document.getElementById('reportPhotoLightbox');
+        const photoLightboxImage = document.getElementById('reportPhotoLightboxImage');
+        const photoLightboxClose = document.getElementById('reportPhotoLightboxClose');
         const maxPhotos = 3;
         const maxFileSize = 5 * 1024 * 1024;
         const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
@@ -484,6 +519,34 @@
             syncInputFiles();
             renderPhotos();
             photoMessage.textContent = 'Foto baru berhasil dihapus dari pilihan.';
+        });
+
+        form.querySelectorAll('[data-existing-photo-src]').forEach(function (button) {
+            button.addEventListener('click', function () {
+                if (!photoLightbox || !photoLightboxImage) return;
+                photoLightboxImage.src = button.dataset.existingPhotoSrc;
+                photoLightboxImage.alt = button.dataset.existingPhotoAlt || 'Foto bukti';
+                photoLightbox.hidden = false;
+                document.body.classList.add('report-photo-lightbox-open');
+                if (photoLightboxClose) photoLightboxClose.focus();
+            });
+        });
+
+        function closePhotoLightbox() {
+            if (!photoLightbox || !photoLightboxImage) return;
+            photoLightbox.hidden = true;
+            photoLightboxImage.src = '';
+            document.body.classList.remove('report-photo-lightbox-open');
+        }
+
+        if (photoLightboxClose) photoLightboxClose.addEventListener('click', closePhotoLightbox);
+        if (photoLightbox) {
+            photoLightbox.addEventListener('click', function (event) {
+                if (event.target === photoLightbox) closePhotoLightbox();
+            });
+        }
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && photoLightbox && !photoLightbox.hidden) closePhotoLightbox();
         });
 
         existingPhotoInputs.forEach(function (input) {
