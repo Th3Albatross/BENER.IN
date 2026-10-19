@@ -13,6 +13,8 @@ export default defineConfig({
                 'resources/css/report-create.css',
                 'resources/css/report-show.css',
                 'resources/css/auth-login.css',
+                'resources/css/discussion.css',
+                'resources/css/discussion-index.css',
                 'resources/js/auth-login.js',
                 'resources/js/app.js'
             ],

@@ -22,6 +22,7 @@ Route::middleware('auth')->group(function () {
             ->name('reports.showDetail');
     });
     Route::controller(ResponsesController::class)->group(function () {
+        Route::get('/discussions', 'index')->name('discussions.index');
         Route::get('/reports/{uuid}/discussion', 'show')->name('responses.show');
         Route::post('/reports/{uuid}/discussion', 'store')->name('responses.store');
         Route::patch('/reports/{uuid}/discussion/{responseId}', 'update')->name('responses.update');

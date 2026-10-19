@@ -19,6 +19,17 @@
                 <span>Dashboard</span>
             </a>
 
+            <a href="{{ route('discussions.index') }}"
+               class="nav-item {{ request()->is('discussions') || request()->is('discussions/*') || request()->is('reports/*/discussion') ? 'nav-item--active' : '' }}">
+                <span class="nav-item__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+                        <path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H7l-3 2v-6.5A7.5 7.5 0 1 1 20 11.5Z"></path>
+                        <path d="M8 10h8M8 13.5h5"></path>
+                    </svg>
+                </span>
+                <span>Discussions</span>
+            </a>
+
             <a href="{{ url('/reports/create') }}"
                class="nav-item {{ request()->is('reports/create') ? 'nav-item--active' : '' }}">
                 <span class="nav-item__icon" aria-hidden="true">

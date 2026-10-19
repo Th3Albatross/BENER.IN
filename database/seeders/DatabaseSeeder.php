@@ -36,6 +36,14 @@ class DatabaseSeeder extends Seeder
             'remember_token' => Str::random(10)
         ]);
 
+        $admin = User::create([
+            'name' => 'Fajar',
+            'email' => 'user@user.com',
+            'role' => 'user',
+            'password' => Hash::make('ifallapart'),
+            'remember_token' => Str::random(10)
+        ]);
+
         //$users = User::factory(10);
         $categories = Category::factory(10);
         $facilities = Facility::factory(10);
@@ -43,10 +51,10 @@ class DatabaseSeeder extends Seeder
         $categories->create();
         $facilities->create();
 
-        Report::factory(72)
+        /*Report::factory(72)
             ->recycle($admin)
             ->recycle($categories)
             ->recycle($facilities)
-            ->create();
+            ->create();*/
     }
 }
