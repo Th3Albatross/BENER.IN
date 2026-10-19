@@ -12,6 +12,7 @@
 @php
     $reportData = $_report ?? $report ?? null;
     $responses = collect($_responses ?? $responses ?? []);
+    $currentUser = $_currentUser ?? auth()->user();
 
     if (!$reportData) {
         abort(404);
@@ -95,7 +96,13 @@
                     @endphp
 
                     <article class="discussion-message {{ $isOwnResponse ? 'discussion-message--mine' : '' }}" data-response-id="{{ $response->id }}">
-                        <div class="discussion-avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr((string) $senderName, 0, 1)) }}</div>
+                        <div class="discussion-avatar" aria-hidden="true">
+                            @if ($response->user?->profile_photo_url)
+                                <img src="{{ $response->user->profile_photo_url }}" alt="" loading="lazy" decoding="async">
+                            @else
+                                <span>{{ mb_strtoupper(mb_substr((string) $senderName, 0, 1)) }}</span>
+                            @endif
+                        </div>
                         <div class="discussion-message-content">
                             <div class="discussion-message-meta">
                                 <strong>{{ $senderName }}</strong>
@@ -146,6 +153,19 @@
 
             <form class="discussion-composer" action="{{ route('responses.store', ['uuid' => $reportData->identifier]) }}" method="POST">
                 @csrf
+                <div class="discussion-composer-identity">
+                    <div class="discussion-avatar discussion-composer-avatar" aria-hidden="true">
+                        @if ($currentUser?->profile_photo_url)
+                            <img src="{{ $currentUser->profile_photo_url }}" alt="" loading="lazy" decoding="async">
+                        @else
+                            <span>{{ mb_strtoupper(mb_substr((string) ($currentUser?->name ?? 'U'), 0, 1)) }}</span>
+                        @endif
+                    </div>
+                    <div class="discussion-composer-identity-copy">
+                        <span>Mengirim sebagai</span>
+                        <strong>{{ $currentUser?->name ?? 'Pengguna' }}</strong>
+                    </div>
+                </div>
                 @if ($returnToDiscussions)
                     <input type="hidden" name="from" value="discussions">
                     <input type="hidden" name="status" value="{{ request()->query('status', 'all') }}">

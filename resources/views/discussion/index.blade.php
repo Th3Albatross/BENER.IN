@@ -77,7 +77,19 @@
                             </td>
                             <td class="discussion-strong-cell">{{ $report->facility?->name ?? '—' }}</td>
                             <td>{{ $report->category?->name ?? 'Tanpa kategori' }}</td>
-                            <td>{{ $report->user?->name ?? 'Pengguna' }}</td>
+                            <td>
+                                @php $reporterName = $report->user?->name ?? 'Pengguna'; @endphp
+                                <div class="discussion-reporter">
+                                    <span class="discussion-reporter-avatar" aria-hidden="true">
+                                        @if ($report->user?->profile_photo_url)
+                                            <img src="{{ $report->user->profile_photo_url }}" alt="" loading="lazy" decoding="async">
+                                        @else
+                                            {{ mb_strtoupper(mb_substr((string) $reporterName, 0, 1)) }}
+                                        @endif
+                                    </span>
+                                    <span class="discussion-reporter-name">{{ $reporterName }}</span>
+                                </div>
+                            </td>
                             <td>
                                 <span class="discussion-status {{ $statusClass }}">
                                     {{ $statusLabels[$report->status] ?? $report->status }}

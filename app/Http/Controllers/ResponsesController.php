@@ -4,14 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Models\Report;
 use App\Models\User;
+use App\Services\ScramblrService;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Storage;
 
 class ResponsesController
 {
     private const STAFF_ROLES = ['petugas', 'attendant', 'staff', 'admin'];
 
     private const VALID_STATUSES = ['all', 'Pending', 'Resolved', 'Rejected'];
+
+    private const PROFILE_PHOTO_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
+
+    public function __construct(
+        protected ScramblrService $scramblrService
+    ) {}
 
     public function index(Request $request)
     {
@@ -58,6 +65,10 @@ class ResponsesController
             ->paginate(10)
             ->withQueryString();
 
+        $reports->getCollection()->each(function (Report $report): void {
+            $this->attachProfilePhotoUrl($report->user);
+        });
+
         return view('discussion.index', [
             '_reports' => $reports,
             '_statusFilter' => $statusFilter,
@@ -82,15 +93,23 @@ class ResponsesController
             403
         );
 
+        $this->attachProfilePhotoUrl($report->user);
+        $this->attachProfilePhotoUrl($user);
+
         $responses = $report->responses()
             ->with('user:id,name,role')
             ->orderBy('created_at')
             ->orderBy('id')
             ->get();
 
+        $responses->each(function ($response): void {
+            $this->attachProfilePhotoUrl($response->user);
+        });
+
         return view('discussion.show', [
             '_report' => $report,
             '_responses' => $responses,
+            '_currentUser' => $user,
         ]);
     }
 
@@ -149,6 +168,39 @@ class ResponsesController
         return redirect()
             ->route('responses.show', $this->returnParams($request, $report))
             ->with('success', 'Pesan berhasil diperbarui.');
+    }
+
+    /** Attach a temporary URL served through the existing private blob route. */
+    private function attachProfilePhotoUrl(?User $user): void
+    {
+        if (!$user) {
+            return;
+        }
+
+        $path = $this->findProfilePhotoPath($user);
+        $user->setAttribute(
+            'profile_photo_url',
+            $path
+                ? route('blob.serve', [
+                    'scrambldToken' => $this->scramblrService->Scramble($path),
+                ])
+                : null
+        );
+    }
+
+    private function findProfilePhotoPath(User $user): ?string
+    {
+        $disk = Storage::disk('local');
+        $directory = 'profile-photos/' . $user->getKey();
+
+        foreach (self::PROFILE_PHOTO_EXTENSIONS as $extension) {
+            $path = $directory . '/avatar.' . $extension;
+            if ($disk->exists($path)) {
+                return $path;
+            }
+        }
+
+        return null;
     }
 
     private function isStaff(User $user): bool

@@ -173,6 +173,43 @@
     font-weight: 600;
 }
 
+.discussion-reporter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.discussion-reporter-avatar {
+    display: inline-flex;
+    flex: 0 0 28px;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    overflow: hidden;
+    color: #3657ac;
+    background: #e9efff;
+    border-radius: 50%;
+    font-size: 10px;
+    font-weight: 750;
+}
+
+.discussion-reporter-avatar img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    object-fit: cover;
+}
+
+.discussion-reporter-name {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    color: #2e3338;
+    font-weight: 600;
+}
+
 .discussion-status {
     display: inline-flex;
     align-items: center;

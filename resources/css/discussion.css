@@ -42,7 +42,9 @@
 .discussion-chat-frame { display: flex; flex-direction: column; gap: 18px; height: clamp(340px, 55vh, 620px); min-height: 280px; overflow-y: auto; overscroll-behavior: contain; padding: 16px; border: 1px solid var(--dc-border); border-radius: 9px; background: #fafbfd; scrollbar-gutter: stable; }
 .discussion-message { display: flex; align-items: flex-start; gap: 10px; max-width: min(88%, 760px); }
 .discussion-message--mine { align-self: flex-end; flex-direction: row-reverse; }
-.discussion-avatar { display: flex; flex: 0 0 34px; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: #e9efff; color: #3657ac; font-size: 12px; font-weight: 700; }
+.discussion-avatar { display: flex; flex: 0 0 34px; align-items: center; justify-content: center; width: 34px; height: 34px; overflow: hidden; border-radius: 50%; background: #e9efff; color: #3657ac; font-size: 12px; font-weight: 700; }
+.discussion-avatar img { display: block; width: 100%; height: 100%; border-radius: inherit; object-fit: cover; }
+.discussion-avatar span { display: block; line-height: 1; }
 .discussion-message--mine .discussion-avatar { background: #e2f5e9; color: #287a58; }
 .discussion-message-content { min-width: 0; max-width: calc(100% - 44px); }
 .discussion-message-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 9px; margin: 0 0 6px; color: var(--dc-muted); font-size: 10px; line-height: 1.5; }
@@ -64,6 +66,11 @@
 .discussion-empty-icon { display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; margin-bottom: 4px; border-radius: 12px; background: var(--dc-soft); color: var(--dc-muted); }
 .discussion-empty-icon svg { width: 22px; height: 22px; }
 .discussion-composer { margin-top: 20px; }
+.discussion-composer-identity { display: flex; align-items: center; gap: 10px; margin-bottom: 3px; }
+.discussion-composer-avatar { flex-basis: 32px; width: 32px; height: 32px; }
+.discussion-composer-identity-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.discussion-composer-identity-copy span { color: var(--dc-muted); font-size: 10px; line-height: 1.4; }
+.discussion-composer-identity-copy strong { overflow-wrap: anywhere; color: var(--dc-ink); font-size: 12px; font-weight: 700; }
 .discussion-composer > label { color: var(--dc-ink); font-size: 12px; font-weight: 700; }
 .discussion-composer-footer { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 2px; }
 .discussion-composer-footer p { margin: 0; color: var(--dc-muted); font-size: 10px; line-height: 1.6; }
