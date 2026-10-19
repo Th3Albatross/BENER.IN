@@ -126,7 +126,17 @@ class ResponsesController
             'updated_at' => now(),
         ]);
 
-        return redirect()->route('responses.show', ['uuid' => $report->identifier])
+        $returnParams = ['uuid' => $report->identifier];
+        if ($request->input('from') === 'discussions') {
+            $status = (string) $request->input('status', 'all');
+            $returnParams['from'] = 'discussions';
+            $returnParams['status'] = in_array($status, ['all', 'Pending', 'Resolved', 'Rejected'], true) ? $status : 'all';
+            if ($request->integer('page') > 0) {
+                $returnParams['page'] = $request->integer('page');
+            }
+        }
+
+        return redirect()->route('responses.show', $returnParams)
             ->with('success', 'Pesan berhasil dikirim.');
     }
 
@@ -158,7 +168,17 @@ class ResponsesController
                 'updated_at' => now(),
             ]);
 
-        return redirect()->route('responses.show', ['uuid' => $report->identifier])
+        $returnParams = ['uuid' => $report->identifier];
+        if ($request->input('from') === 'discussions') {
+            $status = (string) $request->input('status', 'all');
+            $returnParams['from'] = 'discussions';
+            $returnParams['status'] = in_array($status, ['all', 'Pending', 'Resolved', 'Rejected'], true) ? $status : 'all';
+            if ($request->integer('page') > 0) {
+                $returnParams['page'] = $request->integer('page');
+            }
+        }
+
+        return redirect()->route('responses.show', $returnParams)
             ->with('success', 'Pesan berhasil diperbarui.');
     }
 }

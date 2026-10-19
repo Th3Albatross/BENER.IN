@@ -93,7 +93,12 @@
                                 {{ \Illuminate\Support\Carbon::parse($activityAt)->locale('id')->translatedFormat('d M Y, H:i') }}
                             </td>
                             <td>
-                                <a class="discussion-open-button" href="{{ route('responses.show', ['uuid' => $report->identifier]) }}">
+                                <a class="discussion-open-button" href="{{ route('responses.show', [
+                                    'uuid' => $report->identifier,
+                                    'from' => 'discussions',
+                                    'status' => $statusFilter,
+                                    'page' => $reports->currentPage(),
+                                ]) }}">
                                     Buka diskusi
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" /></svg>
                                 </a>

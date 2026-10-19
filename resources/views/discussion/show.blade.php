@@ -16,13 +16,27 @@
     if (!$reportData) {
         abort(404);
     }
+
+    $returnToDiscussions = request()->query('from') === 'discussions';
+    $backUrl = route('reports.showDetail', ['uuid' => $reportData->identifier]);
+    $backLabel = 'Kembali ke Detail Laporan';
+
+    if ($returnToDiscussions) {
+        $backQuery = [
+            'status' => request()->query('status', 'all'),
+            'page' => request()->query('page'),
+        ];
+        $backQuery = array_filter($backQuery, fn ($value) => $value !== null && $value !== '');
+        $backUrl = route('discussions.index', $backQuery);
+        $backLabel = 'Kembali ke Daftar Diskusi';
+    }
 @endphp
 
 <div class="discussion-page">
     <div class="discussion-toolbar">
-        <a href="{{ route('reports.showDetail', ['uuid' => $reportData->identifier]) }}" class="discussion-back-link">
+        <a href="{{ $backUrl }}" class="discussion-back-link">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
-            Kembali ke Detail Laporan
+            {{ $backLabel }}
         </a>
         <span class="discussion-report-reference">{{ $reportData->identifier }}</span>
     </div>
@@ -102,6 +116,13 @@
                                 <form class="discussion-edit-form" action="{{ route('responses.update', ['uuid' => $reportData->identifier, 'responseId' => $response->id]) }}" method="POST" hidden>
                                     @csrf
                                     @method('PATCH')
+                                    @if ($returnToDiscussions)
+                                        <input type="hidden" name="from" value="discussions">
+                                        <input type="hidden" name="status" value="{{ request()->query('status', 'all') }}">
+                                        @if (request()->query('page'))
+                                            <input type="hidden" name="page" value="{{ request()->query('page') }}">
+                                        @endif
+                                    @endif
                                     <label class="discussion-sr-only" for="edit-message-{{ $response->id }}">Edit pesan</label>
                                     <textarea id="edit-message-{{ $response->id }}" name="message" rows="3" maxlength="5000" required>{{ $response->message }}</textarea>
                                     <div class="discussion-form-actions">
@@ -125,6 +146,13 @@
 
             <form class="discussion-composer" action="{{ route('responses.store', ['uuid' => $reportData->identifier]) }}" method="POST">
                 @csrf
+                @if ($returnToDiscussions)
+                    <input type="hidden" name="from" value="discussions">
+                    <input type="hidden" name="status" value="{{ request()->query('status', 'all') }}">
+                    @if (request()->query('page'))
+                        <input type="hidden" name="page" value="{{ request()->query('page') }}">
+                    @endif
+                @endif
                 <label for="new-discussion-message">Tulis pesan</label>
                 <textarea id="new-discussion-message" name="message" rows="3" maxlength="5000" placeholder="Tulis pesan untuk pelapor atau petugas..." required>{{ old('message') }}</textarea>
                 <div class="discussion-composer-footer">
