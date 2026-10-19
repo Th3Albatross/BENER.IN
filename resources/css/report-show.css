@@ -95,45 +95,16 @@
 .report-show-photo { position: relative; display: block; overflow: hidden; aspect-ratio: 4 / 3; padding: 0; border: 1px solid var(--rs-border); border-radius: 9px; background: var(--rs-soft); cursor: zoom-in; }
 .report-show-photo img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform 180ms ease; }
 .report-show-photo:hover img { transform: scale(1.035); }
-.report-show-photo:focus-visible, .report-show-button:focus-visible, .report-show-edit-trigger:focus-visible, .report-show-lightbox-close:focus-visible { outline: 3px solid #7da7ff; outline-offset: 3px; }
+.report-show-photo:focus-visible, .report-show-lightbox-close:focus-visible { outline: 3px solid #7da7ff; outline-offset: 3px; }
 .report-show-photo-overlay { position: absolute; inset: auto 0 0; display: flex; justify-content: center; padding: 18px 8px 9px; color: #fff; background: linear-gradient(transparent, rgba(0, 0, 0, .65)); font-size: 11px; font-weight: 700; opacity: 0; transition: opacity 150ms ease; }
 .report-show-photo:hover .report-show-photo-overlay, .report-show-photo:focus-visible .report-show-photo-overlay { opacity: 1; }
 
-/* Discussion history and composer */
-.report-show-discussion-count { margin-left: auto; padding: 5px 9px; border: 1px solid var(--rs-border); border-radius: 999px; color: var(--rs-muted); font-size: 11px; font-weight: 600; white-space: nowrap; }
-.report-show-discussion-body { padding: 20px; }
-.report-show-chat-frame { display: flex; flex-direction: column; gap: 18px; height: clamp(300px, 46vh, 520px); min-height: 260px; overflow-y: auto; overscroll-behavior: contain; padding: 16px; border: 1px solid var(--rs-border); border-radius: 9px; background: #fafbfd; scrollbar-gutter: stable; }
-.report-show-message { display: flex; align-items: flex-start; gap: 10px; max-width: min(88%, 760px); }
-.report-show-message--mine { align-self: flex-end; flex-direction: row-reverse; }
-.report-show-message-avatar { display: flex; flex: 0 0 34px; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: #e9efff; color: #3657ac; font-size: 12px; font-weight: 700; }
-.report-show-message--mine .report-show-message-avatar { background: #e2f5e9; color: #287a58; }
-.report-show-message-content { min-width: 0; max-width: calc(100% - 44px); }
-.report-show-message-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 9px; margin: 0 0 6px; color: var(--rs-muted); font-size: 10px; line-height: 1.5; }
-.report-show-message-meta strong { color: var(--rs-ink); font-size: 11px; }
-.report-show-message-meta time { margin-left: auto; font-variant-numeric: tabular-nums; }
-.report-show-role { display: inline-flex; padding: 2px 6px; border-radius: 999px; background: #eef2f7; color: #5c6b7b; font-size: 9px; font-weight: 700; }
-.report-show-message-bubble { padding: 11px 12px; border: 1px solid #e1e6ef; border-radius: 3px 11px 11px 11px; background: #fff; box-shadow: 0 1px 2px rgba(25, 40, 60, .03); }
-.report-show-message--mine .report-show-message-bubble { border-color: #d4e4ff; border-radius: 11px 3px 11px 11px; background: #edf4ff; }
-.report-show-message-text { color: var(--rs-ink); font-size: 12px; line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; }
-.report-show-edit-trigger { display: inline-flex; margin-top: 8px; padding: 0; border: 0; background: transparent; color: #3a5cb8; font: inherit; font-size: 10px; font-weight: 700; cursor: pointer; }
-.report-show-edit-trigger:hover { text-decoration: underline; }
-.report-show-edit-form { display: flex; flex-direction: column; gap: 9px; margin-top: 7px; }
-.report-show-edit-form textarea, .report-show-composer textarea { display: block; width: 100%; min-width: 0; padding: 11px 12px; border: 1px solid #d6dee8; border-radius: 8px; background: #fff; color: var(--rs-ink); font: inherit; font-size: 12px; line-height: 1.6; resize: vertical; }
-.report-show-edit-form textarea:focus, .report-show-composer textarea:focus { border-color: #6284d8; outline: 3px solid rgba(58, 92, 184, .12); }
-.report-show-edit-actions { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
-.report-show-chat-empty { flex: 1; min-height: 220px; }
-.report-show-composer { display: flex; flex-direction: column; gap: 9px; margin-top: 18px; }
-.report-show-composer > label { color: var(--rs-ink); font-size: 12px; font-weight: 700; }
-.report-show-composer-footer { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 2px; }
-.report-show-composer-footer p { margin: 0; color: var(--rs-muted); font-size: 10px; line-height: 1.6; }
-.report-show-button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 36px; padding: 8px 13px; border: 1px solid transparent; border-radius: 7px; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; transition: background 150ms ease, border-color 150ms ease; }
-.report-show-button svg { width: 15px; height: 15px; }
-.report-show-button--primary { border-color: #3657ac; background: #3a5cb8; color: #fff; }
-.report-show-button--primary:hover { border-color: #2d4d9f; background: #2d4d9f; }
-.report-show-button--quiet { border-color: var(--rs-border); background: #fff; color: var(--rs-muted); }
-.report-show-button--quiet:hover { background: var(--rs-soft); color: var(--rs-ink); }
-.report-show-field-error { margin: 0; color: #b42332; font-size: 11px; }
-.report-show-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.report-show-discussion-link-body { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.report-show-discussion-link-body p { margin: 0; color: var(--rs-muted); font-size: 12px; line-height: 1.7; }
+.report-show-button { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; gap: 8px; min-height: 38px; padding: 9px 14px; border: 1px solid #3657ac; border-radius: 8px; background: #3a5cb8; color: #fff; font: inherit; font-size: 12px; font-weight: 700; text-decoration: none; transition: background 150ms ease; }
+.report-show-button:hover { background: #2d4d9f; }
+.report-show-button:focus-visible { outline: 3px solid #7da7ff; outline-offset: 3px; }
+.report-show-button svg { width: 16px; height: 16px; }
 
 /* Lightbox for viewing a full-size private photo */
 .report-show-lightbox[hidden] { display: none !important; }
@@ -160,16 +131,13 @@ body.report-show-lightbox-open { overflow: hidden; }
     .report-show-hero h2 { font-size: 21px; }
     .report-show-badges { justify-content: flex-start; }
     .report-show-card-header { padding: 15px 16px; }
-    .report-show-card-body, .report-show-discussion-body { padding: 16px; }
+    .report-show-card-body { padding: 16px; }
     .report-show-info-grid { gap: 18px 14px; }
     .report-show-side { display: flex; flex-direction: column; }
     .report-show-help-card { padding: 17px; }
     .report-show-photo-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .report-show-chat-frame { height: min(52vh, 460px); min-height: 250px; padding: 12px; }
-    .report-show-message { max-width: 100%; }
-    .report-show-composer-footer { align-items: stretch; flex-direction: column; }
-    .report-show-composer-footer .report-show-button { align-self: flex-end; }
-    .report-show-discussion-count { font-size: 10px; }
+    .report-show-discussion-link-body { align-items: stretch; flex-direction: column; }
+    .report-show-discussion-link-body .report-show-button { align-self: flex-start; }
 }
 @media (max-width: 390px) {
     .report-show-info-grid { grid-template-columns: minmax(0, 1fr); }
@@ -177,5 +145,4 @@ body.report-show-lightbox-open { overflow: hidden; }
     .report-show-badge { font-size: 10px; }
     .report-show-photo-grid { grid-template-columns: minmax(0, 1fr); }
     .report-show-photo { aspect-ratio: 16 / 10; }
-    .report-show-message-meta time { width: 100%; margin-left: 0; }
 }

@@ -6,11 +6,10 @@
 
 @section('title', 'Detail Laporan')
 @section('page-title', 'Detail Laporan')
-@section('page-description', 'Informasi, bukti foto, dan diskusi laporan fasilitas.')
+@section('page-description', 'Informasi dan bukti foto laporan fasilitas.')
 
 @section('content')
 @php
-    // The current ReportController sends these exact view-data keys.
     $reportData = $_report ?? $report ?? null;
 
     if (!$reportData) {
@@ -19,31 +18,14 @@
 
     $reportStatus = strtolower((string) ($reportData->status ?? 'pending'));
     $reportSeverity = strtolower((string) ($reportData->severity ?? 'low'));
-
-    // These aliases are supplied directly by the controller's JOIN query.
     $categoryName = data_get($reportData, 'categories_name');
     $facilityName = data_get($reportData, 'facilities_name');
     $reporterName = data_get($reportData, 'user_name');
-
-    // $_photos contains Scramblr tokens, not file paths. Do not inspect storage from Blade.
     $photoTokens = collect($_photos ?? $photos ?? [])
         ->filter(fn ($token) => is_string($token) && $token !== '')
         ->values();
-
-    // The controller currently resolves the report through /reports/{uuid}.
-    $reportShowUrl = url()->current();
     $reportIdentifier = $reportData->identifier ?? null;
-
-    // This view can display responses passed by the controller, or use an existing
-    // Report::responses() relationship if the model already defines one.
-    $responsesSource = $_responses ?? $responses ?? null;
-    if ($responsesSource === null && method_exists($reportData, 'responses')) {
-        $responsesSource = $reportData->responses;
-    }
-    $responses = collect($responsesSource ?? []);
-
-    // Prefer a named route if configured. Otherwise assume GET /blob/{scrambldToken}.
-    $hasAttendantServeRoute = \Illuminate\Support\Facades\Route::has('blob.serve');
+    $hasBlobServeRoute = \Illuminate\Support\Facades\Route::has('blob.serve');
 @endphp
 
 <div class="report-show">
@@ -253,7 +235,7 @@
                 <div class="report-show-photo-grid">
                     @foreach ($photoTokens as $photoToken)
                         @php
-                            $photoUrl = $hasAttendantServeRoute
+                            $photoUrl = $hasBlobServeRoute
                                 ? route('blob.serve', ['scrambldToken' => $photoToken])
                                 : url('/blob/' . rawurlencode($photoToken));
                         @endphp
@@ -285,8 +267,7 @@
         </div>
     </section>
 
-    {{-- Diskusi berada paling bawah; frame history memiliki scroll internal. --}}
-    <section class="report-show-card report-show-discussion" aria-labelledby="reportDiscussionTitle">
+    <section class="report-show-card report-show-discussion-link-card" aria-labelledby="reportDiscussionTitle">
         <header class="report-show-card-header">
             <span class="report-show-card-icon report-show-card-icon--discussion" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -296,85 +277,18 @@
             </span>
             <div>
                 <h3 id="reportDiscussionTitle">Diskusi Laporan</h3>
-                <p>Percakapan antara pelapor dan petugas terkait laporan ini.</p>
+                <p>Buka percakapan dengan pelapor atau petugas terkait laporan ini.</p>
             </div>
-            <span class="report-show-discussion-count">{{ $responses->count() }} pesan</span>
         </header>
-
-        <div class="report-show-discussion-body">
-            <div class="report-show-chat-frame" id="reportChatFrame" aria-label="Riwayat diskusi" aria-live="polite">
-                @forelse ($responses as $response)
-                    @php
-                        $responseUser = is_object($response) && method_exists($response, 'user')
-                            ? $response->user
-                            : data_get($response, 'user');
-                        $isOwnResponse = auth()->check() && (int) data_get($response, 'users_id') === (int) auth()->id();
-                        $senderName = data_get($responseUser, 'name') ?: data_get($responseUser, 'username') ?: ($isOwnResponse ? (auth()->user()->name ?? 'Kamu') : 'Pengguna');
-                        $senderRole = data_get($responseUser, 'role') ?: ($isOwnResponse ? (auth()->user()->role ?? 'Pengguna') : '');
-                        $senderRoleLabel = $senderRole !== '' ? ucfirst(str_replace('_', ' ', strtolower((string) $senderRole))) : 'Pengguna';
-                        $responseDate = data_get($response, 'created_at');
-                    @endphp
-                    <article class="report-show-message {{ $isOwnResponse ? 'report-show-message--mine' : '' }}" data-response-id="{{ $response->id }}">
-                        <div class="report-show-message-avatar" aria-hidden="true">{{ strtoupper(mb_substr((string) $senderName, 0, 1)) }}</div>
-                        <div class="report-show-message-content">
-                            <div class="report-show-message-meta">
-                                <strong>{{ $senderName }}</strong>
-                                <span class="report-show-role">{{ $senderRoleLabel }}</span>
-                                @if ($responseDate)
-                                    <time datetime="{{ \Illuminate\Support\Carbon::parse($responseDate)->toIso8601String() }}">{{ \Illuminate\Support\Carbon::parse($responseDate)->format('d M Y, H:i') }}</time>
-                                @endif
-                            </div>
-                            <div class="report-show-message-bubble">
-                                <div class="report-show-message-text">{{ $response->message }}</div>
-                                @if ($isOwnResponse)
-                                    <button type="button" class="report-show-edit-trigger" aria-expanded="false">Edit</button>
-                                @endif
-                            </div>
-
-                            @if ($isOwnResponse)
-                                <form
-                                    class="report-show-edit-form"
-                                    action="{{ $reportShowUrl . '/responses/' . $response->id }}"
-                                    method="POST"
-                                    hidden>
-                                    @csrf
-                                    @method('PATCH')
-                                    <label class="report-show-sr-only" for="response-message-{{ $response->id }}">Edit pesan</label>
-                                    <textarea id="response-message-{{ $response->id }}" name="message" rows="3" maxlength="5000" required>{{ $response->message }}</textarea>
-                                    <div class="report-show-edit-actions">
-                                        <button type="button" class="report-show-button report-show-button--quiet report-show-edit-cancel">Batal</button>
-                                        <button type="submit" class="report-show-button report-show-button--primary">Simpan perubahan</button>
-                                    </div>
-                                </form>
-                            @endif
-                        </div>
-                    </article>
-                @empty
-                    <div class="report-show-empty-state report-show-chat-empty" id="reportChatEmpty">
-                        <span class="report-show-empty-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H7l-3 2v-6.5A7.5 7.5 0 1 1 20 11.5Z" /><path d="M8 10h8M8 13.5h5" /></svg>
-                        </span>
-                        <strong>Belum ada diskusi</strong>
-                        <span>Pesan dari pelapor dan petugas akan muncul di area ini.</span>
-                    </div>
-                @endforelse
-            </div>
-
-            <form class="report-show-composer" action="{{ $reportShowUrl . '/responses' }}" method="POST">
-                @csrf
-                <label for="new-response-message">Tulis pesan</label>
-                <textarea id="new-response-message" name="message" rows="3" maxlength="5000" placeholder="Tulis pesan untuk pelapor atau petugas..." required>{{ old('message') }}</textarea>
-                @error('message')
-                    <p class="report-show-field-error" role="alert">{{ $message }}</p>
-                @enderror
-                <div class="report-show-composer-footer">
-                    <p>Gunakan bahasa yang sopan dan jelaskan informasi yang relevan dengan laporan.</p>
-                    <button type="submit" class="report-show-button report-show-button--primary">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m21 3-7.5 18-3.5-7-7-3.5z" /><path d="M10 14 21 3" /></svg>
-                        Kirim pesan
-                    </button>
-                </div>
-            </form>
+        <div class="report-show-card-body report-show-discussion-link-body">
+            <p>Riwayat pesan, balasan, dan fitur edit pesan tersedia di halaman diskusi tersendiri.</p>
+            @if ($reportIdentifier)
+                <a href="{{ route('responses.show', ['uuid' => $reportIdentifier]) }}" class="report-show-button report-show-button--primary">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H7l-3 2v-6.5A7.5 7.5 0 1 1 20 11.5Z" /><path d="M8 10h8M8 13.5h5" /></svg>
+                    Buka Diskusi
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" /></svg>
+                </a>
+            @endif
         </div>
     </section>
 </div>
@@ -388,46 +302,6 @@
 @push('scripts')
 <script>
     (() => {
-        const chatFrame = document.getElementById('reportChatFrame');
-        if (chatFrame) {
-            chatFrame.scrollTop = chatFrame.scrollHeight;
-        }
-
-        document.querySelectorAll('.report-show-edit-trigger').forEach((button) => {
-            button.addEventListener('click', () => {
-                const article = button.closest('.report-show-message');
-                if (!article) return;
-
-                const bubble = article.querySelector('.report-show-message-bubble');
-                const editForm = article.querySelector('.report-show-edit-form');
-                if (!bubble || !editForm) return;
-
-                bubble.hidden = true;
-                editForm.hidden = false;
-                button.setAttribute('aria-expanded', 'true');
-                const field = editForm.querySelector('textarea');
-                if (field) field.focus();
-            });
-        });
-
-        document.querySelectorAll('.report-show-edit-cancel').forEach((button) => {
-            button.addEventListener('click', () => {
-                const article = button.closest('.report-show-message');
-                if (!article) return;
-
-                const bubble = article.querySelector('.report-show-message-bubble');
-                const editForm = article.querySelector('.report-show-edit-form');
-                const editButton = article.querySelector('.report-show-edit-trigger');
-                if (bubble) bubble.hidden = false;
-                if (editForm) {
-                    const field = editForm.querySelector('textarea');
-                    if (field) field.value = field.defaultValue;
-                    editForm.hidden = true;
-                }
-                if (editButton) editButton.setAttribute('aria-expanded', 'false');
-            });
-        });
-
         const lightbox = document.getElementById('reportPhotoLightbox');
         const lightboxImage = document.getElementById('reportPhotoLightboxImage');
         const lightboxClose = document.getElementById('reportPhotoLightboxClose');
