@@ -12,17 +12,19 @@ Route::middleware('auth')->group(function() {
         Route::post('/reports/create', 'createReport')
             ->name('reports.create');
         Route::get('/reports/create', 'showCreateReportPage')
-            ->name('reports.show');
+            ->name('reports.showCreate');
         Route::get('/reports/{uuid}/edit', 'showEditReportPage')
-            ->name('reports.edit');
+            ->name('reports.showEdit');
         Route::put('/reports/{uuid}', 'updateReport')
             ->name('reports.update');
         Route::get('/reports/{uuid}', 'showReportDetailPage')
-            ->name('reports.show');
+            ->name('reports.showDetail');
     });
     Route::get('/blob/{scrambldToken}', [AttendantController::class, 'serve'])
         ->name('blob.serve')
         ->where('scrambldToken', '[a-zA-Z0-9_-]+');
+
+    Route::get('/logout', [AuthController::class, 'deauthenticate']);
 });
 
 Route::controller(AuthController::class)->middleware('guest')->group(function() {

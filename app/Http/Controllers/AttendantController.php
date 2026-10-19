@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Services\ScramblrService;
-use Exception;
 use Illuminate\Support\Facades\Storage;
+use Exception;
 
 class AttendantController
 {

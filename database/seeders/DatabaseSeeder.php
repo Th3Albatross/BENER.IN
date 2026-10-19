@@ -43,10 +43,10 @@ class DatabaseSeeder extends Seeder
         $categories->create();
         $facilities->create();
 
-        /*Report::factory(72)
+        Report::factory(72)
             ->recycle($admin)
             ->recycle($categories)
             ->recycle($facilities)
-            ->create();*/
+            ->create();
     }
 }

@@ -309,10 +309,18 @@
     font-size: 11px !important;
 }
 
+.report-action-control {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 150px;
+}
+
 .report-action-select {
+    flex: 1 1 auto;
     width: 100%;
-    min-width: 108px;
-    min-height: 30px;
+    min-width: 0;
+    min-height: 32px;
     padding: 5px 27px 5px 11px;
     appearance: none;
     color: #3559a8;
@@ -333,9 +341,42 @@
     border-color: #b8c8eb;
 }
 
-.report-action-select:focus-visible {
+.report-action-select:focus-visible,
+.report-action-open:focus-visible {
     outline: 2px solid #4a90e2;
     outline-offset: 2px;
+}
+
+.report-action-open {
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    background: #3559a8;
+    border: 1px solid #3559a8;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 150ms ease, border-color 150ms ease, opacity 150ms ease;
+}
+
+.report-action-open svg {
+    width: 15px;
+    height: 15px;
+}
+
+.report-action-open:hover:not(:disabled) {
+    background: #294785;
+    border-color: #294785;
+}
+
+.report-action-open:disabled {
+    color: #8c9bb8;
+    background: #eef2fa;
+    border-color: #d6def3;
+    cursor: not-allowed;
 }
 
 .status-badge {

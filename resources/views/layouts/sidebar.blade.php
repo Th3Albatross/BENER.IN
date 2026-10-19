@@ -19,17 +19,6 @@
                 <span>Dashboard</span>
             </a>
 
-            <a href="{{ url('/reports') }}"
-               class="nav-item {{ request()->is('reports') || request()->is('reports/*') ? 'nav-item--active' : '' }}">
-                <span class="nav-item__icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
-                        <path d="M6 4.5h9l3 3V19.5H6z"></path>
-                        <path d="M14 4.5v4h4M9 12h6M9 15.5h6"></path>
-                    </svg>
-                </span>
-                <span>My Reports</span>
-            </a>
-
             <a href="{{ url('/reports/create') }}"
                class="nav-item {{ request()->is('reports/create') ? 'nav-item--active' : '' }}">
                 <span class="nav-item__icon" aria-hidden="true">

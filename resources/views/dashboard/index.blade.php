@@ -142,16 +142,28 @@
                                     {{ \Illuminate\Support\Carbon::parse($report->created_at)->locale('id')->translatedFormat('d M Y, H:i') }}
                                 </td>
                                 <td>
-                                    <select
-                                        class="report-action-select"
-                                        aria-label="Aksi untuk laporan {{ $report->title }}"
-                                        onchange="if (this.value) window.location.href = this.value">
-                                        <option value="" selected disabled>Aksi ▾</option>
-                                        @if ($report->status === 'Pending')
-                                            <option value="{{ route('reports.edit', ['uuid' => $report->identifier]) }}">Edit laporan</option>
-                                        @endif
-                                        <option value="{{ route('reports.show', ['uuid' => $report->identifier]) }}">Lihat detail</option>
-                                    </select>
+                                    <div class="report-action-control">
+                                        <select
+                                            class="report-action-select"
+                                            aria-label="Pilih aksi untuk laporan {{ $report->title }}"
+                                            data-report-action-select>
+                                            <option value="" selected>Pilih aksi</option>
+                                            @if ($report->status === 'Pending')
+                                                <option value="{{ url('/reports/' . $report->identifier . '/edit') }}">Edit laporan</option>
+                                            @endif
+                                            <option value="{{ url('/reports/' . $report->identifier) }}">Lihat detail</option>
+                                        </select>
+                                        <button
+                                            type="button"
+                                            class="report-action-open"
+                                            aria-label="Buka aksi untuk laporan {{ $report->title }}"
+                                            data-report-action-open
+                                            disabled>
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                                                <path d="M5 12h13M12 6l6 6-6 6"/>
+                                            </svg>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         @empty
@@ -266,3 +278,22 @@
     </section>
 </div>
 @endsection
+
+
+@push('scripts')
+<script>
+    document.querySelectorAll('[data-report-action-select]').forEach((select) => {
+        const button = select.parentElement.querySelector('[data-report-action-open]');
+
+        select.addEventListener('change', () => {
+            button.disabled = !select.value;
+        });
+
+        button.addEventListener('click', () => {
+            if (select.value) {
+                window.location.assign(select.value);
+            }
+        });
+    });
+</script>
+@endpush

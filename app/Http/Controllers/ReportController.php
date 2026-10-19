@@ -196,8 +196,4 @@ class ReportController
             ->route('reports.show', ['uuid' => $report->identifier])
             ->with('success', 'Perubahan laporan berhasil disimpan.');
     }
-
-    public function createComment()
-    {
-    }
 }

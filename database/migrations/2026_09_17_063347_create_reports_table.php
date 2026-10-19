@@ -28,7 +28,7 @@ return new class extends Migration
                 'High',
                 'Critical'
             ]);
-            $table->foreignIdFor(Category::class, 'categories_id')->constrained()->nullable()->default(null);
+            $table->foreignIdFor(Category::class, 'categories_id')->nullable()->default(null)->constrained();
             $table->foreignIdFor(User::class, 'users_id')->constrained();
             $table->foreignIdFor(Facility::class, 'facilities_id')->constrained();
             $table->string('title', 255);
