@@ -414,3 +414,9 @@ body {
         overflow: visible;
     }
 }
+
+/* Profile photo shown in the sidebar user area */
+.user-avatar--image {
+    padding: 0;
+    object-fit: cover;
+}
