@@ -193,7 +193,7 @@ class ReportController
         Cache::forget('photos' . $report->identifier);
 
         return redirect()
-            ->route('reports.show', ['uuid' => $report->identifier])
+            ->route('reports.showDetail', ['uuid' => $report->identifier])
             ->with('success', 'Perubahan laporan berhasil disimpan.');
     }
 }
