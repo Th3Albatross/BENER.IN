@@ -3,68 +3,58 @@
 namespace App\Http\Controllers;
 
 use App\Models\Report;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class ResponsesController
 {
+    private const STAFF_ROLES = ['petugas', 'attendant', 'staff', 'admin'];
+
+    private const VALID_STATUSES = ['all', 'Pending', 'Resolved', 'Rejected'];
+
     public function index(Request $request)
     {
         $user = $request->user();
-        $isStaff = in_array(strtolower((string) $user->role), ['petugas', 'attendant', 'staff', 'admin'], true);
-
+        $isStaff = $this->isStaff($user);
         $statusFilter = $request->query('status', 'all');
-        if (!in_array($statusFilter, ['all', 'Pending', 'Resolved', 'Rejected'], true)) {
+
+        if (!in_array($statusFilter, self::VALID_STATUSES, true)) {
             $statusFilter = 'all';
         }
 
-        $statusCountsQuery = DB::table('reports');
+        $statusCountsQuery = Report::query();
+        $reportsQuery = Report::query()
+            ->with([
+                'user:id,name',
+                'facility:id,name',
+                'category:id,name',
+            ])
+            ->withCount('responses')
+            ->withMax('responses', 'created_at');
+
         if (!$isStaff) {
             $statusCountsQuery->where('users_id', $user->id);
+            $reportsQuery->where('users_id', $user->id);
         }
+
         $statusCounts = $statusCountsQuery
-            ->select('status', DB::raw('COUNT(*) as total'))
+            ->select('status')
+            ->selectRaw('COUNT(*) AS total')
             ->groupBy('status')
             ->pluck('total', 'status');
 
-        $responseSummary = DB::table('responses')
-            ->select('reports_id')
-            ->selectRaw('COUNT(*) as responses_count')
-            ->selectRaw('MAX(created_at) as last_response_at')
-            ->groupBy('reports_id');
-
-        $query = DB::table('reports')
-            ->join('users', 'reports.users_id', '=', 'users.id')
-            ->join('facilities', 'reports.facilities_id', '=', 'facilities.id')
-            ->leftJoin('categories', 'reports.categories_id', '=', 'categories.id')
-            ->leftJoinSub($responseSummary, 'response_summary', function ($join) {
-                $join->on('reports.id', '=', 'response_summary.reports_id');
-            })
-            ->select(
-                'reports.id',
-                'reports.identifier',
-                'reports.title',
-                'reports.description',
-                'reports.status',
-                'reports.created_at',
-                'reports.updated_at',
-                'users.name as user_name',
-                'facilities.name as facilities_name',
-                'categories.name as categories_name',
-                DB::raw('COALESCE(response_summary.responses_count, 0) as responses_count'),
-                'response_summary.last_response_at'
-            );
-
-        if (!$isStaff) {
-            $query->where('reports.users_id', $user->id);
-        }
-
         if ($statusFilter !== 'all') {
-            $query->where('reports.status', $statusFilter);
+            $reportsQuery->where('status', $statusFilter);
         }
 
-        $reports = $query
-            ->orderByRaw('COALESCE(response_summary.last_response_at, reports.updated_at) DESC')
+        $reports = $reportsQuery
+            // Keep the existing behavior: order by the latest response, or by
+            // the report's update time when the discussion has no responses.
+            ->orderByRaw(
+                'COALESCE((SELECT MAX(responses.created_at) FROM responses WHERE responses.reports_id = reports.id), reports.updated_at) DESC'
+            )
+            ->orderByDesc('reports.id')
             ->paginate(10)
             ->withQueryString();
 
@@ -77,28 +67,25 @@ class ResponsesController
 
     public function show(Request $request, string $uuid)
     {
-        $report = Report::where('identifier', $uuid)
-            ->join('users', 'reports.users_id', '=', 'users.id')
-            ->join('facilities', 'reports.facilities_id', '=', 'facilities.id')
-            ->leftJoin('categories', 'reports.categories_id', '=', 'categories.id')
-            ->select(
-                'reports.*',
-                'users.name as user_name',
-                'facilities.name as facilities_name',
-                'categories.name as categories_name'
-            )
+        $report = Report::query()
+            ->with([
+                'user:id,name',
+                'facility:id,name',
+                'category:id,name',
+            ])
+            ->where('identifier', $uuid)
             ->firstOrFail();
 
         $user = $request->user();
-        $isStaff = in_array(strtolower((string) $user->role), ['petugas', 'attendant', 'staff', 'admin'], true);
-        abort_unless((int) $report->users_id === (int) $user->id || $isStaff, 403);
+        abort_unless(
+            (int) $report->users_id === (int) $user->id || $this->isStaff($user),
+            403
+        );
 
-        $responses = DB::table('responses')
-            ->join('users', 'responses.users_id', '=', 'users.id')
-            ->where('responses.reports_id', $report->id)
-            ->select('responses.*', 'users.name as user_name', 'users.role as user_role')
-            ->orderBy('responses.created_at')
-            ->orderBy('responses.id')
+        $responses = $report->responses()
+            ->with('user:id,name,role')
+            ->orderBy('created_at')
+            ->orderBy('id')
             ->get();
 
         return view('discussion.show', [
@@ -109,76 +96,83 @@ class ResponsesController
 
     public function store(Request $request, string $uuid)
     {
-        $report = Report::where('identifier', $uuid)->firstOrFail();
+        $report = Report::query()
+            ->where('identifier', $uuid)
+            ->firstOrFail();
+
         $user = $request->user();
-        $isStaff = in_array(strtolower((string) $user->role), ['petugas', 'attendant', 'staff', 'admin'], true);
-        abort_unless((int) $report->users_id === (int) $user->id || $isStaff, 403);
+        abort_unless(
+            (int) $report->users_id === (int) $user->id || $this->isStaff($user),
+            403
+        );
 
         $validated = $request->validate([
             'message' => ['required', 'string', 'max:5000'],
         ]);
 
-        DB::table('responses')->insert([
+        $report->responses()->create([
             'users_id' => $user->id,
-            'reports_id' => $report->id,
             'message' => $validated['message'],
-            'created_at' => now(),
-            'updated_at' => now(),
         ]);
 
-        $returnParams = ['uuid' => $report->identifier];
-        if ($request->input('from') === 'discussions') {
-            $status = (string) $request->input('status', 'all');
-            $returnParams['from'] = 'discussions';
-            $returnParams['status'] = in_array($status, ['all', 'Pending', 'Resolved', 'Rejected'], true) ? $status : 'all';
-            if ($request->integer('page') > 0) {
-                $returnParams['page'] = $request->integer('page');
-            }
-        }
-
-        return redirect()->route('responses.show', $returnParams)
+        return redirect()
+            ->route('responses.show', $this->returnParams($request, $report))
             ->with('success', 'Pesan berhasil dikirim.');
     }
 
     public function update(Request $request, string $uuid, int $responseId)
     {
-        $report = Report::where('identifier', $uuid)->firstOrFail();
+        $report = Report::query()
+            ->where('identifier', $uuid)
+            ->firstOrFail();
+
         $user = $request->user();
-        $isStaff = in_array(strtolower((string) $user->role), ['petugas', 'attendant', 'staff', 'admin'], true);
-        abort_unless((int) $report->users_id === (int) $user->id || $isStaff, 403);
+        abort_unless(
+            (int) $report->users_id === (int) $user->id || $this->isStaff($user),
+            403
+        );
 
-        $response = DB::table('responses')
-            ->where('id', $responseId)
-            ->where('reports_id', $report->id)
+        // A user may edit only their own response, and only within this report.
+        $response = $report->responses()
+            ->whereKey($responseId)
             ->where('users_id', $user->id)
-            ->first();
-
-        abort_unless($response, 404);
+            ->firstOrFail();
 
         $validated = $request->validate([
             'message' => ['required', 'string', 'max:5000'],
         ]);
 
-        DB::table('responses')
-            ->where('id', $responseId)
-            ->where('reports_id', $report->id)
-            ->where('users_id', $user->id)
-            ->update([
-                'message' => $validated['message'],
-                'updated_at' => now(),
-            ]);
+        $response->update([
+            'message' => $validated['message'],
+        ]);
 
-        $returnParams = ['uuid' => $report->identifier];
-        if ($request->input('from') === 'discussions') {
-            $status = (string) $request->input('status', 'all');
-            $returnParams['from'] = 'discussions';
-            $returnParams['status'] = in_array($status, ['all', 'Pending', 'Resolved', 'Rejected'], true) ? $status : 'all';
-            if ($request->integer('page') > 0) {
-                $returnParams['page'] = $request->integer('page');
-            }
+        return redirect()
+            ->route('responses.show', $this->returnParams($request, $report))
+            ->with('success', 'Pesan berhasil diperbarui.');
+    }
+
+    private function isStaff(User $user): bool
+    {
+        return in_array(mb_strtolower((string) $user->role), self::STAFF_ROLES, true);
+    }
+
+    private function returnParams(Request $request, Report $report): array
+    {
+        $params = ['uuid' => $report->identifier];
+
+        if ($request->input('from') !== 'discussions') {
+            return $params;
         }
 
-        return redirect()->route('responses.show', $returnParams)
-            ->with('success', 'Pesan berhasil diperbarui.');
+        $status = (string) $request->input('status', 'all');
+        $params['from'] = 'discussions';
+        $params['status'] = in_array($status, self::VALID_STATUSES, true) ? $status : 'all';
+
+        $page = $request->integer('page');
+        if ($page > 0) {
+            $params['page'] = $page;
+        }
+
+        return $params;
     }
 }

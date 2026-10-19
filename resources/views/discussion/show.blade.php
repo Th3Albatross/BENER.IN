@@ -65,8 +65,8 @@
             <h2>{{ $reportData->title }}</h2>
             <div class="discussion-report-meta">
                 <span class="discussion-status discussion-status--{{ strtolower((string) ($reportData->status ?? 'pending')) }}">{{ $reportData->status ?? 'Pending' }}</span>
-                @if (!empty($reportData->facilities_name))
-                    <span>{{ $reportData->facilities_name }}</span>
+                @if (!empty($reportData->facility?->name))
+                    <span>{{ $reportData->facility?->name }}</span>
                 @endif
             </div>
         </div>
@@ -86,8 +86,8 @@
                 @forelse ($responses as $response)
                     @php
                         $isOwnResponse = (int) $response->users_id === (int) auth()->id();
-                        $senderName = $response->user_name ?? 'Pengguna';
-                        $role = strtolower((string) ($response->user_role ?? ''));
+                        $senderName = $response->user?->name ?? 'Pengguna';
+                        $role = strtolower((string) ($response->user?->role ?? ''));
                         $senderRole = in_array($role, ['siswa', 'student'], true)
                             ? 'Siswa'
                             : (in_array($role, ['petugas', 'attendant', 'staff'], true) ? 'Petugas' : ucfirst($role ?: 'Pengguna'));

@@ -75,9 +75,9 @@
                             <td class="discussion-title-cell">
                                 <span class="discussion-report-title">{{ $report->title }}</span>
                             </td>
-                            <td class="discussion-strong-cell">{{ $report->facilities_name }}</td>
-                            <td>{{ $report->categories_name ?: 'Tanpa kategori' }}</td>
-                            <td>{{ $report->user_name }}</td>
+                            <td class="discussion-strong-cell">{{ $report->facility?->name ?? '—' }}</td>
+                            <td>{{ $report->category?->name ?? 'Tanpa kategori' }}</td>
+                            <td>{{ $report->user?->name ?? 'Pengguna' }}</td>
                             <td>
                                 <span class="discussion-status {{ $statusClass }}">
                                     {{ $statusLabels[$report->status] ?? $report->status }}
@@ -89,7 +89,7 @@
                                 </span>
                             </td>
                             <td class="discussion-date">
-                                @php $activityAt = $report->last_response_at ?: $report->updated_at; @endphp
+                                @php $activityAt = $report->responses_max_created_at ?: $report->updated_at; @endphp
                                 {{ \Illuminate\Support\Carbon::parse($activityAt)->locale('id')->translatedFormat('d M Y, H:i') }}
                             </td>
                             <td>
