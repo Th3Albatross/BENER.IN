@@ -36,9 +36,28 @@
             </div>
 
             <div class="settings-profile-summary">
-                <div class="settings-avatar" id="settings-avatar-preview" aria-label="Pratinjau foto profil">
+                <div
+                    class="settings-avatar {{ $profilePhotoUrl ? 'settings-avatar--has-photo' : '' }}"
+                    id="settings-avatar-preview"
+                    aria-label="Pratinjau foto profil"
+                    data-existing-photo="{{ $profilePhotoUrl ? 'true' : 'false' }}"
+                >
                     @if ($profilePhotoUrl)
                         <img src="{{ $profilePhotoUrl }}" alt="Foto profil {{ $profileName }}">
+                        <button
+                            class="settings-avatar-remove-toggle"
+                            type="button"
+                            id="settings-avatar-remove-toggle"
+                            aria-label="Tandai foto profil untuk dihapus"
+                            aria-pressed="false"
+                            title="Klik untuk menandai foto profil agar dihapus"
+                        >
+                            <span class="settings-avatar-remove-overlay" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="m7 7 10 10M17 7 7 17" />
+                                </svg>
+                            </span>
+                        </button>
                     @else
                         <span id="settings-avatar-initials">{{ $profileInitials ?: 'U' }}</span>
                     @endif
@@ -52,13 +71,34 @@
                 </div>
             </div>
 
+            @if ($profilePhotoUrl)
+                <p class="settings-avatar-hint" id="profile-photo-reset-hint">Klik foto profil untuk menandai bahwa foto ingin dihapus.</p>
+            @endif
+
             @if (session('status') === 'profile-photo-updated')
                 <div class="settings-message settings-message--success" role="status">
                     Foto profil berhasil diperbarui.
                 </div>
+            @elseif (session('status') === 'profile-photo-reset')
+                <div class="settings-message settings-message--success" role="status">
+                    Foto profil berhasil dihapus. Inisial nama digunakan kembali.
+                </div>
             @endif
 
-            <form class="settings-form" action="{{ route('settings.profile-photo.update') }}" method="POST" enctype="multipart/form-data">
+            {{-- The reset form stays in the DOM so the shared action button can submit it. --}}
+            <form
+                class="settings-form-carrier"
+                id="profile-photo-reset-form"
+                action="{{ route('settings.profile-photo.reset') }}"
+                method="POST"
+                aria-hidden="true"
+                tabindex="-1"
+            >
+                @csrf
+                @method('DELETE')
+            </form>
+
+            <form class="settings-form" id="profile-photo-upload-form" action="{{ route('settings.profile-photo.update') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PATCH')
 
@@ -77,11 +117,33 @@
                         <p class="settings-field-error" role="alert">{{ $message }}</p>
                     @enderror
                 </div>
-
-                <div class="settings-form-actions">
-                    <button class="settings-submit-button" type="submit">Simpan foto</button>
-                </div>
             </form>
+
+            <p class="settings-reset-confirmation" id="profile-photo-reset-confirmation" hidden>
+                Hapus foto profil ini? Avatar akan kembali menampilkan inisial nama.
+            </p>
+
+            <div class="settings-form-actions settings-profile-actions">
+                <button
+                    class="settings-submit-button"
+                    id="profile-photo-save-button"
+                    type="submit"
+                    form="profile-photo-upload-form"
+                >Simpan foto</button>
+                <button
+                    class="settings-delete-button"
+                    id="profile-photo-delete-button"
+                    type="submit"
+                    form="profile-photo-reset-form"
+                    hidden
+                >Hapus foto profil</button>
+                <button
+                    class="settings-cancel-button"
+                    type="button"
+                    id="cancel-profile-photo-reset"
+                    hidden
+                >Batalkan</button>
+            </div>
         </section>
 
         <section class="settings-card" aria-labelledby="password-heading">
@@ -170,14 +232,119 @@
     (() => {
         const input = document.getElementById('profile_photo');
         const preview = document.getElementById('settings-avatar-preview');
+        let removeToggle = document.getElementById('settings-avatar-remove-toggle');
+        const resetHint = document.getElementById('profile-photo-reset-hint');
+        const resetConfirmation = document.getElementById('profile-photo-reset-confirmation');
+        const uploadForm = document.getElementById('profile-photo-upload-form');
+        const saveButton = document.getElementById('profile-photo-save-button');
+        const deleteButton = document.getElementById('profile-photo-delete-button');
+        const cancelReset = document.getElementById('cancel-profile-photo-reset');
 
         if (!input || !preview) return;
 
+        // Keep the server-rendered avatar so Cancel can discard an unsaved preview.
+        const originalPreviewMarkup = preview.innerHTML;
+        const defaultHint = 'Klik foto profil untuk menandai bahwa foto ingin dihapus.';
+        const uploadHint = 'Pratinjau foto baru belum disimpan. Klik Batalkan untuk membuang perubahan.';
         let previewUrl = null;
+        let removalSelected = false;
+        let uploadPending = false;
+
+        const updateHint = () => {
+            if (!resetHint) return;
+
+            if (removalSelected) {
+                resetHint.textContent = 'Foto profil ditandai untuk dihapus. Konfirmasikan dengan tombol Hapus foto profil.';
+            } else if (uploadPending) {
+                resetHint.textContent = uploadHint;
+            } else {
+                resetHint.textContent = defaultHint;
+            }
+
+            resetHint.classList.toggle('settings-avatar-hint--selected', removalSelected);
+        };
+
+        const setRemovalSelected = (selected) => {
+            // A pending upload and a deletion request are mutually exclusive modes.
+            if (uploadPending && selected) return;
+
+            removalSelected = selected;
+            preview.classList.toggle('is-removal-selected', selected);
+
+            if (removeToggle) {
+                removeToggle.setAttribute('aria-pressed', selected ? 'true' : 'false');
+                removeToggle.setAttribute(
+                    'aria-label',
+                    selected ? 'Batalkan pilihan penghapusan foto profil' : 'Tandai foto profil untuk dihapus'
+                );
+            }
+
+            if (uploadForm) {
+                uploadForm.hidden = selected;
+                uploadForm.setAttribute('aria-hidden', selected ? 'true' : 'false');
+            }
+            if (saveButton) saveButton.hidden = selected;
+            if (deleteButton) deleteButton.hidden = !selected;
+            if (cancelReset) cancelReset.hidden = !(selected || uploadPending);
+            if (resetConfirmation) resetConfirmation.hidden = !selected;
+
+            updateHint();
+        };
+
+        const handleRemoveToggle = () => {
+            if (uploadPending || (input.files && input.files.length > 0)) return;
+            setRemovalSelected(!removalSelected);
+        };
+
+        const bindRemoveToggle = () => {
+            removeToggle = preview.querySelector('#settings-avatar-remove-toggle');
+            if (!removeToggle) return;
+
+            removeToggle.hidden = false;
+            removeToggle.addEventListener('click', handleRemoveToggle);
+        };
+
+        const restoreOriginalAvatar = () => {
+            if (previewUrl) {
+                URL.revokeObjectURL(previewUrl);
+                previewUrl = null;
+            }
+
+            input.value = '';
+            uploadPending = false;
+            removalSelected = false;
+            preview.innerHTML = originalPreviewMarkup;
+            preview.classList.remove('is-removal-selected');
+            bindRemoveToggle();
+            setRemovalSelected(false);
+        };
+
+        bindRemoveToggle();
+
+        if (cancelReset) {
+            cancelReset.addEventListener('click', () => {
+                if (uploadPending) {
+                    // Discard an unsaved upload and restore the currently saved photo/initials.
+                    restoreOriginalAvatar();
+                    return;
+                }
+
+                // Exit deletion mode without changing the saved profile photo.
+                setRemovalSelected(false);
+            });
+        }
 
         input.addEventListener('change', () => {
             const file = input.files && input.files[0];
-            if (!file || !file.type.startsWith('image/')) return;
+            if (!file) return;
+
+            if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+                input.value = '';
+                return;
+            }
+
+            setRemovalSelected(false);
+            uploadPending = true;
 
             if (previewUrl) URL.revokeObjectURL(previewUrl);
             previewUrl = URL.createObjectURL(file);
@@ -190,6 +357,19 @@
                 preview.appendChild(image);
             }
             image.src = previewUrl;
+
+            // While an upload is pending, show Save and Cancel together; hide the
+            // removal overlay because the preview is not yet the saved profile photo.
+            if (removeToggle) removeToggle.hidden = true;
+            if (saveButton) saveButton.hidden = false;
+            if (deleteButton) deleteButton.hidden = true;
+            if (cancelReset) cancelReset.hidden = false;
+            if (resetConfirmation) resetConfirmation.hidden = true;
+            if (uploadForm) {
+                uploadForm.hidden = false;
+                uploadForm.setAttribute('aria-hidden', 'false');
+            }
+            updateHint();
         });
     })();
 </script>

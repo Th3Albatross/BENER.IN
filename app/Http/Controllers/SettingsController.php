@@ -72,6 +72,24 @@ class SettingsController
     }
 
 
+    public function resetProfilePhoto(Request $request)
+    {
+        $user = $request->user();
+        $disk = Storage::disk('local');
+        $directory = 'profile-photos/' . $user->getKey();
+
+        foreach (self::PROFILE_PHOTO_EXTENSIONS as $extension) {
+            $path = $directory . '/avatar.' . $extension;
+            if ($disk->exists($path)) {
+                $disk->delete($path);
+            }
+        }
+
+        return redirect()
+            ->route('settings.index')
+            ->with('status', 'profile-photo-reset');
+    }
+
     public function updatePassword(Request $request)
     {
         $validated = $request->validate([
