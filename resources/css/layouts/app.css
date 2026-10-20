@@ -420,3 +420,63 @@ body {
     padding: 0;
     object-fit: cover;
 }
+
+/* Sidebar footer: user identity followed by a distinct logout item */
+.sidebar__footer {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: auto;
+}
+
+.sidebar__user {
+    min-width: 0;
+}
+
+.sidebar__logout {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 42px;
+    padding: 10px 16px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    color: #f07878;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.sidebar__logout:hover {
+    color: #ff8585;
+    background: rgba(220, 53, 69, 0.12);
+    border-color: rgba(220, 53, 69, 0.18);
+}
+
+.sidebar__logout:active {
+    background: rgba(220, 53, 69, 0.18);
+}
+
+.sidebar__logout-icon {
+    display: inline-flex;
+    flex: 0 0 16px;
+    width: 16px;
+    height: 16px;
+}
+
+.sidebar__logout-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+@media (max-width: 700px) {
+    .sidebar__footer {
+        gap: 10px;
+        margin-top: 18px;
+    }
+
+    .sidebar__logout {
+        min-height: 40px;
+    }
+}
+

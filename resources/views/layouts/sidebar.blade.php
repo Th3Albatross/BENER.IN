@@ -47,15 +47,28 @@
         </nav>
     </div>
 
-    <div class="sidebar__user">
-        @if ($sidebarHasPhoto)
-            <img class="user-avatar user-avatar--image" src="{{ $sidebarPhotoUrl }}" alt="Foto profil {{ $sidebarUser->name ?? 'User' }}">
-        @else
-            <div class="user-avatar" aria-hidden="true">{{ strtoupper(substr($sidebarUser->name ?? 'U', 0, 1)) }}</div>
-        @endif
-        <div class="user-info">
-            <div class="user-info__name">{{ $sidebarUser->name ?? 'User' }}</div>
-            <div class="user-info__role">{{ $sidebarUser->role ?? 'Pengguna' }}</div>
+    <div class="sidebar__footer">
+        <a href="{{ url('/logout') }}" class="sidebar__logout" aria-label="Keluar dari akun">
+            <span class="sidebar__logout-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10 17l5-5-5-5"></path>
+                    <path d="M15 12H3"></path>
+                    <path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"></path>
+                </svg>
+            </span>
+            <span>Keluar</span>
+        </a>
+
+        <div class="sidebar__user">
+            @if ($sidebarHasPhoto)
+                <img class="user-avatar user-avatar--image" src="{{ $sidebarPhotoUrl }}" alt="Foto profil {{ $sidebarUser->name ?? 'User' }}">
+            @else
+                <div class="user-avatar" aria-hidden="true">{{ strtoupper(substr($sidebarUser->name ?? 'U', 0, 1)) }}</div>
+            @endif
+            <div class="user-info">
+                <div class="user-info__name">{{ $sidebarUser->name ?? 'User' }}</div>
+                <div class="user-info__role">{{ $sidebarUser->role ?? 'Pengguna' }}</div>
+            </div>
         </div>
     </div>
 </aside>
