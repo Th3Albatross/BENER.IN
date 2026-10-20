@@ -803,3 +803,458 @@
         flex-direction: column;
     }
 }
+
+/* Staff-only dashboard additions. Shared report/status/card design lives in dashboard.css. */
+.staff-dashboard-widget {
+    gap: 24px;
+}
+
+.staff-reports-card {
+    gap: 18px;
+}
+
+.staff-reports-heading {
+    align-items: flex-start;
+}
+
+.staff-report-total {
+    flex: 0 0 auto;
+    padding: 7px 10px;
+    color: #475569;
+    background: #f6f8fb;
+    border: 1px solid #e5e9ef;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.staff-filter-form {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    padding: 16px;
+    background: #fafbfc;
+    border: 1px solid #e8ebf0;
+    border-radius: 10px;
+}
+
+.staff-filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.staff-filter-field--search {
+    grid-column: span 2;
+}
+
+.staff-filter-field label {
+    color: #687384;
+    font-size: 11px;
+    font-weight: 650;
+}
+
+.staff-filter-field input,
+.staff-filter-field select {
+    width: 100%;
+    min-width: 0;
+    min-height: 37px;
+    padding: 8px 10px;
+    color: #374151;
+    background-color: #fff;
+    border: 1px solid #dce1e8;
+    border-radius: 7px;
+    font: inherit;
+    font-size: 12px;
+}
+
+.staff-filter-field input::placeholder {
+    color: #9aa2af;
+}
+
+.staff-filter-field input:focus,
+.staff-filter-field select:focus {
+    outline: 2px solid rgb(74 144 226 / 22%);
+    border-color: #7398d8;
+}
+
+.staff-filter-actions {
+    display: flex;
+    align-items: flex-end;
+    gap: 9px;
+    grid-column: span 2;
+}
+
+.staff-filter-actions .filter-apply-button {
+    min-width: 120px;
+}
+
+.staff-filter-reset {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 7px 12px;
+    color: #596579;
+    background: #fff;
+    border: 1px solid #dce1e8;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.staff-filter-reset:hover {
+    background: #f5f7fa;
+}
+
+.staff-reports-table {
+    min-width: 1260px;
+}
+
+.staff-reports-table td {
+    max-width: 240px;
+}
+
+.staff-report-cell {
+    min-width: 190px;
+}
+
+.staff-report-title,
+.staff-table-primary,
+.staff-table-secondary,
+.staff-report-meta {
+    display: block;
+}
+
+.staff-report-title {
+    max-width: 220px;
+    overflow: hidden;
+    color: #2e3338;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.45;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.staff-report-meta,
+.staff-table-secondary {
+    max-width: 230px;
+    margin-top: 4px;
+    overflow: hidden;
+    color: #8992a0;
+    font-size: 10px;
+    line-height: 1.45;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.staff-table-primary {
+    color: #374151;
+    font-size: 11px;
+    font-weight: 650;
+    line-height: 1.45;
+}
+
+.severity-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 24px;
+    padding: 4px 8px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.severity-critical {
+    color: #a61b1b;
+    background: #fff0f0;
+    border-color: #f2cccc;
+}
+
+.severity-high {
+    color: #b54708;
+    background: #fff4e5;
+    border-color: #f3ddbc;
+}
+
+.severity-medium {
+    color: #8a6500;
+    background: #fff9df;
+    border-color: #f0e6b4;
+}
+
+.severity-low {
+    color: #3f6470;
+    background: #edf7f8;
+    border-color: #d2e9ec;
+}
+
+.staff-view-report {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 10px;
+    color: #3559a8;
+    background: #f5f7ff;
+    border: 1px solid #dce4fa;
+    border-radius: 7px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: background 150ms ease, border-color 150ms ease;
+}
+
+.staff-view-report:hover {
+    background: #eaf0ff;
+    border-color: #c5d3f6;
+}
+
+.staff-view-report span {
+    transition: transform 150ms ease;
+}
+
+.staff-view-report:hover span {
+    transform: translateX(2px);
+}
+
+.staff-dashboard-analytics {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 20px;
+}
+
+.staff-dashboard-analytics > .dashboard-card {
+    min-width: 0;
+}
+
+@media (max-width: 1100px) {
+    .staff-filter-form {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .staff-filter-field--search {
+        grid-column: span 2;
+    }
+
+    .staff-filter-actions {
+        grid-column: span 3;
+    }
+}
+
+@media (max-width: 760px) {
+    .staff-dashboard-widget {
+        gap: 20px;
+    }
+
+    .staff-reports-heading {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .staff-report-total {
+        align-self: flex-start;
+    }
+
+    .staff-filter-form {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        padding: 12px;
+    }
+
+    .staff-filter-field--search,
+    .staff-filter-actions {
+        grid-column: 1 / -1;
+    }
+
+    .staff-dashboard-analytics {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .staff-filter-form {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .staff-filter-field--search,
+    .staff-filter-actions {
+        grid-column: auto;
+    }
+
+    .staff-filter-actions {
+        align-items: stretch;
+    }
+
+    .staff-filter-actions .filter-apply-button {
+        flex: 1;
+    }
+
+    .staff-reports-card {
+        padding: 14px;
+    }
+}
+
+/* Student dashboard alignment with Staff report-list and analytics layout. */
+.student-dashboard-widget {
+    gap: 24px;
+}
+
+.student-reports-card {
+    gap: 18px;
+}
+
+.student-reports-heading {
+    align-items: flex-start;
+}
+
+.student-report-heading-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 9px;
+}
+
+.student-new-report-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 35px;
+    padding: 7px 11px;
+    color: #fff;
+    background: #334155;
+    border: 1px solid #334155;
+    border-radius: 7px;
+    font-size: 11px;
+    font-weight: 650;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 150ms ease, border-color 150ms ease;
+}
+
+.student-new-report-button:hover {
+    background: #1f2937;
+    border-color: #1f2937;
+}
+
+.student-new-report-button svg {
+    width: 15px;
+    height: 15px;
+}
+
+.student-status-filter-form {
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 9px;
+    padding: 13px 14px;
+    background: #fafbfc;
+    border: 1px solid #e8ebf0;
+    border-radius: 9px;
+}
+
+.student-status-filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 190px;
+}
+
+.student-status-filter-field label {
+    color: #687384;
+    font-size: 11px;
+    font-weight: 650;
+}
+
+.student-status-filter-field .report-filter-select {
+    width: 100%;
+    max-width: none;
+}
+
+.student-reports-table {
+    min-width: 1120px;
+}
+
+.student-report-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.student-edit-report {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 31px;
+    padding: 6px 9px;
+    color: #596579;
+    background: #fff;
+    border: 1px solid #dce1e8;
+    border-radius: 7px;
+    font-size: 11px;
+    font-weight: 650;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 150ms ease, border-color 150ms ease;
+}
+
+.student-edit-report:hover {
+    background: #f5f7fa;
+    border-color: #cbd3df;
+}
+
+@media (max-width: 760px) {
+    .student-dashboard-widget {
+        gap: 20px;
+    }
+
+    .student-reports-heading {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .student-report-heading-actions {
+        justify-content: flex-start;
+    }
+
+    .student-status-filter-form {
+        align-items: stretch;
+    }
+
+    .student-status-filter-field {
+        flex: 1 1 100%;
+        min-width: 0;
+    }
+
+    .student-status-filter-form .filter-apply-button,
+    .student-status-filter-form .staff-filter-reset {
+        flex: 1;
+    }
+}
+
+@media (max-width: 480px) {
+    .student-reports-card {
+        padding: 14px;
+    }
+
+    .student-report-heading-actions {
+        align-items: stretch;
+    }
+
+    .student-report-heading-actions .student-new-report-button {
+        flex: 1;
+    }
+
+    .student-status-filter-form {
+        padding: 11px;
+    }
+}

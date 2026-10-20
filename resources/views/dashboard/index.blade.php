@@ -9,291 +9,150 @@
 @section('page-description', 'Pantau status dan perkembangan laporan fasilitasmu.')
 
 @section('content')
-<div class="dashboard-widget">
-    <section class="dashboard-stats" aria-label="Ringkasan laporan">
-        <a href="{{ url('/dashboard') }}" class="stat-card {{ $_statusFilter === null ? 'is-active' : '' }}">
-            <div class="stat-card-header">
-                <span class="stat-label">TOTAL LAPORAN</span>
-                <span class="stat-icon stat-icon-total" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                        <rect x="5" y="3" width="14" height="18" rx="2"/>
-                        <path d="M9 7h6M9 11h6M9 15h4"/>
+<div class="dashboard-widget student-dashboard-widget">
+    @include('dashboard.partials.stats')
+
+    <section class="dashboard-card reports-card student-reports-card" aria-labelledby="student-reports-title">
+        <div class="dashboard-card-header student-reports-heading">
+            <div>
+                <h2 id="student-reports-title" class="dashboard-card-title">Daftar Laporan</h2>
+                <p class="dashboard-card-subtitle">Laporan fasilitas yang kamu kirimkan.</p>
+            </div>
+
+            <div class="student-report-heading-actions">
+                <span class="staff-report-total">{{ number_format($_totalReports, 0, ',', '.') }} laporan</span>
+                <a href="{{ route('reports.showCreate') }}" class="student-new-report-button">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <path d="M12 5v14M5 12h14"/>
                     </svg>
-                </span>
-            </div>
-            <div class="stat-card-body">
-                <span class="stat-value">{{ $_allReportsCount }}</span>
-                <span class="stat-description">Semua laporan yang kamu buat</span>
-            </div>
-            <span class="stat-card-link">Lihat semua laporan <span aria-hidden="true">→</span></span>
-        </a>
-
-        <a href="{{ url('/dashboard') }}?status=Pending" class="stat-card stat-card-pending {{ $_statusFilter === 'Pending' ? 'is-active' : '' }}">
-            <div class="stat-card-header">
-                <span class="stat-label">MENUNGGU</span>
-                <span class="stat-icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                        <circle cx="12" cy="12" r="8"/>
-                        <path d="M12 8v4l2.5 2"/>
-                    </svg>
-                </span>
-            </div>
-            <div class="stat-card-body">
-                <span class="stat-value">{{ $_statusCounts['Pending'] ?? 0 }}</span>
-                <span class="stat-description">Sedang menunggu penanganan</span>
-            </div>
-            <span class="stat-card-link">Saring laporan <span aria-hidden="true">→</span></span>
-        </a>
-
-        <a href="{{ url('/dashboard') }}?status=Rejected" class="stat-card stat-card-rejected {{ $_statusFilter === 'Rejected' ? 'is-active' : '' }}">
-            <div class="stat-card-header">
-                <span class="stat-label">DITOLAK</span>
-                <span class="stat-icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                        <circle cx="12" cy="12" r="8"/>
-                        <path d="m9 9 6 6M15 9l-6 6"/>
-                    </svg>
-                </span>
-            </div>
-            <div class="stat-card-body">
-                <span class="stat-value">{{ $_statusCounts['Rejected'] ?? 0 }}</span>
-                <span class="stat-description">Laporan yang ditolak</span>
-            </div>
-            <span class="stat-card-link">Saring laporan <span aria-hidden="true">→</span></span>
-        </a>
-
-        <a href="{{ url('/dashboard') }}?status=Resolved" class="stat-card stat-card-resolved {{ $_statusFilter === 'Resolved' ? 'is-active' : '' }}">
-            <div class="stat-card-header">
-                <span class="stat-label">SELESAI</span>
-                <span class="stat-icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                        <circle cx="12" cy="12" r="8"/>
-                        <path d="m8.5 12 2.3 2.3 4.7-4.7"/>
-                    </svg>
-                </span>
-            </div>
-            <div class="stat-card-body">
-                <span class="stat-value">{{ $_statusCounts['Resolved'] ?? 0 }}</span>
-                <span class="stat-description">Laporan selesai ditangani</span>
-            </div>
-            <span class="stat-card-link">Saring laporan <span aria-hidden="true">→</span></span>
-        </a>
-    </section>
-
-    <section class="dashboard-main-grid">
-        <div class="dashboard-card reports-card">
-            <div class="dashboard-card-header reports-card-heading">
-                <div>
-                    <h2 class="dashboard-card-title">Daftar Laporan</h2>
-                    <p class="dashboard-card-subtitle">Laporan fasilitas yang kamu kirimkan</p>
-                </div>
-
-                <form method="GET" action="{{ url('/dashboard') }}" class="report-filter-form">
-                    <label for="status-filter">Status</label>
-                    <select name="status" id="status-filter" class="report-filter-select">
-                        <option value="" {{ $_statusFilter === null ? 'selected' : '' }}>Semua status</option>
-                        <option value="Pending" {{ $_statusFilter === 'Pending' ? 'selected' : '' }}>Menunggu</option>
-                        <option value="Rejected" {{ $_statusFilter === 'Rejected' ? 'selected' : '' }}>Ditolak</option>
-                        <option value="Resolved" {{ $_statusFilter === 'Resolved' ? 'selected' : '' }}>Selesai</option>
-                    </select>
-                    <button type="submit" class="filter-apply-button">Terapkan</button>
-                </form>
-            </div>
-
-            @if ($_statusFilter !== null)
-                <div class="active-filter-note">
-                    <span>Menampilkan laporan dengan status <strong>{{ ['Pending' => 'Menunggu', 'Rejected' => 'Ditolak', 'Resolved' => 'Selesai'][$_statusFilter] }}</strong></span>
-                    <a href="{{ url('/dashboard') }}">Hapus filter</a>
-                </div>
-            @endif
-
-            <div class="reports-table-wrapper">
-                <table class="reports-table">
-                    <thead>
-                        <tr>
-                            <th scope="col">ID</th>
-                            <th scope="col">Nama fasilitas</th>
-                            <th scope="col">Kategori laporan</th>
-                            <th scope="col">Status</th>
-                            <th scope="col">Tanggal dibuat</th>
-                            <th scope="col">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($_reports as $report)
-                            @php
-                                $statusClass = [
-                                    'Pending' => 'status-pending',
-                                    'Rejected' => 'status-rejected',
-                                    'Resolved' => 'status-resolved',
-                                ][$report->status] ?? 'status-pending';
-                                $statusLabel = [
-                                    'Pending' => 'Menunggu',
-                                    'Rejected' => 'Ditolak',
-                                    'Resolved' => 'Selesai',
-                                ][$report->status] ?? $report->status;
-                            @endphp
-                            <tr>
-                                <td class="report-id">#{{ $report->id }}</td>
-                                <td class="facility-name">{{ $report->facilities_name }}</td>
-                                <td>{{ $report->categories_name ?? 'Belum dikategorikan' }}</td>
-                                <td><span class="status-badge {{ $statusClass }}">{{ $statusLabel }}</span></td>
-                                <td class="report-date">
-                                    {{ \Illuminate\Support\Carbon::parse($report->created_at)->locale('id')->translatedFormat('d M Y, H:i') }}
-                                </td>
-                                <td>
-                                    <div class="report-action-control">
-                                        <select
-                                            class="report-action-select"
-                                            aria-label="Pilih aksi untuk laporan {{ $report->title }}"
-                                            data-report-action-select>
-                                            <option value="" selected>Pilih aksi</option>
-                                            @if ($report->status === 'Pending')
-                                                <option value="{{ url('/reports/' . $report->identifier . '/edit') }}">Edit laporan</option>
-                                            @endif
-                                            <option value="{{ url('/reports/' . $report->identifier) }}">Lihat detail</option>
-                                        </select>
-                                        <button
-                                            type="button"
-                                            class="report-action-open"
-                                            aria-label="Buka aksi untuk laporan {{ $report->title }}"
-                                            data-report-action-open
-                                            disabled>
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                                                <path d="M5 12h13M12 6l6 6-6 6"/>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" class="table-empty">
-                                    <span class="table-empty-icon" aria-hidden="true">⌕</span>
-                                    <strong>{{ $_statusFilter ? 'Tidak ada laporan dengan status ini' : 'Belum ada laporan' }}</strong>
-                                    <span>{{ $_statusFilter ? 'Coba pilih status lain atau hapus filter.' : 'Laporan yang kamu buat akan muncul di sini.' }}</span>
-                                    @if ($_statusFilter !== null)
-                                        <a href="{{ url('/dashboard') }}" class="empty-clear-filter">Tampilkan semua laporan</a>
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="reports-footer">
-                <span>Menampilkan <strong>{{ $_indexedReports }}</strong> dari <strong>{{ $_totalReports }}</strong> laporan{{ $_statusFilter ? ' yang difilter' : '' }}</span>
-                <div class="pagination">
-                    <form method="GET" action="{{ url('/dashboard') }}">
-                        @if ($_statusFilter !== null)
-                            <input type="hidden" name="status" value="{{ $_statusFilter }}">
-                        @endif
-                        @if ($_currentPage > 0)
-                            <button type="submit" name="page" value="{{ $_currentPage - 1 }}" class="pagination-button">Sebelumnya</button>
-                        @endif
-                        @if (($_currentPage + 1) * 10 < $_totalReports)
-                            <button type="submit" name="page" value="{{ $_currentPage + 1 }}" class="pagination-button">Berikutnya</button>
-                        @endif
-                    </form>
-                </div>
+                    <span>Buat laporan</span>
+                </a>
             </div>
         </div>
 
-        <aside class="dashboard-side">
-            <div class="dashboard-card quick-actions-card">
-                <div class="dashboard-card-header">
-                    <div>
-                        <h2 class="dashboard-card-title">Aksi Cepat</h2>
-                        <p class="dashboard-card-subtitle">Buat laporan baru dalam beberapa langkah</p>
-                    </div>
-                </div>
-                <a href="{{ route('reports.create') }}" class="quick-action-button">
-                    <span class="quick-action-icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                            <path d="M12 5v14M5 12h14"/>
-                        </svg>
-                    </span>
-                    <span>Buat laporan baru</span>
-                    <svg class="quick-action-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                        <path d="m9 18 6-6-6-6"/>
-                    </svg>
-                </a>
+        <form method="GET" action="{{ url('/dashboard') }}" class="student-status-filter-form">
+            <div class="student-status-filter-field">
+                <label for="student-status-filter">Filter status</label>
+                <select name="status" id="student-status-filter" class="report-filter-select">
+                    <option value="" {{ $_statusFilter === null ? 'selected' : '' }}>Semua status</option>
+                    <option value="Pending" {{ $_statusFilter === 'Pending' ? 'selected' : '' }}>Menunggu</option>
+                    <option value="Rejected" {{ $_statusFilter === 'Rejected' ? 'selected' : '' }}>Ditolak</option>
+                    <option value="Resolved" {{ $_statusFilter === 'Resolved' ? 'selected' : '' }}>Selesai</option>
+                </select>
             </div>
+            <button type="submit" class="filter-apply-button">Terapkan</button>
+            @if ($_statusFilter !== null)
+                <a href="{{ url('/dashboard') }}" class="staff-filter-reset">Reset</a>
+            @endif
+        </form>
 
-            <div class="dashboard-card category-card">
-                <div class="dashboard-card-header">
-                    <div>
-                        <h2 class="dashboard-card-title">Laporan per Kategori</h2>
-                        <p class="dashboard-card-subtitle">Kategori yang paling sering dipilih</p>
-                    </div>
-                </div>
-                <div class="widget-list-viewport category-viewport">
-                    @if ($_categoryStats->isNotEmpty())
-                        <div class="category-list">
-                            @foreach ($_categoryStats as $categoryStat)
-                                <div class="category-item">
-                                    <div class="category-info">
-                                        <span title="{{ $categoryStat->category_name }}">{{ $categoryStat->category_name }}</span>
-                                        <strong>{{ $categoryStat->total }}</strong>
-                                    </div>
-                                    <div class="category-progress" role="progressbar" aria-label="Jumlah laporan kategori {{ $categoryStat->category_name }}" aria-valuemin="0" aria-valuemax="{{ $_maxCategoryReports }}" aria-valuenow="{{ $categoryStat->total }}">
-                                        <div class="category-progress-fill" style="width: {{ max(5, (int) round(($categoryStat->total / $_maxCategoryReports) * 100)) }}%"></div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    @else
-                        <p class="widget-empty">Belum ada data kategori untuk ditampilkan.</p>
-                    @endif
-                </div>
+        @if ($_statusFilter !== null)
+            <div class="active-filter-note">
+                <span>Menampilkan laporan dengan status <strong>{{ ['Pending' => 'Menunggu', 'Rejected' => 'Ditolak', 'Resolved' => 'Selesai'][$_statusFilter] }}</strong>.</span>
+                <a href="{{ url('/dashboard') }}">Hapus filter</a>
             </div>
+        @endif
 
-            <div class="dashboard-card facilities-card">
-                <div class="dashboard-card-header">
-                    <div>
-                        <h2 class="dashboard-card-title">Fasilitas Paling Sering Dilaporkan</h2>
-                        <p class="dashboard-card-subtitle">Berdasarkan laporan yang kamu buat</p>
-                    </div>
-                </div>
-                <div class="widget-list-viewport facility-viewport">
-                    @if ($_facilityStats->isNotEmpty())
-                        <div class="facility-list">
-                            @foreach ($_facilityStats as $index => $facilityStat)
-                                <div class="facility-item">
-                                    <div class="facility-rank">{{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}</div>
-                                    <div class="facility-details">
-                                        <span class="facility-title" title="{{ $facilityStat->facility_name }}">{{ $facilityStat->facility_name }}</span>
-                                        <span class="facility-count">{{ $facilityStat->total }} laporan</span>
-                                    </div>
+        <div class="reports-table-wrapper">
+            <table class="reports-table student-reports-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Laporan</th>
+                        <th scope="col">Fasilitas</th>
+                        <th scope="col">Kategori</th>
+                        <th scope="col">Keparahan</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Dibuat</th>
+                        <th scope="col">Aktivitas terakhir</th>
+                        <th scope="col">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($_reports as $report)
+                        @php
+                            $statusClass = [
+                                'Pending' => 'status-pending',
+                                'Rejected' => 'status-rejected',
+                                'Resolved' => 'status-resolved',
+                            ][$report->status] ?? 'status-pending';
+                            $statusLabel = [
+                                'Pending' => 'Menunggu',
+                                'Rejected' => 'Ditolak',
+                                'Resolved' => 'Selesai',
+                            ][$report->status] ?? $report->status;
+                            $severityClass = [
+                                'Critical' => 'severity-critical',
+                                'High' => 'severity-high',
+                                'Medium' => 'severity-medium',
+                                'Low' => 'severity-low',
+                            ][$report->severity] ?? 'severity-low';
+                            $severityLabel = [
+                                'Critical' => 'Kritis',
+                                'High' => 'Tinggi',
+                                'Medium' => 'Sedang',
+                                'Low' => 'Rendah',
+                            ][$report->severity] ?? $report->severity;
+                            $lastActivity = $report->responses_max_created_at ?? $report->updated_at ?? $report->created_at;
+                        @endphp
+                        <tr>
+                            <td class="staff-report-cell">
+                                <strong class="staff-report-title" title="{{ $report->title }}">{{ $report->title }}</strong>
+                                <span class="staff-report-meta">#{{ $report->id }} · {{ $report->location_description }}</span>
+                            </td>
+                            <td class="facility-name">{{ $report->facility?->name ?? 'Fasilitas tidak tersedia' }}</td>
+                            <td>{{ $report->category?->name ?? 'Belum dikategorikan' }}</td>
+                            <td><span class="severity-badge {{ $severityClass }}">{{ $severityLabel }}</span></td>
+                            <td><span class="status-badge {{ $statusClass }}">{{ $statusLabel }}</span></td>
+                            <td class="report-date">{{ \Illuminate\Support\Carbon::parse($report->created_at)->locale('id')->translatedFormat('d M Y, H:i') }}</td>
+                            <td class="report-date">{{ \Illuminate\Support\Carbon::parse($lastActivity)->locale('id')->translatedFormat('d M Y, H:i') }}</td>
+                            <td>
+                                <div class="student-report-actions">
+                                    <a class="staff-view-report" href="{{ route('reports.showDetail', ['uuid' => $report->identifier]) }}">Detail <span aria-hidden="true">→</span></a>
+                                    @if ($report->status === 'Pending')
+                                        <a class="student-edit-report" href="{{ route('reports.showEdit', ['uuid' => $report->identifier]) }}">Edit</a>
+                                    @endif
                                 </div>
-                            @endforeach
-                        </div>
-                    @else
-                        <p class="widget-empty">Belum ada data fasilitas untuk ditampilkan.</p>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="8" class="table-empty">
+                                <span class="table-empty-icon" aria-hidden="true">⌕</span>
+                                <strong>{{ $_statusFilter ? 'Tidak ada laporan dengan status ini' : 'Belum ada laporan' }}</strong>
+                                <span>{{ $_statusFilter ? 'Coba pilih status lain atau reset filter.' : 'Laporan yang kamu kirim akan muncul di sini.' }}</span>
+                                @if ($_statusFilter !== null)
+                                    <a href="{{ url('/dashboard') }}" class="empty-clear-filter">Tampilkan semua laporan</a>
+                                @else
+                                    <a href="{{ route('reports.showCreate') }}" class="empty-clear-filter">Buat laporan pertama</a>
+                                @endif
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        <div class="reports-footer">
+            <span>Menampilkan <strong>{{ $_indexedReports }}</strong> dari <strong>{{ $_totalReports }}</strong> laporan{{ $_statusFilter ? ' yang difilter' : '' }}.</span>
+            <div class="pagination">
+                <form method="GET" action="{{ url('/dashboard') }}">
+                    @if ($_statusFilter !== null)
+                        <input type="hidden" name="status" value="{{ $_statusFilter }}">
                     @endif
-                </div>
+                    @if ($_currentPage > 0)
+                        <button type="submit" name="page" value="{{ $_currentPage - 1 }}" class="pagination-button">Sebelumnya</button>
+                    @endif
+                    @if (($_currentPage + 1) * 10 < $_totalReports)
+                        <button type="submit" name="page" value="{{ $_currentPage + 1 }}" class="pagination-button">Berikutnya</button>
+                    @endif
+                </form>
             </div>
-        </aside>
+        </div>
+    </section>
+
+    <section class="staff-dashboard-analytics" aria-label="Analisis laporan">
+        @include('dashboard.partials.category-card')
+        @include('dashboard.partials.facility-card')
     </section>
 </div>
 @endsection
-
-
-@push('scripts')
-<script>
-    document.querySelectorAll('[data-report-action-select]').forEach((select) => {
-        const button = select.parentElement.querySelector('[data-report-action-open]');
-
-        select.addEventListener('change', () => {
-            button.disabled = !select.value;
-        });
-
-        button.addEventListener('click', () => {
-            if (select.value) {
-                window.location.assign(select.value);
-            }
-        });
-    });
-</script>
-@endpush

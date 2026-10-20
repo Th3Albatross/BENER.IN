@@ -18,8 +18,10 @@ class ReportController
         protected ScramblrService $scramblrService
     ) {}
 
-    public function showCreateReportPage()
+    public function showCreateReportPage(Request $request)
     {
+        abort_if($this->isStaff($request->user()), 403);
+
         return view('report.create', [
             'categories' => Category::all(),
             'facilities' => Facility::all(),
@@ -29,6 +31,8 @@ class ReportController
 
     public function createReport(Request $request)
     {
+        abort_if($this->isStaff($request->user()), 403);
+
         $validated = $request->validate([
             'identifier' => ['required', 'uuid:7', 'unique:reports,identifier'],
             'title' => ['required', 'string', 'max:255'],
@@ -62,8 +66,15 @@ class ReportController
 
     public function showReportDetailPage(Request $request, string $uuid)
     {
-        $report = Report::where('reports.users_id', $request->user()->id)
-            ->where('reports.identifier', $uuid)
+        $user = $request->user();
+        $query = Report::where('reports.identifier', $uuid);
+
+        // Staff may review reports from every student; students remain owner-scoped.
+        if (!$this->isStaff($user)) {
+            $query->where('reports.users_id', $user->id);
+        }
+
+        $report = $query
             ->join('users', 'reports.users_id', '=', 'users.id')
             ->join('facilities', 'reports.facilities_id', '=', 'facilities.id')
             ->leftJoin('categories', 'reports.categories_id', '=', 'categories.id')
@@ -195,5 +206,10 @@ class ReportController
         return redirect()
             ->route('reports.showDetail', ['uuid' => $report->identifier])
             ->with('success', 'Perubahan laporan berhasil disimpan.');
+    }
+
+    private function isStaff($user): bool
+    {
+        return in_array(strtolower(trim((string) ($user->role ?? ''))), ['petugas', 'attendant', 'staff', 'admin'], true);
     }
 }
