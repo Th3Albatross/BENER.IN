@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +7,25 @@
     <title>@yield('title', 'Dashboard') - BENER.IN</title>
     <meta name="description" content="@yield('meta_description', 'BENER.IN facility reporting dashboard')">
 
+    {{-- Apply the stored mode before first paint so the wrong theme never flashes. --}}
+    <script>
+        (() => {
+            try {
+                const stored = localStorage.getItem('benerin:theme');
+                if (stored === 'light' || stored === 'dim' || stored === 'dark') {
+                    document.documentElement.setAttribute('data-theme', stored);
+                    return;
+                }
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            } catch (error) {
+                /* Storage unavailable; keep the default light mode. */
+            }
+        })();
+    </script>
+
+    @vite('resources/css/theme.css')
     @vite('resources/css/layouts/app.css')
     @stack('styles')
 </head>
@@ -55,5 +74,6 @@
     </script>
 
     @stack('scripts')
+    @vite('resources/js/theme.js')
 </body>
 </html>

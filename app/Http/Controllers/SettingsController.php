@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use App\Services\ScramblrService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use App\Services\ScramblrService;
 use Illuminate\Validation\Rules\Password;
-use App\Models\User;
 
 class SettingsController
 {
@@ -44,7 +44,7 @@ class SettingsController
         $file = $request->file('profile_photo');
         $extension = strtolower($file->guessExtension() ?: $file->getClientOriginalExtension());
 
-        if (!in_array($extension, self::PROFILE_PHOTO_EXTENSIONS, true)) {
+        if (! in_array($extension, self::PROFILE_PHOTO_EXTENSIONS, true)) {
             $extension = match ($file->getMimeType()) {
                 'image/jpeg' => 'jpg',
                 'image/png' => 'png',
@@ -54,32 +54,31 @@ class SettingsController
         }
 
         $disk = Storage::disk('local');
-        $directory = 'profile-photos/' . $user->getKey();
+        $directory = 'profile-photos/'.$user->getKey();
 
         // Each user's profile-photo directory is reserved for their current avatar.
         foreach (self::PROFILE_PHOTO_EXTENSIONS as $oldExtension) {
-            $oldPath = $directory . '/avatar.' . $oldExtension;
+            $oldPath = $directory.'/avatar.'.$oldExtension;
             if ($disk->exists($oldPath)) {
                 $disk->delete($oldPath);
             }
         }
 
-        $disk->putFileAs($directory, $file, 'avatar.' . $extension);
+        $disk->putFileAs($directory, $file, 'avatar.'.$extension);
 
         return redirect()
             ->route('settings.index')
             ->with('status', 'profile-photo-updated');
     }
 
-
     public function resetProfilePhoto(Request $request)
     {
         $user = $request->user();
         $disk = Storage::disk('local');
-        $directory = 'profile-photos/' . $user->getKey();
+        $directory = 'profile-photos/'.$user->getKey();
 
         foreach (self::PROFILE_PHOTO_EXTENSIONS as $extension) {
-            $path = $directory . '/avatar.' . $extension;
+            $path = $directory.'/avatar.'.$extension;
             if ($disk->exists($path)) {
                 $disk->delete($path);
             }
@@ -116,10 +115,10 @@ class SettingsController
     private function findProfilePhotoPath(User $user): ?string
     {
         $disk = Storage::disk('local');
-        $directory = 'profile-photos/' . $user->getKey();
+        $directory = 'profile-photos/'.$user->getKey();
 
         foreach (self::PROFILE_PHOTO_EXTENSIONS as $extension) {
-            $path = $directory . '/avatar.' . $extension;
+            $path = $directory.'/avatar.'.$extension;
             if ($disk->exists($path)) {
                 return $path;
             }

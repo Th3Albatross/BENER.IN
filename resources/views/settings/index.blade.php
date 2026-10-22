@@ -17,6 +17,21 @@
         ->take(2)
         ->map(fn ($part) => mb_strtoupper(mb_substr($part, 0, 1)))
         ->implode('');
+
+    $themeOptions = [
+        'light' => [
+            'label' => 'Terang',
+            'description' => 'Tampilan standar dengan latar terang.',
+        ],
+        'dim' => [
+            'label' => 'Redup',
+            'description' => 'Latar gelap yang lebih lembut untuk mata.',
+        ],
+        'dark' => [
+            'label' => 'Gelap',
+            'description' => 'Latar gelap dengan kontras tinggi.',
+        ],
+    ];
 @endphp
 
 <div class="settings-page">
@@ -144,6 +159,59 @@
                     hidden
                 >Batalkan</button>
             </div>
+        </section>
+        <section class="settings-card" aria-labelledby="appearance-heading">
+            <div class="settings-card-heading">
+                <span class="settings-card-heading__icon settings-card-heading__icon--appearance" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="8" />
+                        <path d="M12 4v16" />
+                        <path d="M12 4a8 8 0 0 0 0 16" fill="currentColor" stroke="none" />
+                    </svg>
+                </span>
+                <div>
+                    <h2 id="appearance-heading">Mode tampilan</h2>
+                    <p>Pilih tema yang paling nyaman untuk matamu. Pengaturan ini tersimpan di perangkat ini.</p>
+                </div>
+            </div>
+
+            <fieldset class="settings-theme-fieldset">
+                <legend class="settings-sr-only">Pilih mode tampilan</legend>
+
+                <div class="settings-theme-options" role="radiogroup" aria-label="Mode tampilan">
+                    @foreach ($themeOptions as $value => $option)
+                        <label class="settings-theme-option" data-theme-option="{{ $value }}">
+                            <input
+                                type="radio"
+                                name="theme"
+                                value="{{ $value }}"
+                                class="settings-theme-input"
+                                data-theme-choice
+                            >
+                            <span class="settings-theme-preview settings-theme-preview--{{ $value }}" aria-hidden="true">
+                                <span class="settings-theme-preview__bar"></span>
+                                <span class="settings-theme-preview__body">
+                                    <span class="settings-theme-preview__line"></span>
+                                    <span class="settings-theme-preview__line settings-theme-preview__line--short"></span>
+                                </span>
+                            </span>
+                            <span class="settings-theme-copy">
+                                <span class="settings-theme-label">{{ $option['label'] }}</span>
+                                <span class="settings-theme-description">{{ $option['description'] }}</span>
+                            </span>
+                            <span class="settings-theme-check" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="m5 12 4 4L19 6" />
+                                </svg>
+                            </span>
+                        </label>
+                    @endforeach
+                </div>
+            </fieldset>
+
+            <p class="settings-theme-note" role="status" data-theme-note hidden>
+                Mode tampilan disimpan di perangkat ini.
+            </p>
         </section>
 
         <section class="settings-card" aria-labelledby="password-heading">

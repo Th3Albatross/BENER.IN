@@ -1,0 +1,176 @@
+/*
+ * BENER.IN — Appearance modes.
+ *
+ * Every page loads this file before its own stylesheet, so the tokens below are
+ * available to the page-level CSS. Three modes are offered on the Settings page:
+ *   light — the original palette
+ *   dim   — a softened dark theme (dark surfaces, but not black)
+ *   dark  — a high-contrast dark theme
+ *
+ * The mode is applied as `data-theme` on <html> so it is resolved server-side
+ * and there is no flash of the wrong theme before the page paints.
+ */
+
+:root,
+[data-theme='light'] {
+    color-scheme: light;
+
+    --bg: #f2f3f5;
+    --surface: #ffffff;
+    --surface-2: #f8f9fb;
+    --surface-3: #f6f8fb;
+    --surface-inset: #f4f6f8;
+
+    --sidebar: #202225;
+    --sidebar-border: #18191c;
+    --sidebar-active: #2f3136;
+    --sidebar-text: #ffffff;
+    --sidebar-muted: #8e9297;
+    --sidebar-hover: rgb(255 255 255 / 4%);
+
+    --text-strong: #2e3338;
+    --text: #374151;
+    --text-muted: #747f8d;
+    --text-soft: #6b7280;
+    --text-on-accent: #ffffff;
+
+    --border: #e3e5e8;
+    --border-soft: #edf0f3;
+    --border-strong: #d9dee5;
+
+    --accent: #3a5cb8;
+    --accent-strong: #2d4d9f;
+    --accent-soft: #edf2ff;
+    /* Fill is used for buttons that carry white text; it stays dark enough
+       for white to remain readable in every mode. */
+    --accent-fill: #3a5cb8;
+    --accent-fill-hover: #2d4d9f;
+    --accent-fill-fg: #ffffff;
+
+    /* Neutral "solid" surfaces (primary buttons, avatars) with light text. */
+    --solid: #334155;
+    --solid-hover: #1f2937;
+    --solid-fg: #ffffff;
+
+    --success: #26734b;
+    --success-soft: #eaf7ef;
+    --danger: #b42318;
+    --danger-soft: #fff0f0;
+    --warning: #8a6200;
+    --warning-soft: #fff7e3;
+    --info: #3559a8;
+    --info-soft: #edf3ff;
+
+    --shadow-card: 0 2px 7px rgb(25 35 45 / 2.5%);
+    --shadow-raised: 0 8px 20px rgb(25 35 45 / 6%);
+}
+
+[data-theme='dim'] {
+    color-scheme: dark;
+
+    --bg: #2b2d31;
+    --surface: #313338;
+    --surface-2: #383a40;
+    --surface-3: #35373c;
+    --surface-inset: #3a3c42;
+
+    --sidebar: #1e1f22;
+    --sidebar-border: #16171a;
+    --sidebar-active: #3f4147;
+    --sidebar-text: #ffffff;
+    --sidebar-muted: #a3a6aa;
+    --sidebar-hover: rgb(255 255 255 / 6%);
+
+    --text-strong: #f2f3f5;
+    --text: #dbdee1;
+    --text-muted: #a3a6aa;
+    --text-soft: #b5b8bd;
+    --text-on-accent: #ffffff;
+
+    --border: #3f4147;
+    --border-soft: #383a40;
+    --border-strong: #4a4d53;
+
+    --accent: #8fa9e8;
+    --accent-strong: #a8bdf0;
+    --accent-soft: #363d52;
+    --accent-fill: #42639f;
+    --accent-fill-hover: #4e70ae;
+    --accent-fill-fg: #ffffff;
+
+    --solid: #4a4d55;
+    --solid-hover: #585b64;
+    --solid-fg: #ffffff;
+
+    --success: #6bd39b;
+    --success-soft: #2c4034;
+    --danger: #f08a84;
+    --danger-soft: #4a2f2e;
+    --warning: #e0b968;
+    --warning-soft: #443a26;
+    --info: #8aa8ea;
+    --info-soft: #333c52;
+
+    --shadow-card: 0 2px 7px rgb(0 0 0 / 22%);
+    --shadow-raised: 0 8px 20px rgb(0 0 0 / 30%);
+}
+
+[data-theme='dark'] {
+    color-scheme: dark;
+
+    --bg: #17181a;
+    --surface: #1e1f22;
+    --surface-2: #24262a;
+    --surface-3: #212327;
+    --surface-inset: #26282c;
+
+    --sidebar: #101113;
+    --sidebar-border: #0b0c0d;
+    --sidebar-active: #2b2d31;
+    --sidebar-text: #ffffff;
+    --sidebar-muted: #94979c;
+    --sidebar-hover: rgb(255 255 255 / 8%);
+
+    --text-strong: #f7f8f9;
+    --text: #d6d9dd;
+    --text-muted: #94979c;
+    --text-soft: #a8abb0;
+    --text-on-accent: #ffffff;
+
+    --border: #2f3237;
+    --border-soft: #282b2f;
+    --border-strong: #3a3e44;
+
+    --accent: #9ab3ef;
+    --accent-strong: #b0c5f4;
+    --accent-soft: #262d40;
+    --accent-fill: #3d5695;
+    --accent-fill-hover: #49629f;
+    --accent-fill-fg: #ffffff;
+
+    --solid: #3d4148;
+    --solid-hover: #4b4f57;
+    --solid-fg: #ffffff;
+
+    --success: #74dda4;
+    --success-soft: #1e2f26;
+    --danger: #f49892;
+    --danger-soft: #382423;
+    --warning: #e8c377;
+    --warning-soft: #332c1d;
+    --info: #9ab3ef;
+    --info-soft: #242c40;
+
+    --shadow-card: 0 2px 7px rgb(0 0 0 / 40%);
+    --shadow-raised: 0 8px 20px rgb(0 0 0 / 48%);
+}
+
+/* Native controls (scrollbars, form widgets) follow the active mode. */
+html {
+    background: var(--bg);
+}
+
+body {
+    background: var(--bg);
+    color: var(--text-strong);
+}

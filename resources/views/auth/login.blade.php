@@ -1,11 +1,30 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#f2f3f5">
     <title>Masuk — BENER.IN</title>
 
+    {{-- Apply the stored mode before first paint so the wrong theme never flashes. --}}
+    <script>
+        (() => {
+            try {
+                const stored = localStorage.getItem('benerin:theme');
+                if (stored === 'light' || stored === 'dim' || stored === 'dark') {
+                    document.documentElement.setAttribute('data-theme', stored);
+                    return;
+                }
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            } catch (error) {
+                /* Storage unavailable; keep the default light mode. */
+            }
+        })();
+    </script>
+
+    @vite('resources/css/theme.css')
     @vite('resources/css/auth-login.css')
 </head>
 <body class="login-page">

@@ -1,17 +1,25 @@
 @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap');
 
+/*
+ * Colour tokens live in theme.css, which is loaded before this file. These
+ * aliases keep the existing --color-* names working while they resolve to the
+ * active appearance mode.
+ */
 :root {
-    --color-bg: #f2f3f5;
-    --color-sidebar: #202225;
-    --color-sidebar-border: #18191c;
-    --color-sidebar-active: #2f3136;
-    --color-white: #ffffff;
-    --color-text: #2e3338;
-    --color-muted: #747f8d;
-    --color-muted-light: #8e9297;
-    --color-border: #e3e5e8;
-    --color-border-dark: #2f3136;
-    --color-link: #496077;
+    --color-bg: var(--bg);
+    --color-sidebar: var(--sidebar);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-active: var(--sidebar-active);
+    --color-white: var(--surface);
+    /* The sidebar stays dark in every mode, so its text keeps its own tokens. */
+    --color-sidebar-text: var(--sidebar-text);
+    --color-sidebar-muted: var(--sidebar-muted);
+    --color-text: var(--text-strong);
+    --color-muted: var(--text-muted);
+    --color-muted-light: var(--text-soft);
+    --color-border: var(--border);
+    --color-border-dark: var(--border);
+    --color-link: var(--accent);
     --radius-sm: 6px;
     --radius-md: 8px;
     --sidebar-width: 250px;
@@ -48,7 +56,7 @@ a {
 
 a:focus-visible,
 button:focus-visible {
-    outline: 2px solid #4a90e2;
+    outline: 2px solid var(--accent);
     outline-offset: 2px;
 }
 
@@ -93,18 +101,18 @@ button:focus-visible {
     width: 28px;
     height: 28px;
     place-items: center;
-    border: 1.5px solid var(--color-white);
+    border: 1.5px solid var(--color-sidebar-text);
     border-radius: var(--radius-sm);
 }
 
 .brand__mark-inner {
     width: 14px;
     height: 14px;
-    background: var(--color-white);
+    background: var(--color-sidebar-text);
 }
 
 .brand__name {
-    color: var(--color-white);
+    color: var(--color-sidebar-text);
     font-size: 18px;
     font-weight: 700;
     line-height: 1;
@@ -124,20 +132,20 @@ button:focus-visible {
     min-height: 40px;
     padding: 10px 16px;
     border-radius: var(--radius-sm);
-    color: var(--color-muted-light);
+    color: var(--color-sidebar-muted);
     font-size: 14px;
     font-weight: 500;
     transition: background-color 150ms ease, color 150ms ease;
 }
 
 .nav-item:hover {
-    background: rgba(255, 255, 255, 0.04);
-    color: var(--color-white);
+    background: var(--sidebar-hover);
+    color: var(--color-sidebar-text);
 }
 
 .nav-item--active {
     background: var(--color-sidebar-active);
-    color: var(--color-white);
+    color: var(--color-sidebar-text);
     font-weight: 600;
 }
 
@@ -148,7 +156,7 @@ button:focus-visible {
     width: 4px;
     height: 16px;
     content: '';
-    background: var(--color-white);
+    background: var(--color-sidebar-text);
     border-radius: 999px;
     transform: translateY(-50%);
 }
@@ -180,9 +188,9 @@ button:focus-visible {
     height: 36px;
     place-items: center;
     background: var(--color-sidebar-active);
-    border: 1px solid var(--color-muted-light);
+    border: 1px solid var(--color-sidebar-muted);
     border-radius: 50%;
-    color: var(--color-white);
+    color: var(--color-sidebar-text);
     font-size: 14px;
     font-weight: 600;
 }
@@ -199,14 +207,14 @@ button:focus-visible {
 }
 
 .user-info__name {
-    color: var(--color-white);
+    color: var(--color-sidebar-text);
     font-size: 14px;
     font-weight: 600;
 }
 
 .user-info__role {
     margin-top: 2px;
-    color: var(--color-muted-light);
+    color: var(--color-sidebar-muted);
     font-size: 11px;
 }
 
@@ -441,14 +449,14 @@ body {
     padding: 10px 16px;
     border: 1px solid transparent;
     border-radius: var(--radius-sm);
-    color: #f07878;
+    color: var(--danger);
     font-size: 14px;
     font-weight: 600;
     transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
 }
 
 .sidebar__logout:hover {
-    color: #ff8585;
+    color: var(--danger);
     background: rgba(220, 53, 69, 0.12);
     border-color: rgba(220, 53, 69, 0.18);
 }

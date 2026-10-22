@@ -8,6 +8,7 @@ export default defineConfig({
         laravel({
             input: [
                 'resources/css/app.css',
+                'resources/css/theme.css',
                 'resources/css/layouts/app.css',
                 'resources/css/dashboard.css',
                 'resources/css/settings.css',
@@ -19,6 +20,7 @@ export default defineConfig({
                 'resources/css/discussion-index.css',
                 'resources/js/auth-login.js',
                 'resources/js/analytics.js',
+                'resources/js/theme.js',
                 'resources/js/app.js'
             ],
             refresh: true,
