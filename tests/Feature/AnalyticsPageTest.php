@@ -51,6 +51,7 @@ class AnalyticsPageTest extends TestCase
             ->get('/analytics')
             ->assertOk()
             ->assertSee('Web Analytics')
+            ->assertDontSee('Manajemen Laporan')
             ->assertViewHas('summary', fn (array $summary): bool => $summary['total'] === 1 && $summary['pending'] === 1)
             ->assertViewHas('insights', fn (array $insights): bool => $insights['urgent_open'] === 1);
     }

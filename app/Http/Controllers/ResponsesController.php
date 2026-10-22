@@ -26,7 +26,7 @@ class ResponsesController
         $isStaff = $this->isStaff($user);
         $statusFilter = $request->query('status', 'all');
 
-        if (!in_array($statusFilter, self::VALID_STATUSES, true)) {
+        if (! in_array($statusFilter, self::VALID_STATUSES, true)) {
             $statusFilter = 'all';
         }
 
@@ -40,7 +40,7 @@ class ResponsesController
             ->withCount('responses')
             ->withMax('responses', 'created_at');
 
-        if (!$isStaff) {
+        if (! $isStaff) {
             $statusCountsQuery->where('users_id', $user->id);
             $reportsQuery->where('users_id', $user->id);
         }
@@ -124,6 +124,7 @@ class ResponsesController
             (int) $report->users_id === (int) $user->id || $this->isStaff($user),
             403
         );
+        abort_unless($report->status === 'Pending', 403);
 
         $validated = $request->validate([
             'message' => ['required', 'string', 'max:5000'],
@@ -150,6 +151,7 @@ class ResponsesController
             (int) $report->users_id === (int) $user->id || $this->isStaff($user),
             403
         );
+        abort_unless($report->status === 'Pending', 403);
 
         // A user may edit only their own response, and only within this report.
         $response = $report->responses()
@@ -173,7 +175,7 @@ class ResponsesController
     /** Attach a temporary URL served through the existing private blob route. */
     private function attachProfilePhotoUrl(?User $user): void
     {
-        if (!$user) {
+        if (! $user) {
             return;
         }
 
@@ -191,10 +193,10 @@ class ResponsesController
     private function findProfilePhotoPath(User $user): ?string
     {
         $disk = Storage::disk('local');
-        $directory = 'profile-photos/' . $user->getKey();
+        $directory = 'profile-photos/'.$user->getKey();
 
         foreach (self::PROFILE_PHOTO_EXTENSIONS as $extension) {
-            $path = $directory . '/avatar.' . $extension;
+            $path = $directory.'/avatar.'.$extension;
             if ($disk->exists($path)) {
                 return $path;
             }

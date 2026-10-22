@@ -55,8 +55,8 @@ class ReportController
 
         foreach ($photos as $photo) {
             $photo->storeAs(
-                'reports/' . $report->id,
-                Str::random(10) . '.' . $photo->extension(),
+                'reports/'.$report->id,
+                Str::random(10).'.'.$photo->extension(),
                 'local'
             );
         }
@@ -70,7 +70,7 @@ class ReportController
         $query = Report::where('reports.identifier', $uuid);
 
         // Staff may review reports from every student; students remain owner-scoped.
-        if (!$this->isStaff($user)) {
+        if (! $this->isStaff($user)) {
             $query->where('reports.users_id', $user->id);
         }
 
@@ -86,8 +86,8 @@ class ReportController
             )
             ->firstOrFail();
 
-        $photos = Cache::remember('photos' . $report->identifier, $this->scramblrService->expiration, function () use ($report) {
-            $directory = 'reports/' . $report->id;
+        $photos = Cache::remember('photos'.$report->identifier, $this->scramblrService->expiration, function () use ($report) {
+            $directory = 'reports/'.$report->id;
             $files = Storage::disk('local')->exists($directory)
                 ? Storage::disk('local')->allFiles($directory)
                 : [];
@@ -98,7 +98,41 @@ class ReportController
         return view('report.show', [
             '_report' => $report,
             '_photos' => $photos,
+            '_isStaff' => $this->isStaff($user),
         ]);
+    }
+
+    public function updateStatus(Request $request, string $uuid)
+    {
+        abort_unless($this->isStaff($request->user()), 403);
+
+        $report = Report::where('identifier', $uuid)->firstOrFail();
+
+        $validated = $request->validate([
+            'status' => ['required', 'in:Resolved,Rejected'],
+        ]);
+
+        // Status is a one-way decision. The conditional update also prevents
+        // two simultaneous requests from changing an already concluded report.
+        $updated = Report::query()
+            ->whereKey($report->getKey())
+            ->where('status', 'Pending')
+            ->update([
+                'status' => $validated['status'],
+                'updated_at' => now(),
+            ]);
+
+        abort_unless($updated === 1, 403);
+
+        $statusLabels = [
+            'Pending' => 'Menunggu',
+            'Resolved' => 'Selesai',
+            'Rejected' => 'Ditolak',
+        ];
+
+        return redirect()
+            ->route('reports.showDetail', ['uuid' => $report->identifier])
+            ->with('success', 'Status laporan berhasil diubah menjadi '.$statusLabels[$validated['status']].'.');
     }
 
     public function showEditReportPage(Request $request, string $uuid)
@@ -109,8 +143,8 @@ class ReportController
 
         abort_unless($report->status === 'Pending', 403);
 
-        $photos = Cache::remember('photos' . $report->identifier, $this->scramblrService->expiration, function () use ($report) {
-            $directory = 'reports/' . $report->id;
+        $photos = Cache::remember('photos'.$report->identifier, $this->scramblrService->expiration, function () use ($report) {
+            $directory = 'reports/'.$report->id;
             $files = Storage::disk('local')->exists($directory)
                 ? Storage::disk('local')->allFiles($directory)
                 : [];
@@ -153,7 +187,7 @@ class ReportController
         unset($validated['photos'], $validated['remove_photos']);
 
         $disk = Storage::disk('local');
-        $directory = 'reports/' . $report->id;
+        $directory = 'reports/'.$report->id;
         $currentPaths = $disk->exists($directory) ? $disk->allFiles($directory) : [];
         $removePaths = [];
 
@@ -166,7 +200,7 @@ class ReportController
                 ]);
             }
 
-            if (!$valid || !Str::startsWith($path, $directory . '/') || !in_array($path, $currentPaths, true)) {
+            if (! $valid || ! Str::startsWith($path, $directory.'/') || ! in_array($path, $currentPaths, true)) {
                 throw ValidationException::withMessages([
                     'remove_photos' => 'Foto yang dipilih tidak valid. Muat ulang halaman lalu coba lagi.',
                 ]);
@@ -192,7 +226,7 @@ class ReportController
         foreach ($newPhotos as $photo) {
             $photo->storeAs(
                 $directory,
-                Str::random(10) . '.' . $photo->extension(),
+                Str::random(10).'.'.$photo->extension(),
                 'local'
             );
         }
@@ -201,7 +235,7 @@ class ReportController
             $disk->delete($removePaths);
         }
 
-        Cache::forget('photos' . $report->identifier);
+        Cache::forget('photos'.$report->identifier);
 
         return redirect()
             ->route('reports.showDetail', ['uuid' => $report->identifier])

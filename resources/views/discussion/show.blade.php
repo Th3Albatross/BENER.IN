@@ -13,6 +13,7 @@
     $reportData = $_report ?? $report ?? null;
     $responses = collect($_responses ?? $responses ?? []);
     $currentUser = $_currentUser ?? auth()->user();
+    $discussionIsOpen = ($reportData->status ?? 'Pending') === 'Pending';
 
     if (!$reportData) {
         abort(404);
@@ -114,12 +115,12 @@
 
                             <div class="discussion-bubble">
                                 <p class="discussion-message-text">{{ $response->message }}</p>
-                                @if ($isOwnResponse)
+                                @if ($isOwnResponse && $discussionIsOpen)
                                     <button type="button" class="discussion-edit-trigger" aria-expanded="false">Edit</button>
                                 @endif
                             </div>
 
-                            @if ($isOwnResponse)
+                            @if ($isOwnResponse && $discussionIsOpen)
                                 <form class="discussion-edit-form" action="{{ route('responses.update', ['uuid' => $reportData->identifier, 'responseId' => $response->id]) }}" method="POST" hidden>
                                     @csrf
                                     @method('PATCH')
@@ -151,38 +152,45 @@
                 @endforelse
             </div>
 
-            <form class="discussion-composer" action="{{ route('responses.store', ['uuid' => $reportData->identifier]) }}" method="POST">
-                @csrf
-                <div class="discussion-composer-identity">
-                    <div class="discussion-avatar discussion-composer-avatar" aria-hidden="true">
-                        @if ($currentUser?->profile_photo_url)
-                            <img src="{{ $currentUser->profile_photo_url }}" alt="" loading="lazy" decoding="async">
-                        @else
-                            <span>{{ mb_strtoupper(mb_substr((string) ($currentUser?->name ?? 'U'), 0, 1)) }}</span>
+            @if ($discussionIsOpen)
+                <form class="discussion-composer" action="{{ route('responses.store', ['uuid' => $reportData->identifier]) }}" method="POST">
+                    @csrf
+                    <div class="discussion-composer-identity">
+                        <div class="discussion-avatar discussion-composer-avatar" aria-hidden="true">
+                            @if ($currentUser?->profile_photo_url)
+                                <img src="{{ $currentUser->profile_photo_url }}" alt="" loading="lazy" decoding="async">
+                            @else
+                                <span>{{ mb_strtoupper(mb_substr((string) ($currentUser?->name ?? 'U'), 0, 1)) }}</span>
+                            @endif
+                        </div>
+                        <div class="discussion-composer-identity-copy">
+                            <span>Mengirim sebagai</span>
+                            <strong>{{ $currentUser?->name ?? 'Pengguna' }}</strong>
+                        </div>
+                    </div>
+                    @if ($returnToDiscussions)
+                        <input type="hidden" name="from" value="discussions">
+                        <input type="hidden" name="status" value="{{ request()->query('status', 'all') }}">
+                        @if (request()->query('page'))
+                            <input type="hidden" name="page" value="{{ request()->query('page') }}">
                         @endif
-                    </div>
-                    <div class="discussion-composer-identity-copy">
-                        <span>Mengirim sebagai</span>
-                        <strong>{{ $currentUser?->name ?? 'Pengguna' }}</strong>
-                    </div>
-                </div>
-                @if ($returnToDiscussions)
-                    <input type="hidden" name="from" value="discussions">
-                    <input type="hidden" name="status" value="{{ request()->query('status', 'all') }}">
-                    @if (request()->query('page'))
-                        <input type="hidden" name="page" value="{{ request()->query('page') }}">
                     @endif
-                @endif
-                <label for="new-discussion-message">Tulis pesan</label>
-                <textarea id="new-discussion-message" name="message" rows="3" maxlength="5000" placeholder="Tulis pesan untuk pelapor atau petugas..." required>{{ old('message') }}</textarea>
-                <div class="discussion-composer-footer">
-                    <p>Gunakan bahasa yang sopan dan sampaikan informasi yang relevan dengan laporan.</p>
-                    <button type="submit" class="discussion-button discussion-button--primary">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m21 3-7.5 18-3.5-7-7-3.5z" /><path d="M10 14 21 3" /></svg>
-                        Kirim Pesan
-                    </button>
+                    <label for="new-discussion-message">Tulis pesan</label>
+                    <textarea id="new-discussion-message" name="message" rows="3" maxlength="5000" placeholder="Tulis pesan untuk pelapor atau petugas..." required>{{ old('message') }}</textarea>
+                    <div class="discussion-composer-footer">
+                        <p>Gunakan bahasa yang sopan dan sampaikan informasi yang relevan dengan laporan.</p>
+                        <button type="submit" class="discussion-button discussion-button--primary">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m21 3-7.5 18-3.5-7-7-3.5z" /><path d="M10 14 21 3" /></svg>
+                            Kirim Pesan
+                        </button>
+                    </div>
+                </form>
+            @else
+                <div class="discussion-closed-notice" role="status">
+                    <strong>Diskusi ditutup</strong>
+                    <span>Status laporan sudah {{ $reportData->status === 'Resolved' ? 'selesai' : 'ditolak' }}. Riwayat percakapan ini hanya dapat dibaca.</span>
                 </div>
-            </form>
+            @endif
         </div>
     </section>
 </div>

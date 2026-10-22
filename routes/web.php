@@ -17,6 +17,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/reports/create', 'showCreateReportPage')->name('reports.showCreate');
         Route::get('/reports/{uuid}/edit', 'showEditReportPage')->name('reports.showEdit');
         Route::put('/reports/{uuid}', 'updateReport')->name('reports.update');
+        Route::patch('/reports/{uuid}/status', 'updateStatus')->name('reports.updateStatus');
         Route::get('/reports/{uuid}', 'showReportDetailPage')->name('reports.showDetail');
     });
 

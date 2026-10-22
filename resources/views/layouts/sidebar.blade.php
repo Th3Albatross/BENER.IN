@@ -32,8 +32,7 @@
             <a
                 href="{{ url('/dashboard') }}"
                 class="nav-item {{ request()->is('dashboard') ? 'nav-item--active' : '' }}"
-                data-sidebar-dashboard-link
-                @if (request()->is('dashboard') && !$isStaffSide) aria-current="page" @endif
+                @if (request()->is('dashboard')) aria-current="page" @endif
             >
                 <span class="nav-item__icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
@@ -45,20 +44,6 @@
             </a>
 
             @if ($isStaffSide)
-                <a
-                    href="{{ url('/dashboard#staff-reports') }}"
-                    class="nav-item"
-                    data-sidebar-management-link
-                >
-                    <span class="nav-item__icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="5" y="3.5" width="14" height="17" rx="2"></rect>
-                            <path d="M8.5 8h7M8.5 12h7M8.5 16h4"></path>
-                        </svg>
-                    </span>
-                    <span>Manajemen Laporan</span>
-                </a>
-
                 <a
                     href="{{ route('analytics.index') }}"
                     class="nav-item {{ request()->is('analytics') ? 'nav-item--active' : '' }}"
@@ -144,33 +129,3 @@
         </div>
     </div>
 </aside>
-
-@if ($isStaffSide && request()->is('dashboard'))
-    @push('scripts')
-        <script>
-            (() => {
-                const dashboardLink = document.querySelector('[data-sidebar-dashboard-link]');
-                const managementLink = document.querySelector('[data-sidebar-management-link]');
-
-                if (!dashboardLink || !managementLink) return;
-
-                const syncSidebarActiveLink = () => {
-                    const onReportManagement = window.location.hash === '#staff-reports';
-                    dashboardLink.classList.toggle('nav-item--active', !onReportManagement);
-                    managementLink.classList.toggle('nav-item--active', onReportManagement);
-
-                    if (onReportManagement) {
-                        dashboardLink.removeAttribute('aria-current');
-                        managementLink.setAttribute('aria-current', 'page');
-                    } else {
-                        dashboardLink.setAttribute('aria-current', 'page');
-                        managementLink.removeAttribute('aria-current');
-                    }
-                };
-
-                syncSidebarActiveLink();
-                window.addEventListener('hashchange', syncSidebarActiveLink);
-            })();
-        </script>
-    @endpush
-@endif

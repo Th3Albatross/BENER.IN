@@ -25,6 +25,7 @@
         ->filter(fn ($token) => is_string($token) && $token !== '')
         ->values();
     $reportIdentifier = $reportData->identifier ?? null;
+    $isStaff = (bool) ($_isStaff ?? false);
     $hasBlobServeRoute = \Illuminate\Support\Facades\Route::has('blob.serve');
 @endphp
 
@@ -36,9 +37,15 @@
             </svg>
             <span>Kembali ke Dashboard</span>
         </a>
-        @if ($reportIdentifier)
-            <span class="report-show-reference" title="Kode referensi laporan">{{ $reportIdentifier }}</span>
-        @endif
+        <div class="report-show-toolbar-actions">
+            @if ($reportIdentifier)
+                <span class="report-show-reference" title="Kode referensi laporan">{{ $reportIdentifier }}</span>
+            @endif
+            <button type="button" class="report-show-button report-show-button--outline report-show-print-button" data-report-print title="Buka dialog cetak, lalu pilih Simpan sebagai PDF">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 9V4h12v5M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6z"/><path d="M17 12h.01"/></svg>
+                <span>Ekspor PDF</span>
+            </button>
+        </div>
     </div>
 
     @if (session('success'))
@@ -195,6 +202,24 @@
                             <strong>{{ $reportData->edit_count ?? 0 }} kali</strong>
                         </div>
                     </div>
+
+                    @if ($isStaff && ($reportData->status ?? 'Pending') === 'Pending')
+                        <form method="POST" action="{{ route('reports.updateStatus', ['uuid' => $reportIdentifier]) }}" class="report-show-status-management">
+                            @csrf
+                            @method('PATCH')
+                            <label for="report-status">Ubah status laporan</label>
+                            <div class="report-show-status-management-row">
+                                <select id="report-status" name="status">
+                                    <option value="Resolved" @selected(($reportData->status ?? '') === 'Resolved')>Selesai</option>
+                                    <option value="Rejected" @selected(($reportData->status ?? '') === 'Rejected')>Ditolak</option>
+                                </select>
+                                <button type="submit" class="report-show-status-submit">Simpan</button>
+                            </div>
+                            @error('status')
+                                <span class="report-show-field-error">{{ $message }}</span>
+                            @enderror
+                        </form>
+                    @endif
                 </div>
             </section>
 
@@ -333,6 +358,8 @@
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape') closeLightbox();
         });
+
+        document.querySelector('[data-report-print]')?.addEventListener('click', () => window.print());
     })();
 </script>
 @endpush
