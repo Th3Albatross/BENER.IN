@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#ffffff">
-    <title>Login — BENER.IN</title>
+    <meta name="theme-color" content="#f2f3f5">
+    <title>Masuk — BENER.IN</title>
 
     @vite('resources/css/auth-login.css')
 </head>
@@ -22,10 +22,10 @@
         <section class="login-content">
             <div class="login-grid">
                 <section class="intro-panel" aria-labelledby="login-title">
-                    <div class="eyebrow">Student portal</div>
-                    <h1 id="login-title">Login</h1>
+                    <div class="eyebrow">Portal Fasilitas Sekolah</div>
+                    <h1 id="login-title">Masuk</h1>
                     <p class="intro-copy">
-                        Use your student credentials to continue.
+                        Gunakan akunmu untuk melanjutkan.
                     </p>
 
                     <div class="hero-card" aria-hidden="true">
@@ -35,8 +35,8 @@
 
                         <div class="hero-content">
                             <span class="hero-chip">BENER.IN</span>
-                            <div class="hero-title">Your campus,<br>in one place.</div>
-                            <p class="hero-subtitle">Simple access to your student services.</p>
+                            <div class="hero-title">Laporkan fasilitas,<br>dalam satu tempat.</div>
+                            <p class="hero-subtitle">Akses mudah ke layanan pelaporan fasilitas sekolah.</p>
                         </div>
 
                         <div class="hero-orbit hero-orbit-one"></div>
@@ -47,12 +47,12 @@
 
                 <section class="form-panel" aria-labelledby="welcome-title">
                     <div class="form-heading">
-                        <div class="form-kicker">Account access</div>
-                        <h2 id="welcome-title">Welcome back!</h2>
-                        <p>Sign in with your student credentials.</p>
+                        <div class="form-kicker">Akses Akun</div>
+                        <h2 id="welcome-title">Selamat datang kembali!</h2>
+                        <p>Masuk menggunakan akunmu.</p>
                     </div>
 
-                    <form method="POST" action="#" class="login-form">
+                    <form method="POST" action="{{ route('login') }}" class="login-form">
                         @csrf
 
                         <div class="field-group">
@@ -67,7 +67,7 @@
                                     type="email"
                                     name="email"
                                     value="{{ old('email') }}"
-                                    placeholder="Enter your email"
+                                    placeholder="Masukkan email kamu"
                                     autocomplete="username"
                                     required
                                 >
@@ -76,7 +76,7 @@
 
                         <div class="field-group">
                             <div class="field-label-row">
-                                <label for="password">Password</label>
+                                <label for="password">Kata Sandi</label>
                             </div>
 
                             <div class="input-wrap">
@@ -88,11 +88,11 @@
                                     id="password"
                                     type="password"
                                     name="password"
-                                    placeholder="Enter your password"
+                                    placeholder="Masukkan kata sandi kamu"
                                     autocomplete="current-password"
                                     required
                                 >
-                                <button class="password-toggle" type="button" data-password-toggle aria-label="Show password">
+                                <button class="password-toggle" type="button" data-password-toggle aria-label="Tampilkan kata sandi">
                                     <svg class="eye-icon eye-icon-open" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                         <path d="M2.8 12s3.25-5 9.2-5 9.2 5 9.2 5-3.25 5-9.2 5-9.2-5-9.2-5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
                                         <circle cx="12" cy="12" r="2.3" stroke="currentColor" stroke-width="1.7"/>
@@ -113,13 +113,13 @@
                             <label class="remember-option">
                                 <input type="checkbox" name="remember" value="1">
                                 <span class="custom-checkbox" aria-hidden="true"></span>
-                                <span>Remember me</span>
+                                <span>Ingat saya</span>
                             </label>
                         </div>
 
                         <div class="form-actions">
                             <button type="submit" class="primary-action">
-                                <span>Submit</span>
+                                <span>Masuk</span>
                                 <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                     <path d="M5 12h13M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
                                 </svg>
@@ -128,7 +128,7 @@
                     </form>
 
                     <p class="form-note">
-                        By continuing, you agree to use your assigned student account.
+                        Dengan melanjutkan, kamu setuju menggunakan akun yang telah diberikan kepadamu.
                     </p>
                 </section>
             </div>
@@ -137,7 +137,7 @@
         <footer class="site-footer">
             <span>© {{ date('Y') }} BENER.IN</span>
             <span class="footer-separator"></span>
-            <span>Student access portal</span>
+            <span>Portal fasilitas sekolah</span>
         </footer>
     </main>
 
@@ -151,7 +151,7 @@
             toggle.addEventListener('click', () => {
                 const isPassword = password.type === 'password';
                 password.type = isPassword ? 'text' : 'password';
-                toggle.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+                toggle.setAttribute('aria-label', isPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi');
                 toggle.classList.toggle('is-visible', isPassword);
             });
         });
