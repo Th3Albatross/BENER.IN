@@ -10,11 +10,12 @@ use Illuminate\Support\Facades\Storage;
 
 class ResponsesController
 {
-    private const STAFF_ROLES = ['petugas', 'attendant', 'staff', 'admin'];
-
     private const VALID_STATUSES = ['all', 'Pending', 'Resolved', 'Rejected'];
 
     private const PROFILE_PHOTO_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
+
+    /** @var array<int, string|null> */
+    private array $profilePhotoUrls = [];
 
     public function __construct(
         protected ScramblrService $scramblrService
@@ -23,7 +24,7 @@ class ResponsesController
     public function index(Request $request)
     {
         $user = $request->user();
-        $isStaff = $this->isStaff($user);
+        $isStaff = $user->isStaff();
         $statusFilter = $request->query('status', 'all');
 
         if (! in_array($statusFilter, self::VALID_STATUSES, true)) {
@@ -89,7 +90,7 @@ class ResponsesController
 
         $user = $request->user();
         abort_unless(
-            (int) $report->users_id === (int) $user->id || $this->isStaff($user),
+            (int) $report->users_id === (int) $user->id || $user->isStaff(),
             403
         );
 
@@ -121,7 +122,7 @@ class ResponsesController
 
         $user = $request->user();
         abort_unless(
-            (int) $report->users_id === (int) $user->id || $this->isStaff($user),
+            (int) $report->users_id === (int) $user->id || $user->isStaff(),
             403
         );
         abort_unless($report->status === 'Pending', 403);
@@ -148,7 +149,7 @@ class ResponsesController
 
         $user = $request->user();
         abort_unless(
-            (int) $report->users_id === (int) $user->id || $this->isStaff($user),
+            (int) $report->users_id === (int) $user->id || $user->isStaff(),
             403
         );
         abort_unless($report->status === 'Pending', 403);
@@ -179,15 +180,17 @@ class ResponsesController
             return;
         }
 
-        $path = $this->findProfilePhotoPath($user);
-        $user->setAttribute(
-            'profile_photo_url',
-            $path
+        $userId = (int) $user->getKey();
+        if (! array_key_exists($userId, $this->profilePhotoUrls)) {
+            $path = $this->findProfilePhotoPath($user);
+            $this->profilePhotoUrls[$userId] = $path
                 ? route('blob.serve', [
                     'scrambldToken' => $this->scramblrService->Scramble($path),
                 ])
-                : null
-        );
+                : null;
+        }
+
+        $user->setAttribute('profile_photo_url', $this->profilePhotoUrls[$userId]);
     }
 
     private function findProfilePhotoPath(User $user): ?string
@@ -195,19 +198,15 @@ class ResponsesController
         $disk = Storage::disk('local');
         $directory = 'profile-photos/'.$user->getKey();
 
+        $files = $disk->files($directory);
         foreach (self::PROFILE_PHOTO_EXTENSIONS as $extension) {
             $path = $directory.'/avatar.'.$extension;
-            if ($disk->exists($path)) {
+            if (in_array($path, $files, true)) {
                 return $path;
             }
         }
 
         return null;
-    }
-
-    private function isStaff(User $user): bool
-    {
-        return in_array(mb_strtolower((string) $user->role), self::STAFF_ROLES, true);
     }
 
     private function returnParams(Request $request, Report $report): array

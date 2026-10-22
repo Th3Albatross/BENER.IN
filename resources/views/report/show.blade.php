@@ -61,7 +61,11 @@
             <h2 id="report-show-title">{{ $reportData->title }}</h2>
             <p class="report-show-subtitle">
                 Dibuat pada
-                {{ $reportData->created_at ? \Illuminate\Support\Carbon::parse($reportData->created_at)->format('d M Y, H:i') : 'tanggal tidak tersedia' }}
+                @if ($reportData->created_at)
+                    <time data-local-time datetime="{{ \Illuminate\Support\Carbon::parse($reportData->created_at)->toIso8601String() }}">{{ \Illuminate\Support\Carbon::parse($reportData->created_at)->locale('id')->translatedFormat('d M Y, H:i') }}</time>
+                @else
+                    tanggal tidak tersedia
+                @endif
             </p>
         </div>
 
@@ -120,11 +124,23 @@
                         </div>
                         <div class="report-show-info-item">
                             <dt>Tanggal dibuat</dt>
-                            <dd>{{ $reportData->created_at ? \Illuminate\Support\Carbon::parse($reportData->created_at)->format('d M Y, H:i') : '—' }}</dd>
+                            <dd>
+                                @if ($reportData->created_at)
+                                    <time data-local-time datetime="{{ \Illuminate\Support\Carbon::parse($reportData->created_at)->toIso8601String() }}">{{ \Illuminate\Support\Carbon::parse($reportData->created_at)->locale('id')->translatedFormat('d M Y, H:i') }}</time>
+                                @else
+                                    —
+                                @endif
+                            </dd>
                         </div>
                         <div class="report-show-info-item">
                             <dt>Terakhir diperbarui</dt>
-                            <dd>{{ $reportData->updated_at ? \Illuminate\Support\Carbon::parse($reportData->updated_at)->format('d M Y, H:i') : '—' }}</dd>
+                            <dd>
+                                @if ($reportData->updated_at)
+                                    <time data-local-time datetime="{{ \Illuminate\Support\Carbon::parse($reportData->updated_at)->toIso8601String() }}">{{ \Illuminate\Support\Carbon::parse($reportData->updated_at)->locale('id')->translatedFormat('d M Y, H:i') }}</time>
+                                @else
+                                    —
+                                @endif
+                            </dd>
                         </div>
                     </dl>
                 </div>

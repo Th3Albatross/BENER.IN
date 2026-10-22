@@ -6,8 +6,6 @@ use App\Models\Category;
 use App\Models\Facility;
 use App\Models\Report;
 use App\Models\User;
-use Database\Factories\FacilityFactory;
-use Database\Factories\UserFactory;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -24,10 +22,10 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        //User::factory()->create([
+        // User::factory()->create([
         //    'name' => 'Test User',
         //    'email' => 'test@example.com',
-        //]);
+        // ]);
         /*$admin = User::create([
             'name' => 'admin',
             'email' => 'admin@example.com',
@@ -39,7 +37,7 @@ class DatabaseSeeder extends Seeder
         $user = User::create([
             'name' => 'Fajar',
             'email' => 'user@user.com',
-            'role' => 'user',
+            'role' => 'siswa',
             'password' => Hash::make('ifallapart'),
             'remember_token' => Str::random(10)
         ]);
@@ -51,13 +49,12 @@ class DatabaseSeeder extends Seeder
         $categories->create();
         $facilities->create();*/
 
-
         $petugas = User::create([
             'name' => 'Void',
             'email' => 'petugas@pet.ugas',
             'role' => 'petugas',
             'password' => Hash::make('ifallapart'),
-            'remember_token' => Str::random(10)
+            'remember_token' => Str::random(10),
         ]);
 
         /*Report::factory(72)

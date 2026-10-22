@@ -103,8 +103,8 @@
                             <td>{{ $report->category?->name ?? 'Belum dikategorikan' }}</td>
                             <td><span class="severity-badge {{ $severityClass }}">{{ $severityLabel }}</span></td>
                             <td><span class="status-badge {{ $statusClass }}">{{ $statusLabel }}</span></td>
-                            <td class="report-date">{{ \Illuminate\Support\Carbon::parse($report->created_at)->locale('id')->translatedFormat('d M Y, H:i') }}</td>
-                            <td class="report-date">{{ \Illuminate\Support\Carbon::parse($lastActivity)->locale('id')->translatedFormat('d M Y, H:i') }}</td>
+                            <td class="report-date"><time data-local-time datetime="{{ \Illuminate\Support\Carbon::parse($report->created_at)->toIso8601String() }}">{{ \Illuminate\Support\Carbon::parse($report->created_at)->locale('id')->translatedFormat('d M Y, H:i') }}</time></td>
+                            <td class="report-date"><time data-local-time datetime="{{ \Illuminate\Support\Carbon::parse($lastActivity)->toIso8601String() }}">{{ \Illuminate\Support\Carbon::parse($lastActivity)->locale('id')->translatedFormat('d M Y, H:i') }}</time></td>
                             <td>
                                 <div class="student-report-actions">
                                     <a class="staff-view-report" href="{{ route('reports.showDetail', ['uuid' => $report->identifier]) }}">Detail <span aria-hidden="true">→</span></a>

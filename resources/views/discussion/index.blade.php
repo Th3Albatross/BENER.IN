@@ -102,7 +102,7 @@
                             </td>
                             <td class="discussion-date">
                                 @php $activityAt = $report->responses_max_created_at ?: $report->updated_at; @endphp
-                                {{ \Illuminate\Support\Carbon::parse($activityAt)->locale('id')->translatedFormat('d M Y, H:i') }}
+                                <time data-local-time datetime="{{ \Illuminate\Support\Carbon::parse($activityAt)->toIso8601String() }}">{{ \Illuminate\Support\Carbon::parse($activityAt)->locale('id')->translatedFormat('d M Y, H:i') }}</time>
                             </td>
                             <td>
                                 <a class="discussion-open-button" href="{{ route('responses.show', [

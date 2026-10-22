@@ -1,16 +1,18 @@
 @php
     $sidebarUser = auth()->user();
-    $sidebarRole = strtolower(trim((string) ($sidebarUser->role ?? '')));
-    $isStaffSide = in_array($sidebarRole, ['petugas', 'attendant', 'staff', 'admin'], true);
+    $isStaffSide = $sidebarUser?->isStaff() ?? false;
 
     $sidebarHasPhoto = false;
     $sidebarPhotoUrl = null;
 
     if ($sidebarUser) {
-        foreach (['jpg', 'jpeg', 'png', 'webp'] as $sidebarExtension) {
-            $sidebarPhotoPath = 'profile-photos/' . $sidebarUser->getKey() . '/avatar.' . $sidebarExtension;
+        $sidebarPhotoDirectory = 'profile-photos/'.$sidebarUser->getKey();
+        $sidebarPhotoFiles = \Illuminate\Support\Facades\Storage::disk('local')->files($sidebarPhotoDirectory);
 
-            if (\Illuminate\Support\Facades\Storage::disk('local')->exists($sidebarPhotoPath)) {
+        foreach (['jpg', 'jpeg', 'png', 'webp'] as $sidebarExtension) {
+            $sidebarPhotoPath = $sidebarPhotoDirectory.'/avatar.'.$sidebarExtension;
+
+            if (in_array($sidebarPhotoPath, $sidebarPhotoFiles, true)) {
                 $sidebarHasPhoto = true;
                 $sidebarPhotoUrl = route('blob.serve', [
                     'scrambldToken' => app(\App\Services\ScramblrService::class)->Scramble($sidebarPhotoPath),

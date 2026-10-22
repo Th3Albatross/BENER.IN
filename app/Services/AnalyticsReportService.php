@@ -57,21 +57,38 @@ class AnalyticsReportService
 
         $baseQuery = Report::query();
 
-        if (!$allTime) {
+        if (! $allTime) {
             $baseQuery->where('reports.created_at', '>=', $start)
                 ->where('reports.created_at', '<=', $end);
         }
 
-        $total = (int) (clone $baseQuery)->count('reports.id');
-        $statusCounts = (clone $baseQuery)
-            ->selectRaw('reports.status as label, COUNT(reports.id) as total')
-            ->groupBy('reports.status')
-            ->pluck('total', 'label');
+        // Keep the headline counts in one aggregate query instead of issuing
+        // separate COUNT/GROUP BY queries for every status and severity.
+        $aggregate = (clone $baseQuery)
+            ->selectRaw(<<<'SQL'
+                COUNT(reports.id) as total,
+                COALESCE(SUM(CASE WHEN reports.status = 'Pending' THEN 1 ELSE 0 END), 0) as pending,
+                COALESCE(SUM(CASE WHEN reports.status = 'Resolved' THEN 1 ELSE 0 END), 0) as resolved,
+                COALESCE(SUM(CASE WHEN reports.status = 'Rejected' THEN 1 ELSE 0 END), 0) as rejected,
+                COALESCE(SUM(CASE WHEN reports.severity = 'Low' THEN 1 ELSE 0 END), 0) as low,
+                COALESCE(SUM(CASE WHEN reports.severity = 'Medium' THEN 1 ELSE 0 END), 0) as medium,
+                COALESCE(SUM(CASE WHEN reports.severity = 'High' THEN 1 ELSE 0 END), 0) as high,
+                COALESCE(SUM(CASE WHEN reports.severity = 'Critical' THEN 1 ELSE 0 END), 0) as critical
+            SQL)
+            ->first();
 
-        $severityCounts = (clone $baseQuery)
-            ->selectRaw('reports.severity as label, COUNT(reports.id) as total')
-            ->groupBy('reports.severity')
-            ->pluck('total', 'label');
+        $total = (int) ($aggregate->total ?? 0);
+        $statusCounts = collect([
+            'Pending' => (int) ($aggregate->pending ?? 0),
+            'Resolved' => (int) ($aggregate->resolved ?? 0),
+            'Rejected' => (int) ($aggregate->rejected ?? 0),
+        ]);
+        $severityCounts = collect([
+            'Low' => (int) ($aggregate->low ?? 0),
+            'Medium' => (int) ($aggregate->medium ?? 0),
+            'High' => (int) ($aggregate->high ?? 0),
+            'Critical' => (int) ($aggregate->critical ?? 0),
+        ]);
 
         $categories = (clone $baseQuery)
             ->leftJoin('categories', 'reports.categories_id', '=', 'categories.id')
@@ -148,7 +165,7 @@ class AnalyticsReportService
      * Derived, read-only indicators shown next to the raw counts. They are kept
      * outside "summary" so the base counts keep a stable, minimal shape.
      *
-     * @param array{display_start: ?CarbonImmutable, display_end: ?CarbonImmutable, trend_start: ?CarbonImmutable, trend_end: ?CarbonImmutable} $periodRange
+     * @param  array{display_start: ?CarbonImmutable, display_end: ?CarbonImmutable, trend_start: ?CarbonImmutable, trend_end: ?CarbonImmutable}  $periodRange
      * @return array{resolution_rate: ?float, urgent_open: int, daily_average: ?float, previous_total: ?int, change_percent: ?float}
      */
     private function buildInsights(
@@ -199,7 +216,7 @@ class AnalyticsReportService
     /** @return array{display_start: ?CarbonImmutable, display_end: ?CarbonImmutable, trend_start: ?CarbonImmutable, trend_end: ?CarbonImmutable} */
     private function periodRange(?CarbonImmutable $start, ?CarbonImmutable $end, bool $allTime): array
     {
-        if (!$allTime) {
+        if (! $allTime) {
             return [
                 'display_start' => $start,
                 'display_end' => $end,
@@ -208,10 +225,13 @@ class AnalyticsReportService
             ];
         }
 
-        $firstCreatedAt = (clone Report::query())->min('reports.created_at');
-        $lastCreatedAt = (clone Report::query())->max('reports.created_at');
+        $createdRange = Report::query()
+            ->selectRaw('MIN(reports.created_at) as first_created_at, MAX(reports.created_at) as last_created_at')
+            ->first();
+        $firstCreatedAt = $createdRange?->first_created_at;
+        $lastCreatedAt = $createdRange?->last_created_at;
 
-        if (!$firstCreatedAt || !$lastCreatedAt) {
+        if (! $firstCreatedAt || ! $lastCreatedAt) {
             return [
                 'display_start' => null,
                 'display_end' => null,
@@ -254,7 +274,7 @@ class AnalyticsReportService
 
         $bucketExpression = $this->bucketExpression($granularity);
         $totalsByBucket = $query
-            ->selectRaw($bucketExpression . ' as bucket, COUNT(reports.id) as total')
+            ->selectRaw($bucketExpression.' as bucket, COUNT(reports.id) as total')
             ->groupByRaw($bucketExpression)
             ->orderBy('bucket')
             ->get()
@@ -301,8 +321,8 @@ class AnalyticsReportService
                 'mysql', 'mariadb' => "DATE_FORMAT(reports.created_at, '%Y-%m')",
                 'sqlite' => "strftime('%Y-%m', reports.created_at)",
                 'pgsql' => "TO_CHAR(DATE_TRUNC('month', reports.created_at), 'YYYY-MM')",
-                'sqlsrv' => "CONVERT(char(7), reports.created_at, 126)",
-                default => throw new LogicException('Database driver belum didukung untuk tren Analytics: ' . $driver),
+                'sqlsrv' => 'CONVERT(char(7), reports.created_at, 126)',
+                default => throw new LogicException('Database driver belum didukung untuk tren Analytics: '.$driver),
             };
         }
 
@@ -310,7 +330,7 @@ class AnalyticsReportService
             'mysql', 'mariadb', 'sqlite' => 'DATE(reports.created_at)',
             'pgsql' => 'CAST(reports.created_at AS DATE)',
             'sqlsrv' => 'CAST(reports.created_at AS date)',
-            default => throw new LogicException('Database driver belum didukung untuk tren Analytics: ' . $driver),
+            default => throw new LogicException('Database driver belum didukung untuk tren Analytics: '.$driver),
         };
     }
 }

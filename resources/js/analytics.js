@@ -399,6 +399,15 @@ const renderRanking = (id, rows, colors) => {
 /** Mark the page so the person sees a message instead of silent, empty panels. */
 const markFailed = () => page?.classList.add('analytics-page--charts-failed');
 
+/** Keep the failure notice in the module instead of adding a second inline script to the view. */
+const initChartWatchdog = () => {
+    if (!page?.querySelector('canvas')) return;
+
+    window.setTimeout(() => {
+        if (!page.dataset.chartsReady) markFailed();
+    }, 1500);
+};
+
 /** Draw one chart; a failure only affects its own panel and is logged to the console. */
 const drawSafely = (canvasId, draw) => {
     try {
@@ -453,8 +462,9 @@ const initCharts = () => {
 if (page) {
     initFilterForm();
     initPrint();
+    initChartWatchdog();
 
-    // A flag the inline watchdog in the view looks for: it proves this script was loaded and ran.
+    // The flag proves this module loaded and attempted to render the charts.
     const ok = initCharts();
     page.dataset.chartsReady = ok ? 'true' : 'partial';
 }

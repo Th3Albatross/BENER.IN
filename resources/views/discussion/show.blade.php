@@ -109,7 +109,7 @@
                                 <strong>{{ $senderName }}</strong>
                                 <span class="discussion-role">{{ $senderRole }}</span>
                                 @if ($responseDate)
-                                    <time datetime="{{ \Illuminate\Support\Carbon::parse($responseDate)->toIso8601String() }}">{{ \Illuminate\Support\Carbon::parse($responseDate)->format('d M Y, H:i') }}</time>
+                                    <time data-local-time datetime="{{ \Illuminate\Support\Carbon::parse($responseDate)->toIso8601String() }}">{{ \Illuminate\Support\Carbon::parse($responseDate)->locale('id')->translatedFormat('d M Y, H:i') }}</time>
                                 @endif
                             </div>
 

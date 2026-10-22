@@ -12,13 +12,15 @@ use Illuminate\Http\Request;
 class DashboardController
 {
     private const STATUSES = ['Pending', 'Rejected', 'Resolved'];
+
     private const SEVERITIES = ['Low', 'Medium', 'High', 'Critical'];
+
     private const SORT_OPTIONS = ['newest', 'oldest', 'user_asc', 'user_desc', 'severity_high', 'severity_low'];
 
     public function show(Request $request)
     {
         $user = $request->user();
-        $isStaff = $this->isStaff($user);
+        $isStaff = $user->isStaff();
 
         $statusFilter = $request->query('status');
         $statusFilter = in_array($statusFilter, self::STATUSES, true) ? $statusFilter : null;
@@ -44,7 +46,7 @@ class DashboardController
 
         // Staff can view all reports. Students remain scoped to their own reports.
         $baseQuery = Report::query();
-        if (!$isStaff) {
+        if (! $isStaff) {
             $baseQuery->where('reports.users_id', $user->id);
         }
 
@@ -55,7 +57,7 @@ class DashboardController
 
         $categoryStats = (clone $baseQuery)
             ->leftJoin('categories', 'reports.categories_id', '=', 'categories.id')
-            ->selectRaw("COALESCE(categories.name, ?) as category_name, COUNT(reports.id) as total", ['Belum dikategorikan'])
+            ->selectRaw('COALESCE(categories.name, ?) as category_name, COUNT(reports.id) as total', ['Belum dikategorikan'])
             ->groupBy('categories.id', 'categories.name')
             ->orderByDesc('total')
             ->get();
@@ -92,11 +94,11 @@ class DashboardController
 
             if ($search !== '') {
                 $filteredQuery->where(function (Builder $query) use ($search) {
-                    $query->where('reports.title', 'like', '%' . $search . '%')
-                        ->orWhere('reports.location_description', 'like', '%' . $search . '%')
+                    $query->where('reports.title', 'like', '%'.$search.'%')
+                        ->orWhere('reports.location_description', 'like', '%'.$search.'%')
                         ->orWhereHas('user', function (Builder $userQuery) use ($search) {
-                            $userQuery->where('name', 'like', '%' . $search . '%')
-                                ->orWhere('email', 'like', '%' . $search . '%');
+                            $userQuery->where('name', 'like', '%'.$search.'%')
+                                ->orWhere('email', 'like', '%'.$search.'%');
                         });
 
                     if (ctype_digit($search)) {
@@ -191,10 +193,5 @@ class DashboardController
         }
 
         return view('dashboard.index', $viewData);
-    }
-
-    private function isStaff($user): bool
-    {
-        return in_array(strtolower(trim((string) ($user->role ?? ''))), ['petugas', 'attendant', 'staff', 'admin'], true);
     }
 }

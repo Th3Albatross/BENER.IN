@@ -32,6 +32,28 @@
         </main>
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const formatter = new Intl.DateTimeFormat('id-ID', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+            });
+
+            document.querySelectorAll('time[data-local-time]').forEach((element) => {
+                const value = element.getAttribute('datetime');
+                if (!value) return;
+
+                const date = new Date(value);
+                if (Number.isNaN(date.getTime())) return;
+
+                element.textContent = formatter.format(date);
+            });
+        });
+    </script>
+
     @stack('scripts')
 </body>
 </html>

@@ -9,16 +9,11 @@ use Illuminate\Validation\Rule;
 
 class AnalyticsController
 {
-    private const STAFF_ROLES = ['petugas', 'attendant', 'staff', 'admin'];
-
     /** Show the Staff-only Analytics dashboard for the selected report period. */
     public function index(Request $request, AnalyticsReportService $analyticsReportService)
     {
         $user = $request->user();
-        abort_unless(
-            $user && in_array(strtolower(trim((string) ($user->role ?? ''))), self::STAFF_ROLES, true),
-            403
-        );
+        abort_unless($user?->isStaff(), 403);
 
         // A missing period uses the default preset; all other values are validated.
         $request->merge(['period' => $request->query('period', '30d')]);
@@ -53,7 +48,7 @@ class AnalyticsController
     }
 
     /**
-     * @param array{period: string, start_date?: string|null, end_date?: string|null} $filters
+     * @param  array{period: string, start_date?: string|null, end_date?: string|null}  $filters
      * @return array{0: ?CarbonImmutable, 1: ?CarbonImmutable, 2: string}
      */
     private function resolvePeriod(array $filters): array
@@ -73,7 +68,7 @@ class AnalyticsController
             return [
                 $start,
                 $end,
-                $start->format('d/m/Y') . ' – ' . $end->format('d/m/Y'),
+                $start->format('d/m/Y').' – '.$end->format('d/m/Y'),
             ];
         }
 

@@ -20,7 +20,7 @@ class ReportController
 
     public function showCreateReportPage(Request $request)
     {
-        abort_if($this->isStaff($request->user()), 403);
+        abort_if($request->user()->isStaff(), 403);
 
         return view('report.create', [
             'categories' => Category::all(),
@@ -31,7 +31,7 @@ class ReportController
 
     public function createReport(Request $request)
     {
-        abort_if($this->isStaff($request->user()), 403);
+        abort_if($request->user()->isStaff(), 403);
 
         $validated = $request->validate([
             'identifier' => ['required', 'uuid:7', 'unique:reports,identifier'],
@@ -70,7 +70,7 @@ class ReportController
         $query = Report::where('reports.identifier', $uuid);
 
         // Staff may review reports from every student; students remain owner-scoped.
-        if (! $this->isStaff($user)) {
+        if (! $user->isStaff()) {
             $query->where('reports.users_id', $user->id);
         }
 
@@ -98,13 +98,13 @@ class ReportController
         return view('report.show', [
             '_report' => $report,
             '_photos' => $photos,
-            '_isStaff' => $this->isStaff($user),
+            '_isStaff' => $user->isStaff(),
         ]);
     }
 
     public function updateStatus(Request $request, string $uuid)
     {
-        abort_unless($this->isStaff($request->user()), 403);
+        abort_unless($request->user()->isStaff(), 403);
 
         $report = Report::where('identifier', $uuid)->firstOrFail();
 
@@ -240,10 +240,5 @@ class ReportController
         return redirect()
             ->route('reports.showDetail', ['uuid' => $report->identifier])
             ->with('success', 'Perubahan laporan berhasil disimpan.');
-    }
-
-    private function isStaff($user): bool
-    {
-        return in_array(strtolower(trim((string) ($user->role ?? ''))), ['petugas', 'attendant', 'staff', 'admin'], true);
     }
 }

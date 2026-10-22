@@ -291,20 +291,6 @@
         <p>Statistik menggunakan tanggal laporan dibuat dan status yang tersimpan saat ini. Durasi penyelesaian tidak ditampilkan karena belum ada timestamp historis yang memastikan waktu perubahan status menjadi selesai.</p>
     </aside>
 
-    @if ($hasReports)
-        {{-- If the Vite script never ran (not built, not served, import failed), say so instead of leaving blank panels. --}}
-        <script>
-            window.addEventListener('load', () => {
-                setTimeout(() => {
-                    const page = document.querySelector('.analytics-page');
-                    if (page && page.querySelector('canvas') && !page.dataset.chartsReady) {
-                        page.classList.add('analytics-page--charts-failed');
-                    }
-                }, 1500);
-            });
-        </script>
-    @endif
-
     <script type="application/json" id="analytics-chart-data">@json($chartPayload, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT)</script>
 </div>
 @endsection
