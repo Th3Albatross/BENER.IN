@@ -9,13 +9,16 @@ export default defineConfig({
             input: [
                 'resources/css/app.css',
                 'resources/css/layouts/app.css',
-                'resources/css/dashboard/dashboard.css',
+                'resources/css/dashboard.css',
+                'resources/css/settings.css',
+                'resources/css/analytics.css',
                 'resources/css/report-create.css',
                 'resources/css/report-show.css',
                 'resources/css/auth-login.css',
                 'resources/css/discussion.css',
                 'resources/css/discussion-index.css',
                 'resources/js/auth-login.js',
+                'resources/js/analytics.js',
                 'resources/js/app.js'
             ],
             refresh: true,

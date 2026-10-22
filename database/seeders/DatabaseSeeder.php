@@ -52,7 +52,7 @@ class DatabaseSeeder extends Seeder
         $facilities->create();*/
 
 
-        $user = User::create([
+        $petugas = User::create([
             'name' => 'Void',
             'email' => 'petugas@pet.ugas',
             'role' => 'petugas',

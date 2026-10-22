@@ -12,7 +12,7 @@
 <div class="dashboard-widget staff-dashboard-widget">
     @include('dashboard.partials.stats')
 
-    <section class="dashboard-card reports-card staff-reports-card">
+    <section id="staff-reports" class="dashboard-card reports-card staff-reports-card" tabindex="-1">
         <div class="dashboard-card-header staff-reports-heading">
             <div>
                 <h2 class="dashboard-card-title">Seluruh Laporan</h2>
