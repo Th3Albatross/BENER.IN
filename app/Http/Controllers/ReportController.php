@@ -20,7 +20,7 @@ class ReportController
 
     public function showCreateReportPage(Request $request)
     {
-        abort_if($request->user()->isStaff(), 403);
+        abort_unless($request->user()->isStudent(), 403);
 
         return view('report.create', [
             'categories' => Category::all(),
@@ -31,7 +31,7 @@ class ReportController
 
     public function createReport(Request $request)
     {
-        abort_if($request->user()->isStaff(), 403);
+        abort_unless($request->user()->isStudent(), 403);
 
         $validated = $request->validate([
             'identifier' => ['required', 'uuid:7', 'unique:reports,identifier'],

@@ -57,6 +57,14 @@ class DatabaseSeeder extends Seeder
             'remember_token' => Str::random(10),
         ]);
 
+        $admin = User::create([
+            'name' => 'Admin',
+            'email' => 'admin@be.ner',
+            'role' => User::ADMIN_ROLE,
+            'password' => Hash::make('ifallapart'),
+            'remember_token' => Str::random(10),
+        ]);
+
         /*Report::factory(72)
             ->recycle($admin)
             ->recycle($categories)

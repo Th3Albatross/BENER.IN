@@ -20,6 +20,12 @@ class DashboardController
     public function show(Request $request)
     {
         $user = $request->user();
+
+        // Admin never works with reports; they land on the management overview.
+        if ($user->isAdmin()) {
+            return $this->showAdminDashboard();
+        }
+
         $isStaff = $user->isStaff();
 
         $statusFilter = $request->query('status');
@@ -193,5 +199,99 @@ class DashboardController
         }
 
         return view('dashboard.index', $viewData);
+    }
+
+    /**
+     * Management overview for admins: headline counts, master-data statistics
+     * and the most recently added records.
+     */
+    private function showAdminDashboard()
+    {
+        // Only the top few rows are charted so long tails stay readable.
+        $rankingLimit = 6;
+
+        return view('dashboard.admin', [
+            '_counts' => [
+                'users' => User::query()->count(),
+                'petugas' => User::query()->whereIn('role', User::STAFF_ROLES)->count(),
+                // Match the students filter exactly; a whereNotIn() would also
+                // catch any unexpected role value and inflate the count.
+                'students' => User::query()->where('role', 'siswa')->count(),
+                'facilities' => Facility::query()->count(),
+                'categories' => Category::query()->count(),
+            ],
+            '_roleChart' => $this->buildRoleChart(),
+            '_facilityChart' => $this->topFacilitiesByReports($rankingLimit),
+            '_categoryChart' => $this->topCategoriesByReports($rankingLimit),
+            '_recentUsers' => User::query()
+                ->orderByDesc('id')
+                ->limit(5)
+                ->get(['id', 'name', 'email', 'role']),
+            '_recentFacilities' => Facility::query()
+                ->orderByDesc('id')
+                ->limit(5)
+                ->get(['id', 'name']),
+            '_recentCategories' => Category::query()
+                ->orderByDesc('id')
+                ->limit(5)
+                ->get(['id', 'name']),
+        ]);
+    }
+
+    /** @return array<int, array{label: string, total: int}> */
+    private function buildRoleChart(): array
+    {
+        $counts = User::query()
+            ->selectRaw('role, COUNT(*) as total')
+            ->groupBy('role')
+            ->pluck('total', 'role');
+
+        // Legacy staff spellings are folded into the Petugas slice.
+        $petugas = collect(User::STAFF_ROLES)
+            ->sum(fn (string $role): int => (int) $counts->get($role, 0));
+
+        return [
+            ['label' => 'Siswa', 'total' => (int) $counts->get('siswa', 0)],
+            ['label' => 'Petugas', 'total' => $petugas],
+            ['label' => 'Admin', 'total' => (int) $counts->get(User::ADMIN_ROLE, 0)],
+        ];
+    }
+
+    /** @return array<int, array{label: string, total: int}> */
+    private function topFacilitiesByReports(int $limit): array
+    {
+        return Facility::query()
+            ->leftJoin('reports', 'reports.facilities_id', '=', 'facilities.id')
+            ->selectRaw('facilities.name as label, COUNT(reports.id) as total')
+            ->groupBy('facilities.id', 'facilities.name')
+            ->orderByDesc('total')
+            ->orderBy('label')
+            ->limit($limit)
+            ->get()
+            ->map(fn ($row): array => [
+                'label' => (string) $row->label,
+                'total' => (int) $row->total,
+            ])
+            ->values()
+            ->all();
+    }
+
+    /** @return array<int, array{label: string, total: int}> */
+    private function topCategoriesByReports(int $limit): array
+    {
+        return Category::query()
+            ->leftJoin('reports', 'reports.categories_id', '=', 'categories.id')
+            ->selectRaw('categories.name as label, COUNT(reports.id) as total')
+            ->groupBy('categories.id', 'categories.name')
+            ->orderByDesc('total')
+            ->orderBy('label')
+            ->limit($limit)
+            ->get()
+            ->map(fn ($row): array => [
+                'label' => (string) $row->label,
+                'total' => (int) $row->total,
+            ])
+            ->values()
+            ->all();
     }
 }

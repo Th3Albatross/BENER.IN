@@ -22,15 +22,16 @@ class ReportFactory extends Factory
     public function definition(): array
     {
         return [
-            'identifier' => (string)Str::uuid7(),
-            'status' => rand(1, 3),
-            'severity' => rand(1, 4),
+            'identifier' => (string) Str::uuid7(),
+            // These columns are enums, so only the real values are valid.
+            'status' => fake()->randomElement(['Pending', 'Resolved', 'Rejected']),
+            'severity' => fake()->randomElement(['Low', 'Medium', 'High', 'Critical']),
             'categories_id' => Category::factory(),
             'users_id' => User::factory(),
             'facilities_id' => Facility::factory(),
             'title' => fake()->unique()->company(),
             'location_description' => 'Bell Bottom Blues',
-            'description' => 'Lorem ipsum dolor sit amet'
+            'description' => 'Lorem ipsum dolor sit amet',
         ];
     }
 }

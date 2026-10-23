@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\FacilityController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\AttendantController;
 use App\Http\Controllers\AuthController;
@@ -12,16 +15,29 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'show']);
 
-    Route::controller(ReportController::class)->group(function () {
+    /*
+     * Report authoring and editing belongs to students only.
+     */
+    Route::controller(ReportController::class)->middleware('role:siswa')->group(function () {
         Route::post('/reports/create', 'createReport')->name('reports.create');
         Route::get('/reports/create', 'showCreateReportPage')->name('reports.showCreate');
         Route::get('/reports/{uuid}/edit', 'showEditReportPage')->name('reports.showEdit');
         Route::put('/reports/{uuid}', 'updateReport')->name('reports.update');
-        Route::patch('/reports/{uuid}/status', 'updateStatus')->name('reports.updateStatus');
-        Route::get('/reports/{uuid}', 'showReportDetailPage')->name('reports.showDetail');
     });
 
-    Route::controller(ResponsesController::class)->group(function () {
+    /*
+     * Viewing a report is shared by the student who owns it and petugas.
+     * Admin has no report access at all.
+     */
+    Route::get('/reports/{uuid}', [ReportController::class, 'showReportDetailPage'])
+        ->middleware('role:siswa,petugas')
+        ->name('reports.showDetail');
+
+    Route::patch('/reports/{uuid}/status', [ReportController::class, 'updateStatus'])
+        ->middleware('role:petugas')
+        ->name('reports.updateStatus');
+
+    Route::controller(ResponsesController::class)->middleware('role:siswa,petugas')->group(function () {
         Route::get('/discussions', 'index')->name('discussions.index');
         Route::get('/reports/{uuid}/discussion', 'show')->name('responses.show');
         Route::post('/reports/{uuid}/discussion', 'store')->name('responses.store');
@@ -39,7 +55,19 @@ Route::middleware('auth')->group(function () {
         Route::patch('/settings/password', 'updatePassword')->name('settings.password.update');
     });
 
-    Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
+    Route::get('/analytics', [AnalyticsController::class, 'index'])
+        ->middleware('role:petugas')
+        ->name('analytics.index');
+
+    /*
+     * Admin manages users, facilities and categories. These routes are the only
+     * way to mutate master data, so they are gated behind the admin role.
+     */
+    Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
+        Route::resource('users', UserController::class)->except('show');
+        Route::resource('facilities', FacilityController::class)->except('show');
+        Route::resource('categories', CategoryController::class)->except('show');
+    });
 
     Route::get('/logout', [AuthController::class, 'deauthenticate']);
 });

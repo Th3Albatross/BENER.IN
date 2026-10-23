@@ -1,6 +1,7 @@
 @php
     $sidebarUser = auth()->user();
     $isStaffSide = $sidebarUser?->isStaff() ?? false;
+    $isAdminSide = $sidebarUser?->isAdmin() ?? false;
 
     $sidebarHasPhoto = false;
     $sidebarPhotoUrl = null;
@@ -45,6 +46,52 @@
                 <span>Dashboard</span>
             </a>
 
+            @if ($isAdminSide)
+                <a
+                    href="{{ route('admin.users.index') }}"
+                    class="nav-item {{ request()->is('admin/users*') ? 'nav-item--active' : '' }}"
+                    @if (request()->is('admin/users*')) aria-current="page" @endif
+                >
+                    <span class="nav-item__icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="8" r="3.5"></circle>
+                            <path d="M5 20c.7-3.2 3-5 7-5s6.3 1.8 7 5"></path>
+                        </svg>
+                    </span>
+                    <span>Pengguna</span>
+                </a>
+
+                <a
+                    href="{{ route('admin.facilities.index') }}"
+                    class="nav-item {{ request()->is('admin/facilities*') ? 'nav-item--active' : '' }}"
+                    @if (request()->is('admin/facilities*')) aria-current="page" @endif
+                >
+                    <span class="nav-item__icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 20V9l8-5 8 5v11"></path>
+                            <path d="M9 20v-6h6v6"></path>
+                        </svg>
+                    </span>
+                    <span>Fasilitas</span>
+                </a>
+
+                <a
+                    href="{{ route('admin.categories.index') }}"
+                    class="nav-item {{ request()->is('admin/categories*') ? 'nav-item--active' : '' }}"
+                    @if (request()->is('admin/categories*')) aria-current="page" @endif
+                >
+                    <span class="nav-item__icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="4" y="4" width="7" height="7" rx="1.5"></rect>
+                            <rect x="13" y="4" width="7" height="7" rx="1.5"></rect>
+                            <rect x="4" y="13" width="7" height="7" rx="1.5"></rect>
+                            <rect x="13" y="13" width="7" height="7" rx="1.5"></rect>
+                        </svg>
+                    </span>
+                    <span>Kategori</span>
+                </a>
+            @endif
+
             @if ($isStaffSide)
                 <a
                     href="{{ route('analytics.index') }}"
@@ -60,21 +107,23 @@
                 </a>
             @endif
 
-            <a
-                href="{{ route('discussions.index') }}"
-                class="nav-item {{ request()->is('discussions') || request()->is('discussions/*') || request()->is('reports/*/discussion') ? 'nav-item--active' : '' }}"
-                @if (request()->is('discussions') || request()->is('discussions/*') || request()->is('reports/*/discussion')) aria-current="page" @endif
-            >
-                <span class="nav-item__icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H7l-3 2v-6.5A7.5 7.5 0 1 1 20 11.5Z"></path>
-                        <path d="M8 10h8M8 13.5h5"></path>
-                    </svg>
-                </span>
-                <span>Diskusi</span>
-            </a>
+            @unless ($isAdminSide)
+                <a
+                    href="{{ route('discussions.index') }}"
+                    class="nav-item {{ request()->is('discussions') || request()->is('discussions/*') || request()->is('reports/*/discussion') ? 'nav-item--active' : '' }}"
+                    @if (request()->is('discussions') || request()->is('discussions/*') || request()->is('reports/*/discussion')) aria-current="page" @endif
+                >
+                    <span class="nav-item__icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H7l-3 2v-6.5A7.5 7.5 0 1 1 20 11.5Z"></path>
+                            <path d="M8 10h8M8 13.5h5"></path>
+                        </svg>
+                    </span>
+                    <span>Diskusi</span>
+                </a>
+            @endunless
 
-            @unless ($isStaffSide)
+            @if ($sidebarUser?->isStudent())
                 <a
                     href="{{ route('reports.showCreate') }}"
                     class="nav-item {{ request()->is('reports/create') ? 'nav-item--active' : '' }}"
@@ -87,7 +136,7 @@
                     </span>
                     <span>Buat Laporan</span>
                 </a>
-            @endunless
+            @endif
 
             <a
                 href="{{ route('settings.index') }}"
