@@ -124,11 +124,6 @@ const initFilterForm = () => {
 
 const initPrint = () => {
     document.querySelector('[data-analytics-print]')?.addEventListener('click', () => window.print());
-
-    // Charts are sized by their containers; recalc when the print layout kicks in.
-    const resizeAll = () => Object.values(Chart.instances).forEach((chart) => chart.resize());
-    window.addEventListener('beforeprint', resizeAll);
-    window.addEventListener('afterprint', resizeAll);
 };
 
 /* ------------------------------------------------------------------ charts */
@@ -430,23 +425,15 @@ const initCharts = () => {
         return false;
     }
 
-    const colors = {
-        ink: token('--an-ink', '#26323c'),
-        muted: token('--an-muted', '#7b8792'),
-        line: token('--an-line', '#e8edf0'),
-        brand: token('--an-brand', '#3a5cb8'),
-        pending: token('--an-pending', '#e4a54b'),
-        resolved: token('--an-resolved', '#3c9c7a'),
-        rejected: token('--an-rejected', '#d87980'),
-        // Severity scale steps that sit between the existing status colours.
-        brandLight: '#8fa8e0',
-        high: '#d9825b',
-        critical: '#c0545e',
-    };
+    const colors = readColors();
 
     Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
     Chart.defaults.font.size = 10;
     Chart.defaults.color = colors.muted;
+
+    // Re-rendering on demand requires clearing the previous instances, otherwise
+    // Chart.js reuses them and keeps the colours it captured on first draw.
+    destroyCharts();
 
     const results = [
         drawSafely('analytics-trend-chart', () => renderTrend(payload.trend ?? [], colors)),
@@ -459,10 +446,48 @@ const initCharts = () => {
     return results.every(Boolean);
 };
 
+/**
+ * Read the palette from the active theme tokens.
+ *
+ * Charts bake these values into the canvas when they are drawn, so printing in
+ * dim/dark mode would otherwise emit light strokes on white paper. The print
+ * stylesheet forces the light palette, and re-rendering picks up the new values.
+ */
+const readColors = () => ({
+    ink: token('--an-ink', '#26323c'),
+    muted: token('--an-muted', '#7b8792'),
+    line: token('--an-line', '#e8edf0'),
+    brand: token('--an-brand', '#3a5cb8'),
+    pending: token('--an-pending', '#e4a54b'),
+    resolved: token('--an-resolved', '#3c9c7a'),
+    rejected: token('--an-rejected', '#d87980'),
+    // Severity scale steps that sit between the existing status colours.
+    brandLight: '#8fa8e0',
+    high: '#d9825b',
+    critical: '#c0545e',
+});
+
+const destroyCharts = () => {
+    Object.values(Chart.instances).forEach((chart) => chart.destroy());
+};
+
+/**
+ * Charts are drawn in canvas, so CSS cannot restyle them for print. Re-render
+ * before printing (with the print palette) and restore afterwards.
+ */
+const initPrintRedraw = () => {
+    const payload = readPayload();
+    if (!payload) return;
+
+    window.addEventListener('beforeprint', () => initCharts());
+    window.addEventListener('afterprint', () => initCharts());
+};
+
 if (page) {
     initFilterForm();
     initPrint();
     initChartWatchdog();
+    initPrintRedraw();
 
     // The flag proves this module loaded and attempted to render the charts.
     const ok = initCharts();

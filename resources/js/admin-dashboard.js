@@ -172,23 +172,14 @@ const drawSafely = (id, draw) => {
 };
 
 const initCharts = (payload) => {
-    const colors = {
-        ink: token('--text-strong', '#2e3338'),
-        muted: token('--text-muted', '#747f8d'),
-        line: token('--border', '#e3e5e8'),
-        surface: token('--surface', '#ffffff'),
-        brand: token('--accent-fill', '#3a5cb8'),
-        siswa: token('--text-soft', '#6b7280'),
-        petugas: token('--success', '#26734b'),
-        admin: token('--accent', '#3a5cb8'),
-        tooltipBg: '#26323c',
-        tooltipTitle: '#ffffff',
-        tooltipBody: '#e8edf0',
-    };
+    const colors = readColors();
 
     Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
     Chart.defaults.font.size = 10;
     Chart.defaults.color = colors.muted;
+
+    // Clearing the previous instances lets a re-render pick up new token values.
+    Object.values(Chart.instances).forEach((chart) => chart.destroy());
 
     const results = [
         drawSafely('admin-role-chart', () => renderRoles(payload.roles ?? [], colors)),
@@ -199,11 +190,36 @@ const initCharts = (payload) => {
     return results.some(Boolean);
 };
 
+/**
+ * Read the palette from the active theme tokens.
+ *
+ * Canvas charts bake these values in when drawn, so printing from dim/dark mode
+ * would emit light strokes on white paper. The print stylesheet forces the light
+ * palette; re-rendering on beforeprint/afterprint applies it.
+ */
+const readColors = () => ({
+    ink: token('--text-strong', '#2e3338'),
+    muted: token('--text-muted', '#747f8d'),
+    line: token('--border', '#e3e5e8'),
+    surface: token('--surface', '#ffffff'),
+    brand: token('--accent-fill', '#3a5cb8'),
+    siswa: token('--text-soft', '#6b7280'),
+    petugas: token('--success', '#26734b'),
+    admin: token('--accent', '#3a5cb8'),
+    tooltipBg: '#26323c',
+    tooltipTitle: '#ffffff',
+    tooltipBody: '#e8edf0',
+});
+
 if (page) {
     const payload = readPayload();
 
     if (payload) {
         const ok = initCharts(payload);
         page.dataset.chartsReady = ok ? 'true' : 'partial';
+
+        // Redraw with the print palette so exported charts stay readable.
+        window.addEventListener('beforeprint', () => initCharts(payload));
+        window.addEventListener('afterprint', () => initCharts(payload));
     }
 }

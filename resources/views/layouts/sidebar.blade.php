@@ -1,7 +1,13 @@
 @php
+    use App\Services\SidebarNavigation;
+
     $sidebarUser = auth()->user();
     $isStaffSide = $sidebarUser?->isStaff() ?? false;
     $isAdminSide = $sidebarUser?->isAdmin() ?? false;
+
+    // Exactly one nav item is highlighted, resolved from the current request.
+    $sidebarNav = app(SidebarNavigation::class);
+    $activeSection = $sidebarNav->activeSection(request());
 
     $sidebarHasPhoto = false;
     $sidebarPhotoUrl = null;
@@ -34,8 +40,8 @@
         <nav class="sidebar__nav" aria-label="Menu utama">
             <a
                 href="{{ url('/dashboard') }}"
-                class="nav-item {{ request()->is('dashboard') ? 'nav-item--active' : '' }}"
-                @if (request()->is('dashboard')) aria-current="page" @endif
+                class="nav-item {{ $activeSection === SidebarNavigation::DASHBOARD ? 'nav-item--active' : '' }}"
+                @if ($activeSection === SidebarNavigation::DASHBOARD) aria-current="page" @endif
             >
                 <span class="nav-item__icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
@@ -49,8 +55,8 @@
             @if ($isAdminSide)
                 <a
                     href="{{ route('admin.users.index') }}"
-                    class="nav-item {{ request()->is('admin/users*') ? 'nav-item--active' : '' }}"
-                    @if (request()->is('admin/users*')) aria-current="page" @endif
+                    class="nav-item {{ $activeSection === SidebarNavigation::ADMIN_USERS ? 'nav-item--active' : '' }}"
+                    @if ($activeSection === SidebarNavigation::ADMIN_USERS) aria-current="page" @endif
                 >
                     <span class="nav-item__icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
@@ -63,8 +69,8 @@
 
                 <a
                     href="{{ route('admin.facilities.index') }}"
-                    class="nav-item {{ request()->is('admin/facilities*') ? 'nav-item--active' : '' }}"
-                    @if (request()->is('admin/facilities*')) aria-current="page" @endif
+                    class="nav-item {{ $activeSection === SidebarNavigation::ADMIN_FACILITIES ? 'nav-item--active' : '' }}"
+                    @if ($activeSection === SidebarNavigation::ADMIN_FACILITIES) aria-current="page" @endif
                 >
                     <span class="nav-item__icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
@@ -77,8 +83,8 @@
 
                 <a
                     href="{{ route('admin.categories.index') }}"
-                    class="nav-item {{ request()->is('admin/categories*') ? 'nav-item--active' : '' }}"
-                    @if (request()->is('admin/categories*')) aria-current="page" @endif
+                    class="nav-item {{ $activeSection === SidebarNavigation::ADMIN_CATEGORIES ? 'nav-item--active' : '' }}"
+                    @if ($activeSection === SidebarNavigation::ADMIN_CATEGORIES) aria-current="page" @endif
                 >
                     <span class="nav-item__icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
@@ -95,8 +101,8 @@
             @if ($isStaffSide)
                 <a
                     href="{{ route('analytics.index') }}"
-                    class="nav-item {{ request()->is('analytics') ? 'nav-item--active' : '' }}"
-                    @if (request()->is('analytics')) aria-current="page" @endif
+                    class="nav-item {{ $activeSection === SidebarNavigation::ANALYTICS ? 'nav-item--active' : '' }}"
+                    @if ($activeSection === SidebarNavigation::ANALYTICS) aria-current="page" @endif
                 >
                     <span class="nav-item__icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
@@ -110,8 +116,8 @@
             @unless ($isAdminSide)
                 <a
                     href="{{ route('discussions.index') }}"
-                    class="nav-item {{ request()->is('discussions') || request()->is('discussions/*') || request()->is('reports/*/discussion') ? 'nav-item--active' : '' }}"
-                    @if (request()->is('discussions') || request()->is('discussions/*') || request()->is('reports/*/discussion')) aria-current="page" @endif
+                    class="nav-item {{ $activeSection === SidebarNavigation::DISCUSSION ? 'nav-item--active' : '' }}"
+                    @if ($activeSection === SidebarNavigation::DISCUSSION) aria-current="page" @endif
                 >
                     <span class="nav-item__icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
@@ -126,8 +132,8 @@
             @if ($sidebarUser?->isStudent())
                 <a
                     href="{{ route('reports.showCreate') }}"
-                    class="nav-item {{ request()->is('reports/create') ? 'nav-item--active' : '' }}"
-                    @if (request()->is('reports/create')) aria-current="page" @endif
+                    class="nav-item {{ $activeSection === SidebarNavigation::REPORTS ? 'nav-item--active' : '' }}"
+                    @if ($activeSection === SidebarNavigation::REPORTS) aria-current="page" @endif
                 >
                     <span class="nav-item__icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
@@ -140,8 +146,8 @@
 
             <a
                 href="{{ route('settings.index') }}"
-                class="nav-item {{ request()->is('settings') || request()->is('settings/*') ? 'nav-item--active' : '' }}"
-                @if (request()->is('settings') || request()->is('settings/*')) aria-current="page" @endif
+                class="nav-item {{ $activeSection === SidebarNavigation::SETTINGS ? 'nav-item--active' : '' }}"
+                @if ($activeSection === SidebarNavigation::SETTINGS) aria-current="page" @endif
             >
                 <span class="nav-item__icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
@@ -156,7 +162,7 @@
 
     <div class="sidebar__footer">
         {{-- Logout berada di atas identitas profil, sesuai layout yang disepakati. --}}
-        <a href="{{ url('/logout') }}" class="sidebar__logout" aria-label="Keluar dari akun">
+        <a href="{{ url('/logout') }}" class="sidebar__logout" data-theme-reset aria-label="Keluar dari akun">
             <span class="sidebar__logout-icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M10 17l5-5-5-5"></path>

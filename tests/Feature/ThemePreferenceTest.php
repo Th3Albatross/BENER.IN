@@ -93,6 +93,19 @@ class ThemePreferenceTest extends TestCase
         );
     }
 
+    public function test_logging_out_resets_the_stored_theme(): void
+    {
+        $sidebar = file_get_contents(resource_path('views/layouts/sidebar.blade.php'));
+        $module = file_get_contents(resource_path('js/theme.js'));
+
+        // The logout link is flagged so the module can clear the stored mode.
+        $this->assertStringContainsString('data-theme-reset', $sidebar);
+
+        // The module removes the key rather than leaving it for the next person.
+        $this->assertStringContainsString('removeItem(STORAGE_KEY)', $module);
+        $this->assertStringContainsString('data-theme-reset', $module);
+    }
+
     public function test_both_entry_points_apply_the_stored_theme_before_paint(): void
     {
         foreach (['layouts/app.blade.php', 'auth/login.blade.php'] as $view) {
@@ -111,7 +124,9 @@ class ThemePreferenceTest extends TestCase
 
     public function test_every_mode_defines_the_same_token_set(): void
     {
-        $css = file_get_contents(resource_path('css/theme.css'));
+        // Only the mode declarations; the trailing @media print block also
+        // mentions [data-theme] selectors and would otherwise be parsed as one.
+        $css = $this->modeDeclarationCss();
 
         preg_match_all("/\[data-theme='(\w+)'\]\s*\{(.*?)\n\}/s", $css, $blocks, PREG_SET_ORDER);
 
@@ -131,6 +146,15 @@ class ThemePreferenceTest extends TestCase
                 "Mode [$mode] does not define the same tokens as light."
             );
         }
+    }
+
+    /** theme.css up to (but excluding) the print override block. */
+    private function modeDeclarationCss(): string
+    {
+        $css = file_get_contents(resource_path('css/theme.css'));
+        $printStart = strpos($css, '@media print');
+
+        return $printStart === false ? $css : substr($css, 0, $printStart);
     }
 
     /**
@@ -181,7 +205,7 @@ class ThemePreferenceTest extends TestCase
      */
     public function test_the_accent_fill_tokens_keep_white_text_readable_in_every_mode(): void
     {
-        $css = file_get_contents(resource_path('css/theme.css'));
+        $css = $this->modeDeclarationCss();
 
         preg_match_all("/\[data-theme='(\w+)'\]\s*\{(.*?)\n\}/s", $css, $blocks, PREG_SET_ORDER);
         $this->assertNotEmpty($blocks);

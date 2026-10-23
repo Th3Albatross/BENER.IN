@@ -375,7 +375,31 @@
             if (event.key === 'Escape') closeLightbox();
         });
 
-        document.querySelector('[data-report-print]')?.addEventListener('click', () => window.print());
+        /*
+         * Photos use loading="lazy", so a photo below the fold may not have
+         * loaded when the print dialog opens — it would print as an empty box.
+         * Wait for the pending images before opening the dialog.
+         */
+        const waitForImages = () => Promise.all(
+            Array.from(document.querySelectorAll('.report-show-photo img'))
+                .filter((image) => !image.complete)
+                .map((image) => new Promise((resolve) => {
+                    image.addEventListener('load', resolve, { once: true });
+                    image.addEventListener('error', resolve, { once: true });
+                }))
+        );
+
+        document.querySelector('[data-report-print]')?.addEventListener('click', async (event) => {
+            const button = event.currentTarget;
+            button.disabled = true;
+
+            try {
+                await waitForImages();
+                window.print();
+            } finally {
+                button.disabled = false;
+            }
+        });
     })();
 </script>
 @endpush

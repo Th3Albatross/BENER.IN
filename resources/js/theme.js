@@ -37,6 +37,14 @@
         }
     };
 
+    const clearTheme = () => {
+        try {
+            window.localStorage.removeItem(STORAGE_KEY);
+        } catch {
+            // Nothing to clear if storage is unavailable.
+        }
+    };
+
     const applyTheme = (theme) => {
         root.setAttribute('data-theme', theme);
         root.dataset.themeSource = 'user';
@@ -107,5 +115,22 @@
         document.addEventListener('DOMContentLoaded', initSelector);
     } else {
         initSelector();
+    }
+
+    /*
+     * Signing out clears the stored mode so a shared computer does not hand the
+     * next person the previous user's appearance. The link still navigates; we
+     * only drop the key first.
+     */
+    const initLogoutReset = () => {
+        document.querySelectorAll('[data-theme-reset]').forEach((link) => {
+            link.addEventListener('click', clearTheme);
+        });
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initLogoutReset);
+    } else {
+        initLogoutReset();
     }
 })();

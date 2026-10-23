@@ -174,3 +174,67 @@ body {
     background: var(--bg);
     color: var(--text-strong);
 }
+
+/*
+ * Printing always uses the light palette.
+ *
+ * The alternative is a dark-on-dark PDF for anyone using dim/dark mode, and
+ * print output cannot rely on the user switching modes first. Re-declaring the
+ * tokens here keeps every page consistent without per-page overrides — this
+ * block wins because it comes after the [data-theme] declarations above.
+ */
+@media print {
+    :root,
+    [data-theme='light'],
+    [data-theme='dim'],
+    [data-theme='dark'] {
+        color-scheme: light;
+
+        --bg: #ffffff;
+        --surface: #ffffff;
+        --surface-2: #ffffff;
+        --surface-3: #ffffff;
+        --surface-inset: #ffffff;
+
+        --text-strong: #1a1a1a;
+        --text: #2e3338;
+        --text-muted: #555555;
+        --text-soft: #6b7280;
+        --text-on-accent: #ffffff;
+
+        --border: #dddddd;
+        --border-soft: #e8e8e8;
+        --border-strong: #cccccc;
+
+        --accent: #3a5cb8;
+        --accent-strong: #2d4d9f;
+        --accent-soft: #edf2ff;
+        --accent-fill: #3a5cb8;
+        --accent-fill-hover: #2d4d9f;
+        --accent-fill-fg: #ffffff;
+
+        /* Neutral solid buttons/avatars keep their dark fill so white text reads. */
+        --solid: #334155;
+        --solid-hover: #1f2937;
+        --solid-fg: #ffffff;
+
+        --success: #26734b;
+        --success-soft: #eaf7ef;
+        --danger: #b42318;
+        --danger-soft: #fff0f0;
+        --warning: #8a6200;
+        --warning-soft: #fff7e3;
+        --info: #3559a8;
+        --info-soft: #edf3ff;
+
+        /* Borders and shadows only waste ink on paper. */
+        --shadow-card: none;
+        --shadow-raised: none;
+    }
+
+    html,
+    body {
+        background: #ffffff !important;
+        color: #1a1a1a !important;
+    }
+}

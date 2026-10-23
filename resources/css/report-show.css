@@ -162,7 +162,13 @@ body.report-show-lightbox-open { overflow: hidden; }
 /* Browser print / "Simpan sebagai PDF" layout. */
 @media print {
     @page { size: A4; margin: 12mm; }
-    html, body { height: auto !important; overflow: visible !important; background:var(--surface) !important; }
+
+    /*
+     * A4 with 12mm margins leaves ~703 CSS px, so the screen breakpoints at
+     * 1100px and 900px would otherwise apply and stack the sidebar into a
+     * cramped two-column grid. Everything below resets the layout explicitly.
+     */
+    html, body { height: auto !important; overflow: visible !important; background:#fff !important; }
     .app-shell { display: block !important; height: auto !important; min-height: 0 !important; }
     .sidebar,
     .page-header__actions,
@@ -172,13 +178,68 @@ body.report-show-lightbox-open { overflow: hidden; }
     .report-show-discussion-link-card,
     .report-show-lightbox { display: none !important; }
     .main-content { padding: 0 !important; overflow: visible !important; }
-    .page-header { margin-bottom: 12px !important; }
-    .report-show { padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .page-header { margin-bottom: 10px !important; }
+    .page-header__copy p { color:#555 !important; }
+
+    .report-show {
+        gap: 12px !important;
+        padding: 0 !important;
+        color:#1a1a1a !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    /* Single column: the sidebar sits underneath instead of beside. */
+    .report-show-grid {
+        display: block !important;
+        gap: 0 !important;
+    }
+    .report-show-main-column,
+    .report-show-side {
+        display: block !important;
+        gap: 0 !important;
+    }
+    .report-show-side { margin-top: 12px !important; }
+
+    /* `overflow: hidden` clips content once the page breaks. */
+    .report-show-card,
+    .report-show-hero { overflow: visible !important; }
+
+    /* Keep a block and its heading together across page breaks. */
     .report-show-hero,
     .report-show-card,
+    .report-show-card-header,
     .report-show-info-item,
-    .report-show-status-summary { break-inside: avoid; }
-    .report-show-grid { grid-template-columns: minmax(0, 1fr) 250px; }
-    .report-show-photo { cursor: default; }
-    .report-show-photo-overlay { display: none; }
+    .report-show-status-summary,
+    .report-show-side-metadata-row,
+    .report-show-photo { break-inside: avoid; page-break-inside: avoid; }
+    .report-show-card-header { border-bottom:1px solid #ddd !important; }
+
+    /* Photos: fixed two-up grid with real height so they are not stretched. */
+    .report-show-photo-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+    }
+    .report-show-photo {
+        aspect-ratio: auto !important;
+        height: 210px !important;
+        cursor: default !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+    .report-show-photo img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: contain !important;
+        transform: none !important;
+    }
+    .report-show-photo-overlay { display: none !important; }
+
+    /* Flatten borders so the PDF does not waste ink on card outlines. */
+    .report-show-card,
+    .report-show-hero,
+    .report-show-status-summary { border-color:#ddd !important; }
+
+    a[href]::after { content: none !important; }
 }
