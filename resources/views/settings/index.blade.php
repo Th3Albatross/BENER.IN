@@ -5,7 +5,7 @@
 @section('page-description', 'Kelola foto profil dan keamanan akunmu.')
 
 @push('styles')
-    @vite('resources/css/settings.css')
+    @vite('resources/css/pages/settings.css')
 @endpush
 
 @section('content')

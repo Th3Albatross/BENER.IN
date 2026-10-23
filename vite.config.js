@@ -10,20 +10,21 @@ export default defineConfig({
                 'resources/css/app.css',
                 'resources/css/theme.css',
                 'resources/css/layouts/app.css',
-                'resources/css/dashboard.css',
-                'resources/css/settings.css',
-                'resources/css/admin.css',
-                'resources/css/analytics.css',
-                'resources/css/report-create.css',
-                'resources/css/report-show.css',
-                'resources/css/auth-login.css',
-                'resources/css/discussion.css',
-                'resources/css/discussion-index.css',
-                'resources/js/auth-login.js',
+
+                // One stylesheet per page, mirroring resources/views.
+                'resources/css/pages/admin.css',
+                'resources/css/pages/analytics.css',
+                'resources/css/pages/auth-login.css',
+                'resources/css/pages/dashboard.css',
+                'resources/css/pages/discussion.css',
+                'resources/css/pages/discussion-index.css',
+                'resources/css/pages/report-form.css',
+                'resources/css/pages/report-show.css',
+                'resources/css/pages/settings.css',
+
                 'resources/js/analytics.js',
                 'resources/js/admin-dashboard.js',
                 'resources/js/theme.js',
-                'resources/js/app.js'
             ],
             refresh: true,
             fonts: [

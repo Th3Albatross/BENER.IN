@@ -123,13 +123,13 @@ class PrintPaletteTest extends TestCase
     public function test_the_page_level_print_blocks_do_not_use_dark_tokens(): void
     {
         // Both used a token (or the dark --surface) that resolved dark in dark mode.
-        $analytics = file_get_contents(resource_path('css/analytics.css'));
+        $analytics = file_get_contents(resource_path('css/pages/analytics.css'));
         $analyticsPrint = substr($analytics, strpos($analytics, '@media print'));
 
         $this->assertStringContainsString('background:#ffffff', $analyticsPrint);
         $this->assertStringNotContainsString('background:var(--surface)', $analyticsPrint);
 
-        $report = file_get_contents(resource_path('css/report-show.css'));
+        $report = file_get_contents(resource_path('css/pages/report-show.css'));
         $reportPrint = substr($report, strpos($report, '@media print'));
 
         $this->assertStringContainsString('background:#fff', $reportPrint);

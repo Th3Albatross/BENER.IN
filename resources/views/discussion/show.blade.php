@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @push('styles')
-    @vite('resources/css/discussion.css')
+    @vite('resources/css/pages/discussion.css')
 @endpush
 
 @section('title', 'Diskusi Laporan')

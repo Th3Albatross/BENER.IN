@@ -18,7 +18,7 @@ class ReportPrintLayoutTest extends TestCase
 
     private function printBlock(): string
     {
-        $css = file_get_contents(resource_path('css/report-show.css'));
+        $css = file_get_contents(resource_path('css/pages/report-show.css'));
         $start = strpos($css, '@media print');
 
         $this->assertNotFalse($start, 'The report stylesheet has no @media print block.');

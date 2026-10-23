@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @push('styles')
-    @vite('resources/css/report-create.css')
+    @vite('resources/css/pages/report-form.css')
 @endpush
 
 @section('title', 'Buat Laporan')

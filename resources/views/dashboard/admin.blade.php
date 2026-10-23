@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @push('styles')
-    @vite('resources/css/admin.css')
+    @vite('resources/css/pages/admin.css')
 @endpush
 
 @section('title', 'Dashboard Admin')

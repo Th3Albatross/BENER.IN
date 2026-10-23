@@ -164,9 +164,12 @@ class ThemePreferenceTest extends TestCase
     public function test_no_stylesheet_paints_white_text_on_a_light_switching_token(): void
     {
         $offenders = [];
+        // Every stylesheet, including the page folder, so a regression in any
+        // page cannot slip past this guard.
         $files = array_merge(
             glob(resource_path('css/*.css')),
-            glob(resource_path('css/layouts/*.css'))
+            glob(resource_path('css/layouts/*.css')),
+            glob(resource_path('css/pages/*.css')),
         );
 
         foreach ($files as $file) {

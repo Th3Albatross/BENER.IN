@@ -25,7 +25,7 @@
     </script>
 
     @vite('resources/css/theme.css')
-    @vite('resources/css/auth-login.css')
+    @vite('resources/css/pages/auth-login.css')
 </head>
 <body class="login-page">
     <main class="login-shell">

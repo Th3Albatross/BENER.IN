@@ -5,7 +5,7 @@
 @section('page-description', 'Ringkasan pola pengaduan dan penanganan fasilitas sekolah.')
 
 @push('styles')
-    @vite('resources/css/analytics.css')
+    @vite('resources/css/pages/analytics.css')
 @endpush
 
 @push('scripts')
