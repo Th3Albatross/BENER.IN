@@ -32,6 +32,8 @@
 <body>
     <div class="app-shell">
         @include('layouts.sidebar')
+        {{-- Mobile only: tapping the scrim closes the navigation panel. --}}
+        <div class="sidebar-scrim" data-sidebar-scrim aria-hidden="true"></div>
 
         <main class="main-content">
             <header class="page-header">
@@ -75,5 +77,6 @@
 
     @stack('scripts')
     @vite('resources/js/theme.js')
+    @vite('resources/js/sidebar.js')
 </body>
 </html>

@@ -30,13 +30,36 @@
     }
 @endphp
 
-<aside class="sidebar" aria-label="Navigasi utama">
-    <div class="sidebar__top">
+<aside class="sidebar" aria-label="Navigasi utama" data-sidebar>
+    <div class="sidebar__bar">
         <a href="{{ url('/dashboard') }}" class="brand" aria-label="BENER.IN Dashboard">
             <span class="brand__mark" aria-hidden="true"><span class="brand__mark-inner"></span></span>
             <span class="brand__name">BENER.IN</span>
         </a>
 
+        {{-- Mobile only: toggles the dropdown panel. --}}
+        <button
+            type="button"
+            class="sidebar__toggle"
+            data-sidebar-toggle
+            aria-expanded="false"
+            aria-controls="sidebar-panel"
+            aria-label="Buka menu navigasi"
+        >
+            <span class="sidebar__toggle-icon sidebar__toggle-icon--menu" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                    <path d="M4 7h16M4 12h16M4 17h16" />
+                </svg>
+            </span>
+            <span class="sidebar__toggle-icon sidebar__toggle-icon--close" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                    <path d="m6 6 12 12M18 6 6 18" />
+                </svg>
+            </span>
+        </button>
+    </div>
+
+    <div class="sidebar__panel" id="sidebar-panel" data-sidebar-panel>
         <nav class="sidebar__nav" aria-label="Menu utama">
             <a
                 href="{{ url('/dashboard') }}"
@@ -158,30 +181,30 @@
                 <span>Pengaturan</span>
             </a>
         </nav>
-    </div>
 
-    <div class="sidebar__footer">
-        {{-- Logout berada di atas identitas profil, sesuai layout yang disepakati. --}}
-        <a href="{{ url('/logout') }}" class="sidebar__logout" data-theme-reset aria-label="Keluar dari akun">
-            <span class="sidebar__logout-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M10 17l5-5-5-5"></path>
-                    <path d="M15 12H3"></path>
-                    <path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"></path>
-                </svg>
-            </span>
-            <span>Keluar</span>
-        </a>
+        <div class="sidebar__footer">
+            {{-- Logout berada di atas identitas profil, sesuai layout yang disepakati. --}}
+            <a href="{{ url('/logout') }}" class="sidebar__logout" data-theme-reset aria-label="Keluar dari akun">
+                <span class="sidebar__logout-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10 17l5-5-5-5"></path>
+                        <path d="M15 12H3"></path>
+                        <path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"></path>
+                    </svg>
+                </span>
+                <span>Keluar</span>
+            </a>
 
-        <div class="sidebar__user">
-            @if ($sidebarHasPhoto)
-                <img class="user-avatar user-avatar--image" src="{{ $sidebarPhotoUrl }}" alt="Foto profil {{ $sidebarUser->name ?? 'Pengguna' }}">
-            @else
-                <div class="user-avatar" aria-hidden="true">{{ strtoupper(mb_substr($sidebarUser->name ?? 'U', 0, 1)) }}</div>
-            @endif
-            <div class="user-info">
-                <div class="user-info__name">{{ $sidebarUser->name ?? 'Pengguna' }}</div>
-                <div class="user-info__role">{{ $sidebarUser->role ?? 'Pengguna' }}</div>
+            <div class="sidebar__user">
+                @if ($sidebarHasPhoto)
+                    <img class="user-avatar user-avatar--image" src="{{ $sidebarPhotoUrl }}" alt="Foto profil {{ $sidebarUser->name ?? 'Pengguna' }}">
+                @else
+                    <div class="user-avatar" aria-hidden="true">{{ strtoupper(mb_substr($sidebarUser->name ?? 'U', 0, 1)) }}</div>
+                @endif
+                <div class="user-info">
+                    <div class="user-info__name">{{ $sidebarUser->name ?? 'Pengguna' }}</div>
+                    <div class="user-info__role">{{ $sidebarUser->role ?? 'Pengguna' }}</div>
+                </div>
             </div>
         </div>
     </div>

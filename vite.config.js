@@ -25,6 +25,7 @@ export default defineConfig({
                 'resources/js/analytics.js',
                 'resources/js/admin-dashboard.js',
                 'resources/js/theme.js',
+                'resources/js/sidebar.js',
             ],
             refresh: true,
             fonts: [
