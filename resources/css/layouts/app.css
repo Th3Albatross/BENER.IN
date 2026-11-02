@@ -155,19 +155,18 @@ body[data-sidebar-open] .sidebar__toggle-icon--close {
     width: max-content;
 }
 
-.brand__mark {
-    display: grid;
-    width: 28px;
-    height: 28px;
-    place-items: center;
-    border: 1.5px solid var(--color-sidebar-text);
-    border-radius: var(--radius-sm);
+/* Inline SVG brand mark (see resources/views/components/brand-mark.blade.php). */
+.brand-mark-svg {
+    display: block;
+    flex: 0 0 auto;
+    width: 30px;
+    height: 30px;
 }
 
-.brand__mark-inner {
-    width: 14px;
-    height: 14px;
-    background: var(--color-sidebar-text);
+.brand__logo {
+    flex: 0 0 auto;
+    width: 30px;
+    height: 30px;
 }
 
 .brand__name {

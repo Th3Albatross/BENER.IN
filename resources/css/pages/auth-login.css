@@ -81,46 +81,13 @@ button {
     margin-left: clamp(24px, 4vw, 52px);
 }
 
+/* Inline SVG brand mark (shared with the sidebar via <x-brand-mark />). */
 .brand-mark {
-    position: relative;
-    width: 40px;
-    height: 40px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent) 0%, var(--black) 100%);
+    flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
+    border-radius: 11px;
     box-shadow: 0 8px 20px rgba(58, 92, 184, 0.28);
-    overflow: hidden;
-}
-
-.brand-mark::before,
-.brand-mark::after,
-.brand-mark-dot {
-    position: absolute;
-    display: block;
-    content: '';
-    border-radius: 50%;
-}
-
-.brand-mark::before {
-    width: 24px;
-    height: 24px;
-    border: 1px solid rgba(255, 255, 255, 0.35);
-}
-
-.brand-mark::after {
-    width: 7px;
-    height: 7px;
-    background: #fff;
-    transform: translate(5px, -5px);
-}
-
-.brand-mark-dot {
-    width: 4px;
-    height: 4px;
-    background: rgba(255, 255, 255, 0.75);
-    transform: translate(-7px, 8px);
 }
 
 .brand-name {
@@ -620,8 +587,8 @@ button {
     }
 
     .brand-mark {
-        width: 34px;
-        height: 34px;
+        width: 38px;
+        height: 38px;
     }
 
     .brand-name {

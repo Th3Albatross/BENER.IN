@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#f2f3f5">
+
+    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
     <title>Masuk - BENER.IN</title>
 
     {{-- Apply the stored mode before first paint so the wrong theme never flashes. --}}
@@ -31,9 +35,7 @@
     <main class="login-shell">
         <header class="site-header">
             <a href="{{ url('/') }}" class="brand" aria-label="BENER.IN">
-                <span class="brand-mark" aria-hidden="true">
-                    <span class="brand-mark-dot"></span>
-                </span>
+                <x-brand-mark class="brand-mark" />
                 <span class="brand-name">BENER.IN</span>
             </a>
         </header>

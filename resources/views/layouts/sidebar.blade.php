@@ -33,7 +33,7 @@
 <aside class="sidebar" aria-label="Navigasi utama" data-sidebar>
     <div class="sidebar__bar">
         <a href="{{ url('/dashboard') }}" class="brand" aria-label="BENER.IN Dashboard">
-            <span class="brand__mark" aria-hidden="true"><span class="brand__mark-inner"></span></span>
+            <x-brand-mark class="brand__logo" />
             <span class="brand__name">BENER.IN</span>
         </a>
 
