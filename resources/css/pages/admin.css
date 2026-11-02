@@ -556,9 +556,32 @@
         align-items: stretch;
     }
 
-    .admin-button {
+    /*
+     * Full-width buttons are only wanted where the button is the sole control
+     * in a stacked layout (page actions, form actions). Scoping this keeps
+     * table and dashboard-list buttons at their natural size, so "Ubah" and
+     * "Hapus" stay consistent instead of one stretching across the row.
+     */
+    .admin-form-actions .admin-button,
+    .admin-toolbar .admin-button {
         width: 100%;
     }
+}
+
+/*
+ * Action buttons inside a table row or a list entry must always hug their
+ * label. The <form> wrapper around "Hapus" must not stretch either, otherwise
+ * it would push the button away from "Ubah".
+ */
+.admin-table-actions form,
+.admin-list-item form {
+    display: inline-flex;
+    margin: 0;
+}
+
+.admin-table-actions .admin-button,
+.admin-list-item .admin-button {
+    width: auto;
 }
 
 /* ------------------------------

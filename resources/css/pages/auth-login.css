@@ -641,17 +641,13 @@ button {
         font-size: 14px;
     }
 
+    /*
+     * Phones: drop the decorative hero entirely so the headline flows straight
+     * into the login form instead of pushing it below a large card. Tablets
+     * (601-920px) keep the hero.
+     */
     .hero-card {
-        min-height: 260px;
-        border-radius: 16px;
-    }
-
-    .hero-content {
-        padding: 22px;
-    }
-
-    .hero-title {
-        font-size: 31px;
+        display: none;
     }
 
     .form-panel {
