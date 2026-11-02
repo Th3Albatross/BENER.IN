@@ -47,7 +47,7 @@
     if (!empty($range['start_date']) && !empty($range['end_date'])) {
         $rangeStart = \Carbon\Carbon::parse($range['start_date'])->locale('id');
         $rangeEnd = \Carbon\Carbon::parse($range['end_date'])->locale('id');
-        $rangeText = $rangeStart->translatedFormat('j M Y') . ' – ' . $rangeEnd->translatedFormat('j M Y');
+        $rangeText = $rangeStart->translatedFormat('j M Y') . ' s/d ' . $rangeEnd->translatedFormat('j M Y');
     }
 
     // Status legend rows: label, css modifier, count and share of the total.
@@ -103,7 +103,7 @@
                 <span>Dari</span>
                 <input type="date" id="analytics-start-date" name="start_date" max="{{ now()->toDateString() }}" value="{{ $filters['start_date'] ?? '' }}" aria-label="Dari tanggal">
             </label>
-            <span class="analytics-date-separator analytics-custom-only" aria-hidden="true">—</span>
+            <span class="analytics-date-separator analytics-custom-only" aria-hidden="true">s/d</span>
             <label class="analytics-date-field analytics-custom-only" for="analytics-end-date">
                 <span>Sampai</span>
                 <input type="date" id="analytics-end-date" name="end_date" max="{{ now()->toDateString() }}" value="{{ $filters['end_date'] ?? '' }}" aria-label="Sampai tanggal">
@@ -130,7 +130,7 @@
     <section class="analytics-metrics" aria-label="Ringkasan pengaduan">
         <article class="analytics-metric analytics-metric--total">
             <span class="analytics-metric__label">Total pengaduan <span class="analytics-info" title="Jumlah pengaduan yang dibuat pada periode terpilih">i</span></span>
-            <strong>{{ $hasAnalyticsPayload ? number_format((int) $summary['total'], 0, ',', '.') : '—' }}</strong>
+            <strong>{{ $hasAnalyticsPayload ? number_format((int) $summary['total'], 0, ',', '.') : '-' }}</strong>
             @if ($changePercent !== null)
                 @php $direction = $changePercent > 0 ? 'up' : ($changePercent < 0 ? 'down' : 'flat'); @endphp
                 <span class="analytics-delta analytics-delta--{{ $direction }}" title="Dibandingkan {{ $fmt($previousTotal) }} pengaduan pada periode sebelumnya dengan jumlah hari yang sama">
@@ -146,15 +146,15 @@
         </article>
         <article class="analytics-metric analytics-metric--pending">
             <span class="analytics-metric__label"><span class="analytics-status-dot"></span>Menunggu</span>
-            <strong>{{ $hasAnalyticsPayload ? number_format((int) ($summary['pending'] ?? 0), 0, ',', '.') : '—' }}</strong>
+            <strong>{{ $hasAnalyticsPayload ? number_format((int) ($summary['pending'] ?? 0), 0, ',', '.') : '-' }}</strong>
         </article>
         <article class="analytics-metric analytics-metric--resolved">
             <span class="analytics-metric__label"><span class="analytics-status-dot"></span>Selesai</span>
-            <strong>{{ $hasAnalyticsPayload ? number_format((int) ($summary['resolved'] ?? 0), 0, ',', '.') : '—' }}</strong>
+            <strong>{{ $hasAnalyticsPayload ? number_format((int) ($summary['resolved'] ?? 0), 0, ',', '.') : '-' }}</strong>
         </article>
         <article class="analytics-metric analytics-metric--rejected">
             <span class="analytics-metric__label"><span class="analytics-status-dot"></span>Ditolak</span>
-            <strong>{{ $hasAnalyticsPayload ? number_format((int) ($summary['rejected'] ?? 0), 0, ',', '.') : '—' }}</strong>
+            <strong>{{ $hasAnalyticsPayload ? number_format((int) ($summary['rejected'] ?? 0), 0, ',', '.') : '-' }}</strong>
         </article>
     </section>
 
@@ -162,7 +162,7 @@
         <section class="analytics-insights" aria-label="Indikator penanganan">
             <article class="analytics-insight">
                 <span class="analytics-insight__label">Rasio selesai</span>
-                <strong>{{ $resolutionRate !== null ? $fmt($resolutionRate, 1) . '%' : '—' }}</strong>
+                <strong>{{ $resolutionRate !== null ? $fmt($resolutionRate, 1) . '%' : '-' }}</strong>
                 <span class="analytics-progress" role="img" aria-label="{{ $resolutionRate !== null ? $fmt($resolutionRate, 1) . ' persen laporan selesai' : 'Belum ada data' }}">
                     <i style="width: {{ min(100, max(0, (float) ($resolutionRate ?? 0))) }}%"></i>
                 </span>
@@ -177,13 +177,13 @@
 
             <article class="analytics-insight">
                 <span class="analytics-insight__label">Rata-rata per hari</span>
-                <strong>{{ $dailyAverage !== null ? $fmt($dailyAverage, 1) : '—' }}</strong>
+                <strong>{{ $dailyAverage !== null ? $fmt($dailyAverage, 1) : '-' }}</strong>
                 <span class="analytics-insight__note">Pengaduan baru setiap hari pada periode ini</span>
             </article>
 
             <article class="analytics-insight">
                 <span class="analytics-insight__label">Fasilitas teratas</span>
-                <strong class="analytics-insight__text" title="{{ $topFacility['label'] ?? '' }}">{{ $topFacility['label'] ?? '—' }}</strong>
+                <strong class="analytics-insight__text" title="{{ $topFacility['label'] ?? '' }}">{{ $topFacility['label'] ?? '-' }}</strong>
                 <span class="analytics-insight__note">
                     @if ($topFacility)
                         {{ $fmt($topFacility['total']) }} laporan · {{ $fmt(round(($topFacility['total'] / max(1, $totalReports)) * 100)) }}% dari total

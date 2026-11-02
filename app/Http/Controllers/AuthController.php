@@ -10,18 +10,25 @@ class AuthController
     public function authenticate(Request $request)
     {
         $credentials = $request->validate([
-            'email' => 'required|email|max:255',
+            'login' => 'required|string|max:255',
             'password' => 'required|string',
         ]);
 
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+        // Students log in with their NIS, everyone else with email. A NIS is
+        // all digits, so an email-shaped value can only ever be an email.
+        $field = filter_var($credentials['login'], FILTER_VALIDATE_EMAIL) ? 'email' : 'nis';
+
+        if (Auth::attempt([
+            $field => $credentials['login'],
+            'password' => $credentials['password'],
+        ], $request->boolean('remember'))) {
             $request->session()->regenerate();
 
             return redirect()->intended();
         }
 
         return back()->withErrors([
-            'loginFailure' => 'Email atau kata sandi salah.',
+            'loginFailure' => 'Email/NIS atau kata sandi salah.',
         ]);
     }
 

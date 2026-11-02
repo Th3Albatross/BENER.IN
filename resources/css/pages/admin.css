@@ -1,4 +1,4 @@
-/* BENER.IN — Admin area (dashboard + master-data management).
+/* BENER.IN: Admin area (dashboard + master-data management).
    All colours come from theme.css so every mode is supported. */
 
 .admin-widget,
@@ -396,6 +396,15 @@
     flex-direction: column;
     gap: 7px;
     min-width: 0;
+}
+
+/*
+ * The role toggle on the user form sets [hidden] on the fields that do not
+ * apply. `display:flex` above would otherwise win over the browser default,
+ * so the attribute needs an author rule of equal-or-higher specificity.
+ */
+.admin-field[hidden] {
+    display: none;
 }
 
 .admin-field label {

@@ -14,7 +14,7 @@
         <div class="admin-card-heading">
             <div>
                 <h2 id="edit-user-heading" class="admin-card-title">{{ $user->name }}</h2>
-                <p class="admin-card-subtitle">{{ $user->email }}</p>
+                <p class="admin-card-subtitle">{{ $user->email ?: 'Email belum tersedia' }}</p>
             </div>
         </div>
 

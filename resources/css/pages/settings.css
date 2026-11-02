@@ -1,4 +1,4 @@
-/* BENER.IN — Settings page. Cards follow the dashboard's vertical flow. */
+/* BENER.IN: Settings page. Cards follow the dashboard's vertical flow. */
 .settings-page {
     display: flex;
     flex-direction: column;

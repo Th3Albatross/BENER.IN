@@ -1,5 +1,5 @@
 /**
- * BENER.IN — Admin dashboard charts.
+ * BENER.IN: Admin dashboard charts.
  *
  * Reads the payload embedded by dashboard/admin.blade.php and draws a role
  * doughnut plus two horizontal rankings. Colours are read from the active

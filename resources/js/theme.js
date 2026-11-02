@@ -1,5 +1,5 @@
 /**
- * BENER.IN — appearance mode.
+ * BENER.IN: appearance mode.
  *
  * The chosen mode lives in localStorage, not the database: it is a per-device
  * display preference, so keeping it client-side avoids a write on every change

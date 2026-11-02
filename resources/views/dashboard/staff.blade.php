@@ -24,7 +24,7 @@
         <form method="GET" action="{{ url('/dashboard') }}" class="staff-filter-form">
             <div class="staff-filter-field staff-filter-field--search">
                 <label for="report-search">Cari laporan</label>
-                <input type="search" id="report-search" name="q" value="{{ $_search }}" placeholder="Judul, lokasi, nama, email, atau ID">
+                <input type="search" id="report-search" name="q" value="{{ $_search }}" placeholder="Judul, lokasi, nama, NIS, email, atau ID">
             </div>
 
             <div class="staff-filter-field">
@@ -83,8 +83,8 @@
                 <select id="staff-sort-filter" name="sort">
                     <option value="newest" {{ $_sortFilter === 'newest' ? 'selected' : '' }}>Aktivitas terbaru</option>
                     <option value="oldest" {{ $_sortFilter === 'oldest' ? 'selected' : '' }}>Laporan terlama</option>
-                    <option value="user_asc" {{ $_sortFilter === 'user_asc' ? 'selected' : '' }}>Nama pengguna A–Z</option>
-                    <option value="user_desc" {{ $_sortFilter === 'user_desc' ? 'selected' : '' }}>Nama pengguna Z–A</option>
+                    <option value="user_asc" {{ $_sortFilter === 'user_asc' ? 'selected' : '' }}>Nama pengguna A-Z</option>
+                    <option value="user_desc" {{ $_sortFilter === 'user_desc' ? 'selected' : '' }}>Nama pengguna Z-A</option>
                     <option value="severity_high" {{ $_sortFilter === 'severity_high' ? 'selected' : '' }}>Keparahan tertinggi</option>
                     <option value="severity_low" {{ $_sortFilter === 'severity_low' ? 'selected' : '' }}>Keparahan terendah</option>
                 </select>
@@ -152,9 +152,9 @@
                             </td>
                             <td>
                                 <strong class="staff-table-primary">{{ $report->user?->name ?? 'Pengguna tidak tersedia' }}</strong>
-                                @if ($report->user?->email)
-                                    <span class="staff-table-secondary">{{ $report->user->email }}</span>
-                                @endif
+                                <span class="staff-table-secondary">{{ $report->user?->nis ? 'NIS '.$report->user->nis : 'NIS belum tersedia' }}</span>
+                                <span class="staff-table-secondary">{{ $report->user?->classroom ? 'Kelas '.$report->user->classroom : 'Kelas belum tersedia' }}</span>
+                                <span class="staff-table-secondary">{{ $report->user?->email ?: 'Email belum tersedia' }}</span>
                             </td>
                             <td class="facility-name">{{ $report->facility?->name ?? 'Fasilitas tidak tersedia' }}</td>
                             <td>{{ $report->category?->name ?? 'Belum dikategorikan' }}</td>

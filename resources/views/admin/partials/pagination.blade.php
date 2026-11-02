@@ -1,7 +1,7 @@
 {{-- Minimal pagination that matches the admin card styling. --}}
 @if ($paginator->hasPages())
     <nav class="admin-pagination" aria-label="Navigasi halaman">
-        <span>Menampilkan {{ $paginator->firstItem() }}–{{ $paginator->lastItem() }} dari {{ $paginator->total() }}</span>
+        <span>Menampilkan {{ $paginator->firstItem() }}-{{ $paginator->lastItem() }} dari {{ $paginator->total() }}</span>
 
         <div class="admin-pagination-links">
             @if ($paginator->onFirstPage())

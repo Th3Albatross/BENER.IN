@@ -40,7 +40,7 @@ class RememberMeTest extends TestCase
     private function loginWithRemember(User $user, bool $remember): Cookie
     {
         $response = $this->post(route('login'), [
-            'email' => $user->email,
+            'login' => $user->email,
             'password' => 'rahasia123',
             'remember' => $remember ? '1' : '0',
         ])->assertRedirect();
@@ -72,7 +72,7 @@ class RememberMeTest extends TestCase
         $user = User::factory()->siswa()->create(['password' => 'rahasia123']);
 
         $response = $this->post(route('login'), [
-            'email' => $user->email,
+            'login' => $user->email,
             'password' => 'rahasia123',
         ])->assertRedirect();
 
@@ -100,7 +100,7 @@ class RememberMeTest extends TestCase
         $user = User::factory()->siswa()->create(['password' => 'rahasia123']);
 
         $this->post(route('login'), [
-            'email' => $user->email,
+            'login' => $user->email,
             'password' => 'rahasia123',
         ])->assertRedirect();
 

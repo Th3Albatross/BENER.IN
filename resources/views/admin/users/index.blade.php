@@ -63,7 +63,9 @@
                             <tr>
                                 <td>
                                     <span class="admin-table-primary">{{ $user->name }}</span>
-                                    <span class="admin-table-secondary">{{ $user->email }}</span>
+                                    <span class="admin-table-secondary">{{ $user->nis ? 'NIS '.$user->nis : 'NIS belum tersedia' }}</span>
+                                    <span class="admin-table-secondary">{{ $user->classroom ? 'Kelas '.$user->classroom : 'Kelas belum tersedia' }}</span>
+                                    <span class="admin-table-secondary">{{ $user->email ?: 'Email belum tersedia' }}</span>
                                 </td>
                                 <td>
                                     @php

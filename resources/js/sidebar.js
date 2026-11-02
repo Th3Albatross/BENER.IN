@@ -1,5 +1,5 @@
 /**
- * BENER.IN — mobile navigation panel.
+ * BENER.IN: mobile navigation panel.
  *
  * On screens at or below the mobile breakpoint the sidebar collapses into a
  * sticky bar with a dropdown panel. The panel overlays the page (it never

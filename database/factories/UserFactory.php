@@ -26,6 +26,8 @@ class UserFactory extends Factory
     {
         return [
             'name' => fake()->name(),
+            'nis' => (string) fake()->unique()->numberBetween(1000000000, 9999999999),
+            'classroom' => fake()->randomElement(['X-1', 'X-2', 'XI-1', 'XI-2', 'XII-1', 'XII-2']),
             'email' => fake()->unique()->safeEmail(),
             'role' => 'siswa',
             'email_verified_at' => now(),
@@ -48,6 +50,8 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'role' => User::ADMIN_ROLE,
+            'nis' => null,
+            'classroom' => null,
         ]);
     }
 
@@ -55,6 +59,9 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'role' => 'petugas',
+            // Staff authenticate by email only; they never carry a NIS.
+            'nis' => null,
+            'classroom' => null,
         ]);
     }
 

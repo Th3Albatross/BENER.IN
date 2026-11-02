@@ -104,6 +104,7 @@ class DashboardController
                         ->orWhere('reports.location_description', 'like', '%'.$search.'%')
                         ->orWhereHas('user', function (Builder $userQuery) use ($search) {
                             $userQuery->where('name', 'like', '%'.$search.'%')
+                                ->orWhere('nis', 'like', '%'.$search.'%')
                                 ->orWhere('email', 'like', '%'.$search.'%');
                         });
 
@@ -226,7 +227,7 @@ class DashboardController
             '_recentUsers' => User::query()
                 ->orderByDesc('id')
                 ->limit(5)
-                ->get(['id', 'name', 'email', 'role']),
+                ->get(['id', 'name', 'nis', 'classroom', 'email', 'role']),
             '_recentFacilities' => Facility::query()
                 ->orderByDesc('id')
                 ->limit(5)

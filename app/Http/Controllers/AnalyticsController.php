@@ -68,7 +68,7 @@ class AnalyticsController
             return [
                 $start,
                 $end,
-                $start->format('d/m/Y').' – '.$end->format('d/m/Y'),
+                $start->format('d/m/Y').' s/d '.$end->format('d/m/Y'),
             ];
         }
 

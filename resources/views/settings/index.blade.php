@@ -11,7 +11,9 @@
 @section('content')
 @php
     $profileName = $user->name ?? 'Pengguna';
-    $profileEmail = $user->email ?? 'Email belum tersedia';
+    $profileNis = $user->nis ?: 'NIS belum tersedia';
+    $profileClassroom = $user->classroom ?: 'Kelas belum tersedia';
+    $profileEmail = $user->email ?: 'Email belum tersedia';
     $profileInitials = collect(preg_split('/\s+/', trim($profileName)))
         ->filter()
         ->take(2)
@@ -79,6 +81,8 @@
                 </div>
                 <div class="settings-profile-summary__text">
                     <h3>{{ $profileName }}</h3>
+                    <p>{{ $profileNis }}</p>
+                    <p>{{ $profileClassroom }}</p>
                     <p>{{ $profileEmail }}</p>
                     @if (!empty($user->role))
                         <span class="settings-role">{{ ucfirst($user->role) }}</span>

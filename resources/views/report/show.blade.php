@@ -120,7 +120,7 @@
                         </div>
                         <div class="report-show-info-item">
                             <dt>Tanggal Kejadian</dt>
-                            <dd>{{ $reportData->incident_date ? \Illuminate\Support\Carbon::parse($reportData->incident_date)->format('d M Y') : '—' }}</dd>
+                            <dd>{{ $reportData->incident_date ? \Illuminate\Support\Carbon::parse($reportData->incident_date)->format('d M Y') : '-' }}</dd>
                         </div>
                         <div class="report-show-info-item">
                             <dt>Tanggal dibuat</dt>
@@ -128,7 +128,7 @@
                                 @if ($reportData->created_at)
                                     <time data-local-time datetime="{{ \Illuminate\Support\Carbon::parse($reportData->created_at)->toIso8601String() }}">{{ \Illuminate\Support\Carbon::parse($reportData->created_at)->locale('id')->translatedFormat('d M Y, H:i') }}</time>
                                 @else
-                                    —
+                                    -
                                 @endif
                             </dd>
                         </div>
@@ -138,7 +138,7 @@
                                 @if ($reportData->updated_at)
                                     <time data-local-time datetime="{{ \Illuminate\Support\Carbon::parse($reportData->updated_at)->toIso8601String() }}">{{ \Illuminate\Support\Carbon::parse($reportData->updated_at)->locale('id')->translatedFormat('d M Y, H:i') }}</time>
                                 @else
-                                    —
+                                    -
                                 @endif
                             </dd>
                         </div>
@@ -377,7 +377,7 @@
 
         /*
          * Photos use loading="lazy", so a photo below the fold may not have
-         * loaded when the print dialog opens — it would print as an empty box.
+         * loaded when the print dialog opens. It would print as an empty box.
          * Wait for the pending images before opening the dialog.
          */
         const waitForImages = () => Promise.all(

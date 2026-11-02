@@ -168,7 +168,9 @@
                         <li class="admin-list-item">
                             <span class="admin-list-copy">
                                 <strong>{{ $user->name }}</strong>
-                                <span>{{ $user->email }}</span>
+                                <span>{{ $user->nis ? 'NIS '.$user->nis : 'NIS belum tersedia' }}</span>
+                                <span>{{ $user->classroom ? 'Kelas '.$user->classroom : 'Kelas belum tersedia' }}</span>
+                                <span>{{ $user->email ?: 'Email belum tersedia' }}</span>
                             </span>
                             <span class="admin-role {{ $roleClass[$user->role] ?? 'admin-role--siswa' }}">
                                 {{ $roleLabels[$user->role] ?? ucfirst($user->role) }}

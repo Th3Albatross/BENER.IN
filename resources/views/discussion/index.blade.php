@@ -75,7 +75,7 @@
                             <td class="discussion-title-cell">
                                 <span class="discussion-report-title">{{ $report->title }}</span>
                             </td>
-                            <td class="discussion-strong-cell">{{ $report->facility?->name ?? '—' }}</td>
+                            <td class="discussion-strong-cell">{{ $report->facility?->name ?? '-' }}</td>
                             <td>{{ $report->category?->name ?? 'Tanpa kategori' }}</td>
                             <td>
                                 @php $reporterName = $report->user?->name ?? 'Pengguna'; @endphp

@@ -40,7 +40,36 @@ class DatabaseSeederTest extends TestCase
         $this->seed(UserSeeder::class);
 
         $this->post(route('login'), [
-            'email' => 'admin@benerin.test',
+            'login' => 'admin@benerin.test',
+            'password' => 'password',
+        ])->assertRedirect();
+
+        $this->assertAuthenticated();
+    }
+
+    public function test_seeded_students_get_a_nis_and_classroom(): void
+    {
+        $this->seed(UserSeeder::class);
+
+        foreach (User::where('role', 'siswa')->get() as $siswa) {
+            $this->assertNotNull($siswa->nis, "Student {$siswa->id} has no NIS.");
+            $this->assertMatchesRegularExpression('/^\d{4,20}$/', $siswa->nis);
+            $this->assertNotNull($siswa->classroom, "Student {$siswa->id} has no classroom.");
+        }
+
+        // Staff keep email-only identities.
+        foreach (User::whereIn('role', [User::ADMIN_ROLE, 'petugas'])->get() as $staff) {
+            $this->assertNull($staff->nis);
+            $this->assertNull($staff->classroom);
+        }
+    }
+
+    public function test_a_seeded_student_can_log_in_with_their_nis(): void
+    {
+        $this->seed(UserSeeder::class);
+
+        $this->post(route('login'), [
+            'login' => '1000000001',
             'password' => 'password',
         ])->assertRedirect();
 

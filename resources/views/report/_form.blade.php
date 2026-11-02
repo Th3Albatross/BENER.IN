@@ -118,10 +118,10 @@
                             <label for="reportSeverity">Tingkat Urgensi <span class="report-required">*</span></label>
                             <select id="reportSeverity" name="severity" required @error('severity') aria-invalid="true" @enderror>
                                 <option value="">Pilih urgensi</option>
-                                <option value="Low" @selected(old('severity', data_get($reportRecord, 'severity')) === 'Low')>Rendah — tidak mengganggu aktivitas</option>
-                                <option value="Medium" @selected(old('severity', data_get($reportRecord, 'severity')) === 'Medium')>Sedang — sedikit mengganggu</option>
-                                <option value="High" @selected(old('severity', data_get($reportRecord, 'severity')) === 'High')>Tinggi — mengganggu kegiatan belajar</option>
-                                <option value="Critical" @selected(old('severity', data_get($reportRecord, 'severity')) === 'Critical')>Kritis — berpotensi membahayakan</option>
+                                <option value="Low" @selected(old('severity', data_get($reportRecord, 'severity')) === 'Low')>Rendah: tidak mengganggu aktivitas</option>
+                                <option value="Medium" @selected(old('severity', data_get($reportRecord, 'severity')) === 'Medium')>Sedang: sedikit mengganggu</option>
+                                <option value="High" @selected(old('severity', data_get($reportRecord, 'severity')) === 'High')>Tinggi: mengganggu kegiatan belajar</option>
+                                <option value="Critical" @selected(old('severity', data_get($reportRecord, 'severity')) === 'Critical')>Kritis: berpotensi membahayakan</option>
                             </select>
                             @error('severity')
                                 <small class="report-field-error">{{ $message }}</small>

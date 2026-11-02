@@ -1,11 +1,11 @@
 /*
- * BENER.IN — Appearance modes.
+ * BENER.IN: Appearance modes.
  *
  * Every page loads this file before its own stylesheet, so the tokens below are
  * available to the page-level CSS. Three modes are offered on the Settings page:
- *   light — the original palette
- *   dim   — a softened dark theme (dark surfaces, but not black)
- *   dark  — a high-contrast dark theme
+ *   light: the original palette
+ *   dim: a softened dark theme (dark surfaces, but not black)
+ *   dark: a high-contrast dark theme
  *
  * The mode is applied as `data-theme` on <html> so it is resolved server-side
  * and there is no flash of the wrong theme before the page paints.
@@ -180,7 +180,7 @@ body {
  *
  * The alternative is a dark-on-dark PDF for anyone using dim/dark mode, and
  * print output cannot rely on the user switching modes first. Re-declaring the
- * tokens here keeps every page consistent without per-page overrides — this
+ * tokens here keeps every page consistent without per-page overrides. This
  * block wins because it comes after the [data-theme] declarations above.
  */
 @media print {

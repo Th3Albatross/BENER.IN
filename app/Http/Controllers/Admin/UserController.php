@@ -44,10 +44,12 @@ class UserController
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'role' => ['required', 'string', Rule::in(User::assignableRoles())],
             'password' => ['required', 'string', 'confirmed', Password::min(8)],
-        ], $this->messages());
+        ] + $this->identityRules($request->input('role')), $this->messages());
+
+        // Students carry a NIS and classroom; staff only ever use email.
+        $validated = $this->normalizeIdentity($validated);
 
         // The User model's hashed cast hashes the plain-text password on save.
         User::create($validated);
@@ -74,14 +76,17 @@ class UserController
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->getKey())],
             'role' => ['required', 'string', Rule::in(User::assignableRoles())],
             'password' => ['nullable', 'string', 'confirmed', Password::min(8)],
-        ], $this->messages());
+        ] + $this->identityRules($request->input('role'), $user), $this->messages());
+
+        $validated = $this->normalizeIdentity($validated);
 
         $user->fill([
             'name' => $validated['name'],
-            'email' => $validated['email'],
+            'nis' => $validated['nis'] ?? null,
+            'classroom' => $validated['classroom'] ?? null,
+            'email' => $validated['email'] ?? null,
             'role' => $validated['role'],
         ]);
 
@@ -118,6 +123,59 @@ class UserController
             ->with('status', 'user-deleted');
     }
 
+    /**
+     * Identity rules depend on the chosen role: students are identified by NIS
+     * and classroom, while petugas/admin are identified by email.
+     *
+     * @return array<string, array<int, mixed>>
+     */
+    private function identityRules(mixed $role, ?User $user = null): array
+    {
+        $isStudent = $role === 'siswa';
+
+        return [
+            'nis' => [
+                Rule::requiredIf($isStudent),
+                'nullable',
+                'string',
+                'digits_between:4,20',
+                Rule::unique('users', 'nis')->ignore($user?->getKey()),
+            ],
+            'classroom' => [
+                Rule::requiredIf($isStudent),
+                'nullable',
+                'string',
+                'max:20',
+            ],
+            'email' => [
+                Rule::requiredIf(! $isStudent),
+                'nullable',
+                'string',
+                'email',
+                'max:255',
+                Rule::unique('users', 'email')->ignore($user?->getKey()),
+            ],
+        ];
+    }
+
+    /**
+     * Keep the two identity flavours apart: a petugas/admin never stores a NIS
+     * or classroom, and a blank email on a student becomes NULL rather than ''.
+     *
+     * @param  array<string, mixed>  $validated
+     * @return array<string, mixed>
+     */
+    private function normalizeIdentity(array $validated): array
+    {
+        $isStudent = ($validated['role'] ?? null) === 'siswa';
+
+        $validated['nis'] = $isStudent ? ($validated['nis'] ?? null) : null;
+        $validated['classroom'] = $isStudent ? ($validated['classroom'] ?? null) : null;
+        $validated['email'] = ! empty($validated['email']) ? $validated['email'] : null;
+
+        return $validated;
+    }
+
     /** @return array<string, string> */
     private function messages(): array
     {
@@ -127,6 +185,11 @@ class UserController
             'email.required' => 'Masukkan email pengguna.',
             'email.email' => 'Format email tidak valid.',
             'email.unique' => 'Email ini sudah digunakan pengguna lain.',
+            'nis.required' => 'Masukkan NIS siswa.',
+            'nis.digits_between' => 'NIS harus berupa 4 sampai 20 angka.',
+            'nis.unique' => 'NIS ini sudah digunakan siswa lain.',
+            'classroom.required' => 'Masukkan kelas siswa.',
+            'classroom.max' => 'Kelas maksimal 20 karakter.',
             'role.required' => 'Pilih peran pengguna.',
             'role.in' => 'Peran yang dipilih tidak diizinkan.',
             'password.required' => 'Masukkan kata sandi awal.',

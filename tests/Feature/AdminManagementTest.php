@@ -94,6 +94,104 @@ class AdminManagementTest extends TestCase
         $this->assertSame('Nama Diubah', $user->name);
         $this->assertSame('diubah@example.com', $user->email);
         $this->assertSame('petugas', $user->role);
+        // Promoting a student to petugas clears the student-only identity.
+        $this->assertNull($user->nis);
+        $this->assertNull($user->classroom);
+    }
+
+    public function test_creating_a_siswa_requires_a_nis_and_classroom(): void
+    {
+        $this->actingAs($this->admin())
+            ->post(route('admin.users.store'), [
+                'name' => 'Siswa Baru',
+                'role' => 'siswa',
+                'password' => 'rahasia123',
+                'password_confirmation' => 'rahasia123',
+            ])
+            ->assertSessionHasErrors(['nis', 'classroom']);
+    }
+
+    public function test_a_siswa_nis_must_be_numeric_and_unique(): void
+    {
+        $existing = User::factory()->siswa()->create();
+
+        $this->actingAs($this->admin())
+            ->post(route('admin.users.store'), [
+                'name' => 'Siswa A',
+                'nis' => 'ABC123',
+                'classroom' => 'XI-1',
+                'role' => 'siswa',
+                'password' => 'rahasia123',
+                'password_confirmation' => 'rahasia123',
+            ])
+            ->assertSessionHasErrors('nis');
+
+        $this->actingAs($this->admin())
+            ->post(route('admin.users.store'), [
+                'name' => 'Siswa B',
+                'nis' => $existing->nis,
+                'classroom' => 'XI-2',
+                'role' => 'siswa',
+                'password' => 'rahasia123',
+                'password_confirmation' => 'rahasia123',
+            ])
+            ->assertSessionHasErrors('nis');
+    }
+
+    public function test_admin_can_create_a_siswa_with_a_nis_and_classroom(): void
+    {
+        $this->actingAs($this->admin())
+            ->post(route('admin.users.store'), [
+                'name' => 'Siswa Baru',
+                'nis' => '1234567890',
+                'classroom' => 'XI-1',
+                'role' => 'siswa',
+                'password' => 'rahasia123',
+                'password_confirmation' => 'rahasia123',
+            ])
+            ->assertRedirect(route('admin.users.index'))
+            ->assertSessionHas('status', 'user-created');
+
+        $siswa = User::where('nis', '1234567890')->firstOrFail();
+        $this->assertSame('XI-1', $siswa->classroom);
+        $this->assertNull($siswa->email);
+    }
+
+    public function test_creating_a_petugas_ignores_nis_and_classroom(): void
+    {
+        $this->actingAs($this->admin())
+            ->post(route('admin.users.store'), [
+                'name' => 'Petugas Baru',
+                'nis' => '9999999999',
+                'classroom' => 'XI-9',
+                'email' => 'petugas.baru@example.com',
+                'role' => 'petugas',
+                'password' => 'rahasia123',
+                'password_confirmation' => 'rahasia123',
+            ])
+            ->assertSessionHas('status', 'user-created');
+
+        $petugas = User::where('email', 'petugas.baru@example.com')->firstOrFail();
+        $this->assertNull($petugas->nis);
+        $this->assertNull($petugas->classroom);
+    }
+
+    public function test_admin_can_assign_a_nis_and_classroom_when_editing(): void
+    {
+        $user = User::factory()->siswa()->create(['nis' => null, 'classroom' => null]);
+
+        $this->actingAs($this->admin())
+            ->put(route('admin.users.update', $user), [
+                'name' => $user->name,
+                'nis' => '5555555555',
+                'classroom' => 'XII-3',
+                'role' => 'siswa',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $user->refresh();
+        $this->assertSame('5555555555', $user->nis);
+        $this->assertSame('XII-3', $user->classroom);
     }
 
     public function test_updating_without_a_password_keeps_the_existing_password(): void
@@ -104,6 +202,8 @@ class AdminManagementTest extends TestCase
         $this->actingAs($this->admin())
             ->put(route('admin.users.update', $user), [
                 'name' => $user->name,
+                'nis' => $user->nis,
+                'classroom' => $user->classroom,
                 'email' => $user->email,
                 'role' => 'siswa',
                 'password' => '',

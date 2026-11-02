@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#f2f3f5">
-    <title>Masuk — BENER.IN</title>
+    <title>Masuk - BENER.IN</title>
 
     {{-- Apply the stored mode before first paint so the wrong theme never flashes. --}}
     <script>
@@ -75,18 +75,18 @@
                         @csrf
 
                         <div class="field-group">
-                            <label for="email">Email</label>
+                            <label for="login">Email atau NIS</label>
                             <div class="input-wrap">
                                 <svg class="input-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                     <path d="M4 6.75h16v10.5H4V6.75Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
                                     <path d="m5 8 7 5 7-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
                                 </svg>
                                 <input
-                                    id="email"
-                                    type="email"
-                                    name="email"
-                                    value="{{ old('email') }}"
-                                    placeholder="Masukkan email kamu"
+                                    id="login"
+                                    type="text"
+                                    name="login"
+                                    value="{{ old('login') }}"
+                                    placeholder="Masukkan email atau NIS"
                                     autocomplete="username"
                                     required
                                 >
