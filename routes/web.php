@@ -50,6 +50,7 @@ Route::middleware('auth')->group(function () {
 
     Route::controller(SettingsController::class)->group(function () {
         Route::get('/settings', 'index')->name('settings.index');
+        Route::patch('/settings/email', 'updateEmail')->name('settings.email.update');
         Route::patch('/settings/profile-photo', 'updateProfilePhoto')->name('settings.profile-photo.update');
         Route::delete('/settings/profile-photo', 'resetProfilePhoto')->name('settings.profile-photo.reset');
         Route::patch('/settings/password', 'updatePassword')->name('settings.password.update');

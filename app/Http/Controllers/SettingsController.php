@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Services\ScramblrService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
 class SettingsController
@@ -87,6 +88,35 @@ class SettingsController
         return redirect()
             ->route('settings.index')
             ->with('status', 'profile-photo-reset');
+    }
+
+    public function updateEmail(Request $request)
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'max:255',
+                'confirmed',
+                Rule::unique('users', 'email')->ignore($user->getKey()),
+            ],
+        ], [
+            'email.required' => 'Masukkan email kamu.',
+            'email.email' => 'Format email tidak valid.',
+            'email.max' => 'Email maksimal 255 karakter.',
+            'email.unique' => 'Email ini sudah digunakan pengguna lain.',
+            'email.confirmed' => 'Konfirmasi email tidak cocok.',
+        ]);
+
+        $user->email = $validated['email'];
+        $user->save();
+
+        return redirect()
+            ->route('settings.index')
+            ->with('status', 'email-updated');
     }
 
     public function updatePassword(Request $request)

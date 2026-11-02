@@ -11,9 +11,6 @@
 @section('content')
 @php
     $profileName = $user->name ?? 'Pengguna';
-    $profileNis = $user->nis ?: 'NIS belum tersedia';
-    $profileClassroom = $user->classroom ?: 'Kelas belum tersedia';
-    $profileEmail = $user->email ?: 'Email belum tersedia';
     $profileInitials = collect(preg_split('/\s+/', trim($profileName)))
         ->filter()
         ->take(2)
@@ -47,123 +44,184 @@
                     </svg>
                 </span>
                 <div>
-                    <h2 id="profile-heading">Foto profil</h2>
-                    <p>Foto ini akan ditampilkan di navigasi akunmu.</p>
+                    <h2 id="profile-heading">Profil akun</h2>
+                    <p>Data akun dan foto yang tampil di navigasi.</p>
                 </div>
             </div>
 
-            <div class="settings-profile-summary">
-                <div
-                    class="settings-avatar {{ $profilePhotoUrl ? 'settings-avatar--has-photo' : '' }}"
-                    id="settings-avatar-preview"
-                    aria-label="Pratinjau foto profil"
-                    data-existing-photo="{{ $profilePhotoUrl ? 'true' : 'false' }}"
-                >
-                    @if ($profilePhotoUrl)
-                        <img src="{{ $profilePhotoUrl }}" alt="Foto profil {{ $profileName }}">
-                        <button
-                            class="settings-avatar-remove-toggle"
-                            type="button"
-                            id="settings-avatar-remove-toggle"
-                            aria-label="Tandai foto profil untuk dihapus"
-                            aria-pressed="false"
-                            title="Klik untuk menandai foto profil agar dihapus"
-                        >
-                            <span class="settings-avatar-remove-overlay" aria-hidden="true">
-                                <svg viewBox="0 0 24 24" fill="none">
-                                    <path d="m7 7 10 10M17 7 7 17" />
-                                </svg>
-                            </span>
-                        </button>
-                    @else
-                        <span id="settings-avatar-initials">{{ $profileInitials ?: 'U' }}</span>
-                    @endif
-                </div>
-                <div class="settings-profile-summary__text">
-                    <h3>{{ $profileName }}</h3>
-                    <p>{{ $profileNis }}</p>
-                    <p>{{ $profileClassroom }}</p>
-                    <p>{{ $profileEmail }}</p>
-                    @if (!empty($user->role))
-                        <span class="settings-role">{{ ucfirst($user->role) }}</span>
-                    @endif
-                </div>
-            </div>
-
-            @if ($profilePhotoUrl)
-                <p class="settings-avatar-hint" id="profile-photo-reset-hint">Klik foto profil untuk menandai bahwa foto ingin dihapus.</p>
-            @endif
-
-            @if (session('status') === 'profile-photo-updated')
-                <div class="settings-message settings-message--success" role="status">
-                    Foto profil berhasil diperbarui.
-                </div>
-            @elseif (session('status') === 'profile-photo-reset')
-                <div class="settings-message settings-message--success" role="status">
-                    Foto profil berhasil dihapus. Inisial nama digunakan kembali.
-                </div>
-            @endif
-
-            {{-- The reset form stays in the DOM so the shared action button can submit it. --}}
-            <form
-                class="settings-form-carrier"
-                id="profile-photo-reset-form"
-                action="{{ route('settings.profile-photo.reset') }}"
-                method="POST"
-                aria-hidden="true"
-                tabindex="-1"
-            >
-                @csrf
-                @method('DELETE')
-            </form>
-
-            <form class="settings-form" id="profile-photo-upload-form" action="{{ route('settings.profile-photo.update') }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                @method('PATCH')
-
-                <div class="settings-form-field">
-                    <label for="profile_photo">Pilih foto baru</label>
-                    <input
-                        class="settings-file-input"
-                        type="file"
-                        id="profile_photo"
-                        name="profile_photo"
-                        accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
-                        required
+            <div class="settings-profile">
+                <aside class="settings-profile__photo">
+                    <div
+                        class="settings-avatar"
+                        id="settings-avatar-preview"
+                        aria-label="Pratinjau foto profil"
+                        data-existing-photo="{{ $profilePhotoUrl ? 'true' : 'false' }}"
                     >
-                    <p class="settings-field-help">Format JPG, PNG, atau WebP. Ukuran maksimal 2 MB.</p>
-                    @error('profile_photo')
-                        <p class="settings-field-error" role="alert">{{ $message }}</p>
-                    @enderror
+                        @if ($profilePhotoUrl)
+                            <img src="{{ $profilePhotoUrl }}" alt="Foto profil {{ $profileName }}">
+                        @else
+                            <span id="settings-avatar-initials">{{ $profileInitials ?: 'U' }}</span>
+                        @endif
+                    </div>
+
+                    @if (session('status') === 'profile-photo-updated')
+                        <div class="settings-message settings-message--success" role="status">
+                            Foto berhasil diperbarui.
+                        </div>
+                    @elseif (session('status') === 'profile-photo-reset')
+                        <div class="settings-message settings-message--success" role="status">
+                            Foto berhasil dihapus.
+                        </div>
+                    @endif
+
+                    <p class="settings-photo-note" id="profile-photo-note" hidden></p>
+
+                    <form class="settings-form" id="profile-photo-upload-form" action="{{ route('settings.profile-photo.update') }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        @method('PATCH')
+
+                        <div class="settings-photo-buttons" data-photo-state="idle">
+                            <label class="settings-photo-input" for="profile_photo" id="profile-photo-choose">Ubah foto</label>
+                            <button
+                                class="settings-photo-input settings-photo-input--danger"
+                                id="profile-photo-delete-button"
+                                type="button"
+                                @unless ($profilePhotoUrl) hidden @endunless
+                            >Hapus foto</button>
+                        </div>
+
+                        <div class="settings-photo-buttons" data-photo-state="uploading" hidden>
+                            <button class="settings-submit-button" id="profile-photo-save-button" type="submit">Simpan foto</button>
+                            <button class="settings-cancel-button" id="profile-photo-cancel-upload" type="button">Batalkan</button>
+                        </div>
+
+                        <div class="settings-photo-buttons" data-photo-state="confirming-delete" hidden>
+                            <button class="settings-delete-button" id="profile-photo-delete-confirm" type="button">Ya, hapus</button>
+                            <button class="settings-cancel-button" id="profile-photo-cancel-delete" type="button">Batal</button>
+                        </div>
+
+                        <input
+                            class="settings-photo-file"
+                            type="file"
+                            id="profile_photo"
+                            name="profile_photo"
+                            accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                            required
+                        >
+                        @error('profile_photo')
+                            <p class="settings-field-error" role="alert">{{ $message }}</p>
+                        @enderror
+                    </form>
+
+                    {{-- Deletion is submitted by the dedicated form below so the
+                         photo-upload form can keep the file input untouched. --}}
+                    <form
+                        id="profile-photo-reset-form"
+                        action="{{ route('settings.profile-photo.reset') }}"
+                        method="POST"
+                        hidden
+                    >
+                        @csrf
+                        @method('DELETE')
+                    </form>
+                </aside>
+
+                <div class="settings-profile__info">
+                    <div class="settings-profile__identity">
+                        <h3>{{ $profileName }}</h3>
+                        @if (!empty($user->role))
+                            <span class="settings-role">{{ ucfirst($user->role) }}</span>
+                        @endif
+                    </div>
+
+                    <dl class="settings-facts">
+                        <div class="settings-fact">
+                            <dt>NIS</dt>
+                            <dd>{{ $user->nis ?: 'Belum tersedia' }}</dd>
+                        </div>
+                        <div class="settings-fact">
+                            <dt>Kelas</dt>
+                            <dd>{{ $user->classroom ?: 'Belum tersedia' }}</dd>
+                        </div>
+                        <div class="settings-fact">
+                            <dt>Email</dt>
+                            <dd>
+                                <span id="settings-email-value">{{ $user->email ?: 'Belum tersedia' }}</span>
+                                <button
+                                    class="settings-fact-edit"
+                                    type="button"
+                                    id="settings-email-edit-toggle"
+                                    aria-expanded="{{ $errors->has('email') ? 'true' : 'false' }}"
+                                    aria-controls="settings-email-form"
+                                >Ubah</button>
+                            </dd>
+                        </div>
+                    </dl>
+
+                    @if (session('status') === 'email-updated')
+                        <div class="settings-message settings-message--success" role="status">
+                            Email berhasil diperbarui.
+                        </div>
+                    @endif
+
+                    <form
+                        class="settings-form settings-email-form"
+                        id="settings-email-form"
+                        action="{{ route('settings.email.update') }}"
+                        method="POST"
+                        @unless ($errors->has('email')) hidden @endunless
+                        data-open="{{ $errors->has('email') ? 'true' : 'false' }}"
+                    >
+                        @csrf
+                        @method('PATCH')
+
+                        <div class="settings-form-field">
+                            <label for="email">Email baru</label>
+                            <input
+                                class="settings-text-input @error('email') is-invalid @enderror"
+                                type="email"
+                                id="email"
+                                name="email"
+                                value="{{ old('email', $user->email) }}"
+                                maxlength="255"
+                                required
+                            >
+                            @error('email')
+                                <p class="settings-field-error" role="alert">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="settings-form-field">
+                            <label for="email_confirmation">Ulangi email baru</label>
+                            <input
+                                class="settings-text-input"
+                                type="email"
+                                id="email_confirmation"
+                                name="email_confirmation"
+                                value="{{ old('email_confirmation') }}"
+                                maxlength="255"
+                                required
+                            >
+                        </div>
+
+                        <div class="settings-form-actions">
+                            <button class="settings-submit-button" type="submit">Simpan email</button>
+                            <button
+                                class="settings-cancel-button"
+                                type="button"
+                                id="settings-email-cancel"
+                            >Batalkan</button>
+                        </div>
+                    </form>
+
+                    {{-- Without JS the reveal button cannot work, so show the form outright. --}}
+                    <noscript>
+                        <style>#settings-email-form[hidden] { display: flex; }</style>
+                    </noscript>
                 </div>
-            </form>
-
-            <p class="settings-reset-confirmation" id="profile-photo-reset-confirmation" hidden>
-                Hapus foto profil ini? Avatar akan kembali menampilkan inisial nama.
-            </p>
-
-            <div class="settings-form-actions settings-profile-actions">
-                <button
-                    class="settings-submit-button"
-                    id="profile-photo-save-button"
-                    type="submit"
-                    form="profile-photo-upload-form"
-                >Simpan foto</button>
-                <button
-                    class="settings-delete-button"
-                    id="profile-photo-delete-button"
-                    type="submit"
-                    form="profile-photo-reset-form"
-                    hidden
-                >Hapus foto profil</button>
-                <button
-                    class="settings-cancel-button"
-                    type="button"
-                    id="cancel-profile-photo-reset"
-                    hidden
-                >Batalkan</button>
             </div>
         </section>
+
         <section class="settings-card" aria-labelledby="appearance-heading">
             <div class="settings-card-heading">
                 <span class="settings-card-heading__icon settings-card-heading__icon--appearance" aria-hidden="true">
@@ -304,107 +362,50 @@
     (() => {
         const input = document.getElementById('profile_photo');
         const preview = document.getElementById('settings-avatar-preview');
-        let removeToggle = document.getElementById('settings-avatar-remove-toggle');
-        const resetHint = document.getElementById('profile-photo-reset-hint');
-        const resetConfirmation = document.getElementById('profile-photo-reset-confirmation');
-        const uploadForm = document.getElementById('profile-photo-upload-form');
-        const saveButton = document.getElementById('profile-photo-save-button');
-        const deleteButton = document.getElementById('profile-photo-delete-button');
-        const cancelReset = document.getElementById('cancel-profile-photo-reset');
+        const note = document.getElementById('profile-photo-note');
+        const buttons = document.querySelectorAll('#profile-photo-upload-form .settings-photo-buttons');
+        const deleteForm = document.getElementById('profile-photo-reset-form');
 
         if (!input || !preview) return;
 
         // Keep the server-rendered avatar so Cancel can discard an unsaved preview.
         const originalPreviewMarkup = preview.innerHTML;
-        const defaultHint = 'Klik foto profil untuk menandai bahwa foto ingin dihapus.';
-        const uploadHint = 'Pratinjau foto baru belum disimpan. Klik Batalkan untuk membuang perubahan.';
         let previewUrl = null;
-        let removalSelected = false;
-        let uploadPending = false;
 
-        const updateHint = () => {
-            if (!resetHint) return;
+        // Exactly one button group is visible per state, so the panel never
+        // shows more than two controls at once.
+        const showState = (state, message) => {
+            buttons.forEach((group) => {
+                group.hidden = group.dataset.photoState !== state;
+            });
 
-            if (removalSelected) {
-                resetHint.textContent = 'Foto profil ditandai untuk dihapus. Konfirmasikan dengan tombol Hapus foto profil.';
-            } else if (uploadPending) {
-                resetHint.textContent = uploadHint;
-            } else {
-                resetHint.textContent = defaultHint;
+            if (note) {
+                note.textContent = message || '';
+                note.hidden = !message;
             }
-
-            resetHint.classList.toggle('settings-avatar-hint--selected', removalSelected);
         };
 
-        const setRemovalSelected = (selected) => {
-            // A pending upload and a deletion request are mutually exclusive modes.
-            if (uploadPending && selected) return;
-
-            removalSelected = selected;
-            preview.classList.toggle('is-removal-selected', selected);
-
-            if (removeToggle) {
-                removeToggle.setAttribute('aria-pressed', selected ? 'true' : 'false');
-                removeToggle.setAttribute(
-                    'aria-label',
-                    selected ? 'Batalkan pilihan penghapusan foto profil' : 'Tandai foto profil untuk dihapus'
-                );
-            }
-
-            if (uploadForm) {
-                uploadForm.hidden = selected;
-                uploadForm.setAttribute('aria-hidden', selected ? 'true' : 'false');
-            }
-            if (saveButton) saveButton.hidden = selected;
-            if (deleteButton) deleteButton.hidden = !selected;
-            if (cancelReset) cancelReset.hidden = !(selected || uploadPending);
-            if (resetConfirmation) resetConfirmation.hidden = !selected;
-
-            updateHint();
-        };
-
-        const handleRemoveToggle = () => {
-            if (uploadPending || (input.files && input.files.length > 0)) return;
-            setRemovalSelected(!removalSelected);
-        };
-
-        const bindRemoveToggle = () => {
-            removeToggle = preview.querySelector('#settings-avatar-remove-toggle');
-            if (!removeToggle) return;
-
-            removeToggle.hidden = false;
-            removeToggle.addEventListener('click', handleRemoveToggle);
-        };
-
-        const restoreOriginalAvatar = () => {
+        const discardPreview = () => {
             if (previewUrl) {
                 URL.revokeObjectURL(previewUrl);
                 previewUrl = null;
             }
 
             input.value = '';
-            uploadPending = false;
-            removalSelected = false;
             preview.innerHTML = originalPreviewMarkup;
-            preview.classList.remove('is-removal-selected');
-            bindRemoveToggle();
-            setRemovalSelected(false);
+            showState('idle');
         };
 
-        bindRemoveToggle();
+        document.getElementById('profile-photo-cancel-upload')?.addEventListener('click', discardPreview);
+        document.getElementById('profile-photo-cancel-delete')?.addEventListener('click', () => showState('idle'));
 
-        if (cancelReset) {
-            cancelReset.addEventListener('click', () => {
-                if (uploadPending) {
-                    // Discard an unsaved upload and restore the currently saved photo/initials.
-                    restoreOriginalAvatar();
-                    return;
-                }
+        document.getElementById('profile-photo-delete-button')?.addEventListener('click', () => {
+            showState('confirming-delete', 'Foto akan dihapus dan avatar kembali menampilkan inisial nama.');
+        });
 
-                // Exit deletion mode without changing the saved profile photo.
-                setRemovalSelected(false);
-            });
-        }
+        document.getElementById('profile-photo-delete-confirm')?.addEventListener('click', () => {
+            deleteForm?.submit();
+        });
 
         input.addEventListener('change', () => {
             const file = input.files && input.files[0];
@@ -414,9 +415,6 @@
                 input.value = '';
                 return;
             }
-
-            setRemovalSelected(false);
-            uploadPending = true;
 
             if (previewUrl) URL.revokeObjectURL(previewUrl);
             previewUrl = URL.createObjectURL(file);
@@ -430,19 +428,36 @@
             }
             image.src = previewUrl;
 
-            // While an upload is pending, show Save and Cancel together; hide the
-            // removal overlay because the preview is not yet the saved profile photo.
-            if (removeToggle) removeToggle.hidden = true;
-            if (saveButton) saveButton.hidden = false;
-            if (deleteButton) deleteButton.hidden = true;
-            if (cancelReset) cancelReset.hidden = false;
-            if (resetConfirmation) resetConfirmation.hidden = true;
-            if (uploadForm) {
-                uploadForm.hidden = false;
-                uploadForm.setAttribute('aria-hidden', 'false');
-            }
-            updateHint();
+            showState('uploading', 'Pratinjau belum disimpan. Klik Simpan foto untuk menerapkan.');
         });
+
+        // Returning to the page after a failed upload should show the idle state.
+        showState('idle');
+    })();
+
+    // Email change: reveal the inline form on demand. The form is open by
+    // default when validation failed, so the errors are visible.
+    (() => {
+        const toggle = document.getElementById('settings-email-edit-toggle');
+        const form = document.getElementById('settings-email-form');
+        const cancel = document.getElementById('settings-email-cancel');
+
+        if (!toggle || !form) return;
+
+        const setOpen = (open) => {
+            form.hidden = !open;
+            toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+
+            if (open) {
+                form.querySelector('input[name="email"]')?.focus();
+            }
+        };
+
+        toggle.addEventListener('click', () => setOpen(form.hidden));
+        cancel?.addEventListener('click', () => setOpen(false));
+
+        // A server-side validation failure re-renders with the form open.
+        setOpen(form.dataset.open === 'true');
     })();
 </script>
 @endpush
