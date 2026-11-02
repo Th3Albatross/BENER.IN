@@ -146,4 +146,90 @@ class PrintPaletteTest extends TestCase
             $this->assertStringContainsString('chart.destroy()', $js, "$module must clear instances so a redraw picks up new colours.");
         }
     }
+
+    /**
+     * An animation in flight is captured half-drawn, which is what made the
+     * exported charts look broken. The print redraw must be synchronous.
+     */
+    public function test_charts_do_not_animate_while_printing(): void
+    {
+        foreach (['js/analytics.js', 'js/admin-dashboard.js'] as $module) {
+            $js = file_get_contents(resource_path($module));
+
+            $this->assertMatchesRegularExpression(
+                '/animation:\s*isPrint\s*\?\s*false/',
+                $js,
+                "$module must disable animation for the print redraw."
+            );
+        }
+    }
+
+    public function test_the_print_redraw_passes_the_print_flag(): void
+    {
+        foreach (['js/analytics.js', 'js/admin-dashboard.js'] as $module) {
+            $js = file_get_contents(resource_path($module));
+
+            $this->assertMatchesRegularExpression(
+                "/beforeprint',\s*\(\)\s*=>\s*[a-zA-Z]+\([^)]*true\)/",
+                $js,
+                "$module must call its chart builder with the print flag on beforeprint."
+            );
+        }
+    }
+
+    /**
+     * Chart.js writes inline px width/height from the screen size. On the
+     * narrower print page that overflows and clips the chart unless the
+     * canvases are pinned to their containers.
+     */
+    public function test_the_chart_pages_constrain_canvases_when_printing(): void
+    {
+        $analytics = file_get_contents(resource_path('css/pages/analytics.css'));
+        $analyticsPrint = substr($analytics, strpos($analytics, '@media print'));
+
+        foreach (['.analytics-trend-canvas', '.analytics-status-canvas', '.analytics-bar-canvas'] as $container) {
+            $this->assertStringContainsString($container.' canvas', $analyticsPrint, "$container canvas is not constrained for print.");
+        }
+
+        $admin = file_get_contents(resource_path('css/pages/admin.css'));
+        $adminPrint = substr($admin, strpos($admin, '@media print'));
+
+        $this->assertStringContainsString('.admin-chart-canvas canvas', $adminPrint);
+    }
+
+    /**
+     * Print media is not reliably active when `beforeprint` fires, so reading
+     * the CSS tokens there can still yield the dark on-screen palette. The print
+     * colours must be fixed.
+     */
+    public function test_the_print_palette_is_hard_coded_not_read_from_tokens(): void
+    {
+        foreach (['js/analytics.js', 'js/admin-dashboard.js'] as $module) {
+            $js = file_get_contents(resource_path($module));
+
+            $this->assertStringContainsString('PRINT_COLORS', $js, "$module must define a print palette.");
+
+            // Extract only the PRINT_COLORS object literal.
+            $matched = preg_match('/PRINT_COLORS = \{(.*?)\n\};/s', $js, $m);
+            $this->assertSame(1, $matched, "$module print palette could not be parsed.");
+
+            $palette = $m[1];
+            // The print palette uses literals, never token() lookups.
+            $this->assertStringNotContainsString('token(', $palette, "$module print palette must not read CSS tokens.");
+
+            // Dark ink on paper, never the light text used by dark themes.
+            $this->assertStringContainsString("ink: '#1a1a1a'", $palette, "$module must print with dark ink.");
+        }
+    }
+
+    public function test_the_admin_dashboard_has_a_print_stylesheet(): void
+    {
+        // It printed the sidebar and the screen grid before this block existed.
+        $admin = file_get_contents(resource_path('css/pages/admin.css'));
+        $adminPrint = substr($admin, strpos($admin, '@media print'));
+
+        $this->assertNotFalse(strpos($admin, '@media print'), 'admin.css has no print block.');
+        $this->assertStringContainsString('.sidebar', $adminPrint);
+        $this->assertStringContainsString('.app-shell', $adminPrint);
+    }
 }

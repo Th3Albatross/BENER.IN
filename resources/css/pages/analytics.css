@@ -325,4 +325,24 @@
     .analytics-lower-panel,
     .analytics-footnote { break-inside: avoid; }
     .analytics-lower-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+    /*
+     * Chart.js writes inline px width/height onto each canvas from the screen
+     * size. On the narrower print page that overflows and clips the chart, so
+     * pin the canvases to their containers and let the bitmap scale down.
+     */
+    .analytics-trend-canvas,
+    .analytics-status-canvas,
+    .analytics-bar-canvas { height: auto !important; }
+
+    .analytics-trend-canvas canvas,
+    .analytics-status-canvas canvas,
+    .analytics-bar-canvas canvas {
+        width: 100% !important;
+        height: auto !important;
+        max-width: 100% !important;
+    }
+
+    .analytics-trend-canvas { margin-top: 8px !important; }
+    .analytics-bar-canvas { margin-top: 8px !important; }
 }

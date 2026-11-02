@@ -50,10 +50,11 @@ const readPayload = () => {
 
 const canvas = (id) => document.getElementById(id);
 
-const baseOptions = (colors) => ({
+const baseOptions = (colors, isPrint = false) => ({
     responsive: true,
     maintainAspectRatio: false,
-    animation: { duration: 450 },
+    // Printing captures the canvas immediately, so leave no animation in flight.
+    animation: isPrint ? false : { duration: 450 },
     plugins: {
         legend: { display: false },
         tooltip: {
@@ -93,10 +94,11 @@ const centerTotalPlugin = (colors) => ({
     },
 });
 
-const renderRoles = (rows, colors) => {
+const renderRoles = (rows, colors, isPrint = false) => {
     const el = canvas('admin-role-chart');
     if (!el || !rows.length) return false;
 
+    const base = baseOptions(colors, isPrint);
     const palette = {
         Siswa: colors.siswa,
         Petugas: colors.petugas,
@@ -115,7 +117,7 @@ const renderRoles = (rows, colors) => {
             }],
         },
         options: {
-            ...baseOptions(colors),
+            ...base,
             cutout: '66%',
         },
         plugins: [centerTotalPlugin(colors)],
@@ -124,9 +126,11 @@ const renderRoles = (rows, colors) => {
     return true;
 };
 
-const renderRanking = (id, rows, colors) => {
+const renderRanking = (id, rows, colors, isPrint = false) => {
     const el = canvas(id);
     if (!el || !rows.length) return false;
+
+    const base = baseOptions(colors, isPrint);
 
     new Chart(el, {
         type: 'bar',
@@ -140,7 +144,7 @@ const renderRanking = (id, rows, colors) => {
             }],
         },
         options: {
-            ...baseOptions(colors),
+            ...base,
             indexAxis: 'y',
             scales: {
                 x: {
@@ -171,8 +175,8 @@ const drawSafely = (id, draw) => {
     }
 };
 
-const initCharts = (payload) => {
-    const colors = readColors();
+const initCharts = (payload, isPrint = false) => {
+    const colors = readColors(isPrint);
 
     Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
     Chart.defaults.font.size = 10;
@@ -182,34 +186,58 @@ const initCharts = (payload) => {
     Object.values(Chart.instances).forEach((chart) => chart.destroy());
 
     const results = [
-        drawSafely('admin-role-chart', () => renderRoles(payload.roles ?? [], colors)),
-        drawSafely('admin-facility-chart', () => renderRanking('admin-facility-chart', payload.facilities ?? [], colors)),
-        drawSafely('admin-category-chart', () => renderRanking('admin-category-chart', payload.categories ?? [], colors)),
+        drawSafely('admin-role-chart', () => renderRoles(payload.roles ?? [], colors, isPrint)),
+        drawSafely('admin-facility-chart', () => renderRanking('admin-facility-chart', payload.facilities ?? [], colors, isPrint)),
+        drawSafely('admin-category-chart', () => renderRanking('admin-category-chart', payload.categories ?? [], colors, isPrint)),
     ];
 
     return results.some(Boolean);
 };
 
 /**
- * Read the palette from the active theme tokens.
+ * The palette used for print/PDF export.
  *
- * Canvas charts bake these values in when drawn, so printing from dim/dark mode
- * would emit light strokes on white paper. The print stylesheet forces the light
- * palette; re-rendering on beforeprint/afterprint applies it.
+ * Hard-coded rather than read from the CSS tokens: print media is not reliably
+ * active yet when `beforeprint` fires, so the print tokens may still resolve to
+ * the on-screen (possibly dark) values.
  */
-const readColors = () => ({
-    ink: token('--text-strong', '#2e3338'),
-    muted: token('--text-muted', '#747f8d'),
-    line: token('--border', '#e3e5e8'),
-    surface: token('--surface', '#ffffff'),
-    brand: token('--accent-fill', '#3a5cb8'),
-    siswa: token('--text-soft', '#6b7280'),
-    petugas: token('--success', '#26734b'),
-    admin: token('--accent', '#3a5cb8'),
+const PRINT_COLORS = {
+    ink: '#1a1a1a',
+    muted: '#555555',
+    line: '#dddddd',
+    surface: '#ffffff',
+    brand: '#3a5cb8',
+    siswa: '#6b7280',
+    petugas: '#26734b',
+    admin: '#3a5cb8',
     tooltipBg: '#26323c',
     tooltipTitle: '#ffffff',
     tooltipBody: '#e8edf0',
-});
+};
+
+/**
+ * Read the palette from the active theme tokens for on-screen rendering.
+ *
+ * Canvas charts bake these values in when drawn, so a re-render is required
+ * whenever the effective palette changes.
+ */
+const readColors = (isPrint = false) => {
+    if (isPrint) return PRINT_COLORS;
+
+    return {
+        ink: token('--text-strong', '#2e3338'),
+        muted: token('--text-muted', '#747f8d'),
+        line: token('--border', '#e3e5e8'),
+        surface: token('--surface', '#ffffff'),
+        brand: token('--accent-fill', '#3a5cb8'),
+        siswa: token('--text-soft', '#6b7280'),
+        petugas: token('--success', '#26734b'),
+        admin: token('--accent', '#3a5cb8'),
+        tooltipBg: '#26323c',
+        tooltipTitle: '#ffffff',
+        tooltipBody: '#e8edf0',
+    };
+};
 
 if (page) {
     const payload = readPayload();
@@ -218,8 +246,8 @@ if (page) {
         const ok = initCharts(payload);
         page.dataset.chartsReady = ok ? 'true' : 'partial';
 
-        // Redraw with the print palette so exported charts stay readable.
-        window.addEventListener('beforeprint', () => initCharts(payload));
-        window.addEventListener('afterprint', () => initCharts(payload));
+        // Redraw synchronously with the print palette so the snapshot is complete.
+        window.addEventListener('beforeprint', () => initCharts(payload, true));
+        window.addEventListener('afterprint', () => initCharts(payload, false));
     }
 }

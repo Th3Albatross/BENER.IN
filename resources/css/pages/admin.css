@@ -748,3 +748,45 @@
         width: 100%;
     }
 }
+
+/* Print / "Simpan sebagai PDF": hide chrome, keep the widgets readable. */
+@media print {
+    @page { size: A4; margin: 12mm; }
+
+    /* A4 minus margins is ~703 CSS px, so the mobile breakpoints would apply.
+       Reset the shell explicitly instead of relying on screen layout. */
+    html,
+    body { height: auto !important; overflow: visible !important; background:#ffffff !important; }
+    .app-shell { display: block !important; height: auto !important; min-height: 0 !important; }
+    .sidebar,
+    .page-header__actions,
+    .admin-button { display: none !important; }
+    .main-content { padding: 0 !important; overflow: visible !important; }
+    .page-header { margin-bottom: 12px !important; }
+
+    .admin-widget {
+        padding: 0;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .admin-stat-card,
+    .admin-card,
+    .admin-chart-card { break-inside: avoid; }
+    .admin-chart-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+    .admin-recent-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+
+    /*
+     * Charts are canvas: admin-dashboard.js redraws them for print. Chart.js also
+     * writes inline px sizes taken from the screen, which overflow the narrower
+     * page, so let the containers size to their content and scale the bitmaps
+     * down proportionally instead of clipping them.
+     */
+    .admin-chart-canvas { height: auto !important; }
+
+    .admin-chart-canvas canvas {
+        width: 100% !important;
+        height: auto !important;
+        max-width: 100% !important;
+    }
+}

@@ -122,6 +122,14 @@ const initFilterForm = () => {
     sync();
 };
 
+/**
+ * Export to PDF.
+ *
+ * The button only opens the dialog: the actual redraw happens in the
+ * `beforeprint` handler below, which is the point where the print stylesheet is
+ * active. Redrawing here instead would read the screen palette, because print
+ * media has not been applied yet.
+ */
 const initPrint = () => {
     document.querySelector('[data-analytics-print]')?.addEventListener('click', () => window.print());
 };
@@ -142,10 +150,12 @@ const readPayload = () => {
 
 const canvas = (id) => document.getElementById(id);
 
-const baseOptions = () => ({
+const baseOptions = (isPrint = false) => ({
     responsive: true,
     maintainAspectRatio: false,
-    animation: { duration: 450 },
+    // Printing snapshots the canvas immediately, so an animation in flight would
+    // be captured half-drawn. Disable it while printing.
+    animation: isPrint ? false : { duration: 450 },
     plugins: {
         legend: { display: false },
         tooltip: {
@@ -160,9 +170,11 @@ const baseOptions = () => ({
     },
 });
 
-const renderTrend = (rows, colors) => {
+const renderTrend = (rows, colors, isPrint = false) => {
     const el = canvas('analytics-trend-chart');
     if (!el || !rows.length) return;
+
+    const base = baseOptions(isPrint);
 
     const tag = document.querySelector('[data-analytics-trend-tag]');
     if (tag) tag.textContent = isMonthly(rows[0].label) ? 'Per bulan' : 'Per hari';
@@ -191,12 +203,12 @@ const renderTrend = (rows, colors) => {
             }],
         },
         options: {
-            ...baseOptions(),
+            ...base,
             interaction: { mode: 'index', intersect: false },
             plugins: {
-                ...baseOptions().plugins,
+                ...base.plugins,
                 tooltip: {
-                    ...baseOptions().plugins.tooltip,
+                    ...base.plugins.tooltip,
                     callbacks: {
                         title: (items) => formatTitle(rows[items[0].dataIndex].label),
                         label: (item) => reportsLabel(item.parsed.y),
@@ -253,10 +265,11 @@ const centerTotalPlugin = (colors) => ({
     },
 });
 
-const renderStatus = (rows, colors) => {
+const renderStatus = (rows, colors, isPrint = false) => {
     const el = canvas('analytics-status-chart');
     if (!el || !rows.length) return;
 
+    const base = baseOptions(isPrint);
     const names = { Pending: 'Menunggu', Resolved: 'Selesai', Rejected: 'Ditolak' };
     const palette = { Pending: colors.pending, Resolved: colors.resolved, Rejected: colors.rejected };
     const total = rows.reduce((sum, row) => sum + row.total, 0);
@@ -274,12 +287,12 @@ const renderStatus = (rows, colors) => {
             }],
         },
         options: {
-            ...baseOptions(),
+            ...base,
             cutout: '68%',
             plugins: {
-                ...baseOptions().plugins,
+                ...base.plugins,
                 tooltip: {
-                    ...baseOptions().plugins.tooltip,
+                    ...base.plugins.tooltip,
                     callbacks: {
                         title: () => '',
                         label: (item) => {
@@ -295,10 +308,11 @@ const renderStatus = (rows, colors) => {
 };
 
 /** Severity: fixed order, colour runs from calm blue to a deep rose. */
-const renderSeverity = (rows, colors) => {
+const renderSeverity = (rows, colors, isPrint = false) => {
     const el = canvas('analytics-severity-chart');
     if (!el || !rows.length) return;
 
+    const base = baseOptions(isPrint);
     const names = { Low: 'Rendah', Medium: 'Sedang', High: 'Tinggi', Critical: 'Kritis' };
     const palette = { Low: colors.brandLight, Medium: colors.pending, High: colors.high, Critical: colors.critical };
 
@@ -315,11 +329,11 @@ const renderSeverity = (rows, colors) => {
             }],
         },
         options: {
-            ...baseOptions(),
+            ...base,
             plugins: {
-                ...baseOptions().plugins,
+                ...base.plugins,
                 tooltip: {
-                    ...baseOptions().plugins.tooltip,
+                    ...base.plugins.tooltip,
                     callbacks: {
                         title: (items) => `Keparahan ${items[0].label.toLowerCase()}`,
                         label: (item) => reportsLabel(item.parsed.y),
@@ -340,9 +354,11 @@ const renderSeverity = (rows, colors) => {
 };
 
 /** Horizontal ranking bars, used for categories and facilities. */
-const renderRanking = (id, rows, colors) => {
+const renderRanking = (id, rows, colors, isPrint = false) => {
     const el = canvas(id);
     if (!el || !rows.length) return;
+
+    const base = baseOptions(isPrint);
 
     new Chart(el, {
         type: 'bar',
@@ -357,12 +373,12 @@ const renderRanking = (id, rows, colors) => {
             }],
         },
         options: {
-            ...baseOptions(),
+            ...base,
             indexAxis: 'y',
             plugins: {
-                ...baseOptions().plugins,
+                ...base.plugins,
                 tooltip: {
-                    ...baseOptions().plugins.tooltip,
+                    ...base.plugins.tooltip,
                     callbacks: {
                         title: (items) => rows[items[0].dataIndex].label,
                         label: (item) => reportsLabel(item.parsed.x),
@@ -418,14 +434,14 @@ const drawSafely = (canvasId, draw) => {
     }
 };
 
-const initCharts = () => {
+const initCharts = (isPrint = false) => {
     const payload = readPayload();
     if (!payload) {
         markFailed();
         return false;
     }
 
-    const colors = readColors();
+    const colors = readColors(isPrint);
 
     Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
     Chart.defaults.font.size = 10;
@@ -436,51 +452,78 @@ const initCharts = () => {
     destroyCharts();
 
     const results = [
-        drawSafely('analytics-trend-chart', () => renderTrend(payload.trend ?? [], colors)),
-        drawSafely('analytics-status-chart', () => renderStatus(payload.statuses ?? [], colors)),
-        drawSafely('analytics-severity-chart', () => renderSeverity(payload.severities ?? [], colors)),
-        drawSafely('analytics-category-chart', () => renderRanking('analytics-category-chart', payload.categories ?? [], colors)),
-        drawSafely('analytics-facility-chart', () => renderRanking('analytics-facility-chart', payload.facilities ?? [], colors)),
+        drawSafely('analytics-trend-chart', () => renderTrend(payload.trend ?? [], colors, isPrint)),
+        drawSafely('analytics-status-chart', () => renderStatus(payload.statuses ?? [], colors, isPrint)),
+        drawSafely('analytics-severity-chart', () => renderSeverity(payload.severities ?? [], colors, isPrint)),
+        drawSafely('analytics-category-chart', () => renderRanking('analytics-category-chart', payload.categories ?? [], colors, isPrint)),
+        drawSafely('analytics-facility-chart', () => renderRanking('analytics-facility-chart', payload.facilities ?? [], colors, isPrint)),
     ];
 
     return results.every(Boolean);
 };
 
 /**
- * Read the palette from the active theme tokens.
+ * The palette used for print/PDF export.
  *
- * Charts bake these values into the canvas when they are drawn, so printing in
- * dim/dark mode would otherwise emit light strokes on white paper. The print
- * stylesheet forces the light palette, and re-rendering picks up the new values.
+ * Hard-coded rather than read from the CSS tokens: print media is not reliably
+ * active yet when `beforeprint` fires, so the "print" tokens in theme.css may
+ * still resolve to the on-screen (possibly dark) values. Exporting must always
+ * produce the light palette on white paper.
  */
-const readColors = () => ({
-    ink: token('--an-ink', '#26323c'),
-    muted: token('--an-muted', '#7b8792'),
-    line: token('--an-line', '#e8edf0'),
-    brand: token('--an-brand', '#3a5cb8'),
-    pending: token('--an-pending', '#e4a54b'),
-    resolved: token('--an-resolved', '#3c9c7a'),
-    rejected: token('--an-rejected', '#d87980'),
-    // Severity scale steps that sit between the existing status colours.
+const PRINT_COLORS = {
+    ink: '#1a1a1a',
+    muted: '#555555',
+    line: '#dddddd',
+    brand: '#3a5cb8',
+    pending: '#8a6200',
+    resolved: '#26734b',
+    rejected: '#b42318',
     brandLight: '#8fa8e0',
-    high: '#d9825b',
-    critical: '#c0545e',
-});
+    high: '#c0662c',
+    critical: '#a02a2a',
+};
+
+/**
+ * Read the palette from the active theme tokens for on-screen rendering.
+ *
+ * Charts bake these values into the canvas when they are drawn, so a re-render
+ * is required whenever the effective palette changes.
+ */
+const readColors = (isPrint = false) => {
+    if (isPrint) return PRINT_COLORS;
+
+    return {
+        ink: token('--an-ink', '#26323c'),
+        muted: token('--an-muted', '#7b8792'),
+        line: token('--an-line', '#e8edf0'),
+        brand: token('--an-brand', '#3a5cb8'),
+        pending: token('--an-pending', '#e4a54b'),
+        resolved: token('--an-resolved', '#3c9c7a'),
+        rejected: token('--an-rejected', '#d87980'),
+        // Severity scale steps that sit between the existing status colours.
+        brandLight: '#8fa8e0',
+        high: '#d9825b',
+        critical: '#c0545e',
+    };
+};
 
 const destroyCharts = () => {
     Object.values(Chart.instances).forEach((chart) => chart.destroy());
 };
 
 /**
- * Charts are drawn in canvas, so CSS cannot restyle them for print. Re-render
- * before printing (with the print palette) and restore afterwards.
+ * Keep the canvases in step with the medium.
+ *
+ * `beforeprint`/`afterprint` cover printing started from the browser menu
+ * (Ctrl+P) as well as the export button. The redraw is synchronous so the
+ * snapshot always matches the print palette.
  */
 const initPrintRedraw = () => {
     const payload = readPayload();
     if (!payload) return;
 
-    window.addEventListener('beforeprint', () => initCharts());
-    window.addEventListener('afterprint', () => initCharts());
+    window.addEventListener('beforeprint', () => initCharts(true));
+    window.addEventListener('afterprint', () => initCharts(false));
 };
 
 if (page) {
