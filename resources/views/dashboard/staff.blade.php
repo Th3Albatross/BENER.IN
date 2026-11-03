@@ -5,7 +5,7 @@
 @endpush
 
 @section('title', 'Dashboard Staff')
-@section('page-title', 'Dashboard')
+@section('page-title', 'Antrean Laporan')
 @section('page-description', 'Pantau dan kelola laporan fasilitas dari seluruh siswa.')
 
 @section('content')
@@ -146,23 +146,23 @@
                             $lastActivity = $report->responses_max_created_at ?? $report->updated_at ?? $report->created_at;
                         @endphp
                         <tr>
-                            <td class="staff-report-cell">
+                            <td class="staff-report-cell" data-label="Laporan">
                                 <strong class="staff-report-title">{{ $report->title }}</strong>
                                 <span class="staff-report-meta">#{{ $report->id }} · {{ $report->location_description }}</span>
                             </td>
-                            <td>
+                            <td data-label="Pelapor">
                                 <strong class="staff-table-primary">{{ $report->user?->name ?? 'Pengguna tidak tersedia' }}</strong>
                                 <span class="staff-table-secondary">{{ $report->user?->nis ? 'NIS '.$report->user->nis : 'NIS belum tersedia' }}</span>
                                 <span class="staff-table-secondary">{{ $report->user?->classroom ? 'Kelas '.$report->user->classroom : 'Kelas belum tersedia' }}</span>
                                 <span class="staff-table-secondary">{{ $report->user?->email ?: 'Email belum tersedia' }}</span>
                             </td>
-                            <td class="facility-name">{{ $report->facility?->name ?? 'Fasilitas tidak tersedia' }}</td>
-                            <td>{{ $report->category?->name ?? 'Belum dikategorikan' }}</td>
-                            <td><span class="severity-badge {{ $severityClass }}">{{ $severityLabel }}</span></td>
-                            <td><span class="status-badge {{ $statusClass }}">{{ $statusLabel }}</span></td>
-                            <td class="report-date"><time data-local-time datetime="{{ \Illuminate\Support\Carbon::parse($report->created_at)->toIso8601String() }}">{{ \Illuminate\Support\Carbon::parse($report->created_at)->locale('id')->translatedFormat('d M Y, H:i') }}</time></td>
-                            <td class="report-date"><time data-local-time datetime="{{ \Illuminate\Support\Carbon::parse($lastActivity)->toIso8601String() }}">{{ \Illuminate\Support\Carbon::parse($lastActivity)->locale('id')->translatedFormat('d M Y, H:i') }}</time></td>
-                            <td>
+                            <td class="facility-name" data-label="Fasilitas">{{ $report->facility?->name ?? 'Fasilitas tidak tersedia' }}</td>
+                            <td data-label="Kategori">{{ $report->category?->name ?? 'Belum dikategorikan' }}</td>
+                            <td data-label="Keparahan"><span class="severity-badge {{ $severityClass }}">{{ $severityLabel }}</span></td>
+                            <td data-label="Status"><span class="status-badge {{ $statusClass }}">{{ $statusLabel }}</span></td>
+                            <td class="report-date" data-label="Dibuat"><time data-local-time datetime="{{ \Illuminate\Support\Carbon::parse($report->created_at)->toIso8601String() }}">{{ \Illuminate\Support\Carbon::parse($report->created_at)->locale('id')->translatedFormat('d M Y, H:i') }}</time></td>
+                            <td class="report-date" data-label="Aktivitas terakhir"><time data-local-time datetime="{{ \Illuminate\Support\Carbon::parse($lastActivity)->toIso8601String() }}">{{ \Illuminate\Support\Carbon::parse($lastActivity)->locale('id')->translatedFormat('d M Y, H:i') }}</time></td>
+                            <td data-label="Aksi">
                                 <a class="staff-view-report" href="{{ route('reports.showDetail', ['uuid' => $report->identifier]) }}">Lihat detail <span aria-hidden="true">→</span></a>
                             </td>
                         </tr>

@@ -5,17 +5,8 @@
 @endpush
 
 @section('title', 'Dashboard Admin')
-@section('page-title', 'Dashboard')
+@section('page-title', 'Ringkasan Fasilitas')
 @section('page-description', 'Statistik dan ringkasan data fasilitas sekolah.')
-
-@section('header-actions')
-    <a href="{{ route('admin.users.create') }}" class="admin-button admin-button--primary">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-            <path d="M12 5v14M5 12h14" />
-        </svg>
-        <span>Tambah pengguna</span>
-    </a>
-@endsection
 
 @section('content')
 @php

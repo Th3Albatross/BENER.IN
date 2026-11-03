@@ -30,7 +30,10 @@
 
     --text-strong: #2e3338;
     --text: #374151;
-    --text-muted: #747f8d;
+    /* #5b6675 clears WCAG AA (>=4.5:1) on every light surface: 5.83 on
+       #ffffff, 5.53 on #f8f9fb, 5.25 on #f2f3f5. The old #747f8d failed
+       (3.66-4.07) on the 11-12px subtitles and table headers that use it. */
+    --text-muted: #5b6675;
     --text-soft: #6b7280;
     --text-on-accent: #ffffff;
 
@@ -58,6 +61,10 @@
     --danger-soft: #fff0f0;
     --warning: #8a6200;
     --warning-soft: #fff7e3;
+    /* Solid warning fill for the "Tinggi" badge, which must read as stronger
+       than the pale "Sedang" badge. Mirrors the --accent-fill pattern. */
+    --warning-fill: #8a6200;
+    --warning-fill-fg: #ffffff;
     --info: #3559a8;
     --info-soft: #edf3ff;
 
@@ -108,6 +115,8 @@
     --danger-soft: #4a2f2e;
     --warning: #e0b968;
     --warning-soft: #443a26;
+    --warning-fill: #e0b968;
+    --warning-fill-fg: #332c1d;
     --info: #8aa8ea;
     --info-soft: #333c52;
 
@@ -158,6 +167,8 @@
     --danger-soft: #382423;
     --warning: #e8c377;
     --warning-soft: #332c1d;
+    --warning-fill: #e8c377;
+    --warning-fill-fg: #332c1d;
     --info: #9ab3ef;
     --info-soft: #242c40;
 
@@ -224,6 +235,8 @@ body {
         --danger-soft: #fff0f0;
         --warning: #8a6200;
         --warning-soft: #fff7e3;
+        --warning-fill: #8a6200;
+        --warning-fill-fg: #ffffff;
         --info: #3559a8;
         --info-soft: #edf3ff;
 

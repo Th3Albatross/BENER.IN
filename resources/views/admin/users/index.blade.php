@@ -8,15 +8,6 @@
 @section('page-title', 'Pengguna')
 @section('page-description', 'Kelola akun siswa dan petugas.')
 
-@section('header-actions')
-    <a href="{{ route('admin.users.create') }}" class="admin-button admin-button--primary">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-            <path d="M12 5v14M5 12h14" />
-        </svg>
-        <span>Tambah pengguna</span>
-    </a>
-@endsection
-
 @section('content')
 <div class="admin-page">
     @include('admin.partials.flash')
@@ -39,6 +30,13 @@
                     @endif
                 </p>
             </div>
+
+            <a href="{{ route('admin.users.create') }}" class="admin-button admin-button--primary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path d="M12 5v14M5 12h14" />
+                </svg>
+                <span>Tambah pengguna</span>
+            </a>
         </div>
 
         @if ($users->isEmpty())
@@ -61,13 +59,13 @@
                     <tbody>
                         @foreach ($users as $user)
                             <tr>
-                                <td>
+                                <td data-label="Nama">
                                     <span class="admin-table-primary">{{ $user->name }}</span>
                                     <span class="admin-table-secondary">{{ $user->nis ? 'NIS '.$user->nis : 'NIS belum tersedia' }}</span>
                                     <span class="admin-table-secondary">{{ $user->classroom ? 'Kelas '.$user->classroom : 'Kelas belum tersedia' }}</span>
                                     <span class="admin-table-secondary">{{ $user->email ?: 'Email belum tersedia' }}</span>
                                 </td>
-                                <td>
+                                <td data-label="Peran">
                                     @php
                                         $roleClass = match ($user->role) {
                                             'admin' => 'admin-role--admin',
@@ -77,9 +75,9 @@
                                     @endphp
                                     <span class="admin-role {{ $roleClass }}">{{ ucfirst($user->role) }}</span>
                                 </td>
-                                <td><span class="admin-count-pill">{{ number_format($user->reports_count, 0, ',', '.') }}</span></td>
-                                <td><span class="admin-count-pill">{{ number_format($user->responses_count, 0, ',', '.') }}</span></td>
-                                <td>
+                                <td data-label="Laporan"><span class="admin-count-pill">{{ number_format($user->reports_count, 0, ',', '.') }}</span></td>
+                                <td data-label="Pesan"><span class="admin-count-pill">{{ number_format($user->responses_count, 0, ',', '.') }}</span></td>
+                                <td data-label="Aksi">
                                     @if ($user->isAdmin())
                                         <span class="admin-table-secondary">Tidak dapat diubah</span>
                                     @else

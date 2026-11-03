@@ -71,13 +71,13 @@
                             ][$report->status] ?? 'discussion-status--pending';
                         @endphp
                         <tr>
-                            <td class="discussion-id">#{{ $report->id }}</td>
-                            <td class="discussion-title-cell">
+                            <td class="discussion-id" data-label="ID">#{{ $report->id }}</td>
+                            <td class="discussion-title-cell" data-label="Judul laporan">
                                 <span class="discussion-report-title">{{ $report->title }}</span>
                             </td>
-                            <td class="discussion-strong-cell">{{ $report->facility?->name ?? '-' }}</td>
-                            <td>{{ $report->category?->name ?? 'Tanpa kategori' }}</td>
-                            <td>
+                            <td class="discussion-strong-cell" data-label="Fasilitas">{{ $report->facility?->name ?? '-' }}</td>
+                            <td data-label="Kategori">{{ $report->category?->name ?? 'Tanpa kategori' }}</td>
+                            <td data-label="Pelapor">
                                 @php $reporterName = $report->user?->name ?? 'Pengguna'; @endphp
                                 <div class="discussion-reporter">
                                     <span class="discussion-reporter-avatar" aria-hidden="true">
@@ -90,21 +90,21 @@
                                     <span class="discussion-reporter-name">{{ $reporterName }}</span>
                                 </div>
                             </td>
-                            <td>
+                            <td data-label="Status">
                                 <span class="discussion-status {{ $statusClass }}">
                                     {{ $statusLabels[$report->status] ?? $report->status }}
                                 </span>
                             </td>
-                            <td>
+                            <td data-label="Pesan">
                                 <span class="discussion-message-count {{ (int) $report->responses_count === 0 ? 'is-empty' : '' }}">
                                     {{ (int) $report->responses_count }}
                                 </span>
                             </td>
-                            <td class="discussion-date">
+                            <td class="discussion-date" data-label="Aktivitas terakhir">
                                 @php $activityAt = $report->responses_max_created_at ?: $report->updated_at; @endphp
                                 <time data-local-time datetime="{{ \Illuminate\Support\Carbon::parse($activityAt)->toIso8601String() }}">{{ \Illuminate\Support\Carbon::parse($activityAt)->locale('id')->translatedFormat('d M Y, H:i') }}</time>
                             </td>
-                            <td>
+                            <td data-label="Aksi">
                                 <a class="discussion-open-button" href="{{ route('responses.show', [
                                     'uuid' => $report->identifier,
                                     'from' => 'discussions',

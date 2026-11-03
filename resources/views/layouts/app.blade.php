@@ -34,12 +34,15 @@
     @stack('styles')
 </head>
 <body>
+    {{-- Keyboard and screen-reader users can jump past the navigation. --}}
+    <a class="skip-link" href="#main-content">Lewati ke konten</a>
+
     <div class="app-shell">
         @include('layouts.sidebar')
         {{-- Mobile only: tapping the scrim closes the navigation panel. --}}
         <div class="sidebar-scrim" data-sidebar-scrim aria-hidden="true"></div>
 
-        <main class="main-content">
+        <main class="main-content" id="main-content" tabindex="-1">
             <header class="page-header">
                 <div class="page-header__copy">
                     <h1>@yield('page-title', 'Dashboard')</h1>

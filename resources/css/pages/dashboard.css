@@ -43,62 +43,37 @@
     box-shadow: 0 0 0 2px rgba(73, 112, 224, 0.10);
 }
 
-.stat-card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-}
-
+/* Sentence-case label above the value; the value leads the card. */
 .stat-label {
-    color:var(--text-muted);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.055em;
-}
-
-.stat-icon {
-    width: 34px;
-    height: 34px;
-    flex: 0 0 34px;
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    color:var(--text-soft);
-    background:var(--surface-2);
-    border-radius:9px;
+    gap: 7px;
+    color:var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
 }
 
-.stat-icon svg {
-    width: 18px;
-    height: 18px;
+/*
+ * Status colour rides on a small dot next to the label, not on an icon in a
+ * tinted chip: colour belongs on the data, and 0 of 23 studied app screens put
+ * an icon in a coloured circle on a KPI (app-screens.md §5).
+ */
+.stat-dot {
+    width: 7px;
+    height: 7px;
+    flex: 0 0 7px;
+    border-radius:50%;
+    background:var(--text-soft);
 }
 
-.stat-card-pending .stat-icon {
-    color:var(--warning);
-    background:var(--warning-soft);
-}
-
-.stat-card-rejected .stat-icon {
-    color:var(--danger);
-    background:var(--danger-soft);
-}
-
-.stat-card-resolved .stat-icon {
-    color:var(--success);
-    background:var(--success-soft);
-}
-
-.stat-card-body {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
+.stat-card-pending .stat-dot { background:var(--warning); }
+.stat-card-rejected .stat-dot { background:var(--danger); }
+.stat-card-resolved .stat-dot { background:var(--success); }
 
 .stat-value {
     color:var(--text-strong);
     font-size: 30px;
-    font-weight: 700;
+    font-weight: 600;
     line-height: 1.1;
     font-variant-numeric: tabular-nums;
 }
@@ -264,15 +239,16 @@
     background:var(--surface-2);
 }
 
+/* Sentence case at a legible size; the uppercase tracked header was flagged in
+   app-screens.md 7.2 as louder than the data it labels. */
 .reports-table th {
     padding: 13px 12px;
-    color:var(--text-soft);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.045em;
+    color:var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
     text-align: left;
     white-space: nowrap;
-    border-bottom:1px solid var(--border);
+    border-bottom:1px solid var(--border-strong);
 }
 
 .reports-table td {
@@ -769,17 +745,11 @@
     }
 
     .stat-label {
-        font-size: 10px;
-    }
-
-    .stat-icon {
-        width: 29px;
-        height: 29px;
-        flex-basis: 29px;
+        font-size: 11px;
     }
 
     .stat-value {
-        font-size: 25px;
+        font-size: 26px;
     }
 
     .stat-description {
@@ -977,10 +947,13 @@
     border-color:var(--danger-soft);
 }
 
+/* Tinggi is the level that drives triage order, so it must read as stronger
+   than Sedang. Both used --warning/--warning-soft, collapsing four levels into
+   three visible states. Tinggi is now a solid fill; Sedang keeps the soft tint. */
 .severity-high {
-    color:var(--warning);
-    background:var(--warning-soft);
-    border-color:var(--warning-soft);
+    color:var(--warning-fill-fg);
+    background:var(--warning-fill);
+    border-color:var(--warning-fill);
 }
 
 .severity-medium {

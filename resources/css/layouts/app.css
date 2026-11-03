@@ -62,6 +62,34 @@ button:focus-visible {
     outline-offset: 2px;
 }
 
+/*
+ * Skip link: visually hidden until keyboard focus, so a keyboard or
+ * screen-reader user can jump past the 5-6 nav links straight to the content.
+ */
+.skip-link {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 100;
+    padding: 10px 14px;
+    color: var(--accent-fill-fg);
+    background: var(--accent-fill);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    /* Clipped rather than display:none so it stays focusable. */
+    clip-path: inset(50%);
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.skip-link:focus-visible {
+    clip-path: none;
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
+}
+
 /* Height follows the content so the document is the scroll container. */
 .app-shell {
     display: flex;
@@ -274,6 +302,11 @@ body[data-sidebar-open] .sidebar__toggle-icon--close {
     margin-top: 2px;
     color: var(--color-sidebar-muted);
     font-size: 11px;
+}
+
+/* The skip link target receives focus; no ring around the entire page. */
+.main-content:focus {
+    outline: none;
 }
 
 /* ------------------------------
@@ -593,6 +626,10 @@ body[data-sidebar-open] .sidebar__toggle-icon--close {
     min-width: 0;
 }
 
+/*
+ * Signing out is routine, not destructive. Danger red is reserved for Kritis,
+ * Ditolak and Hapus, so the sidebar item uses the muted/normal sidebar ink.
+ */
 .sidebar__logout {
     display: flex;
     align-items: center;
@@ -601,20 +638,25 @@ body[data-sidebar-open] .sidebar__toggle-icon--close {
     padding: 10px 16px;
     border: 1px solid transparent;
     border-radius: var(--radius-sm);
-    color: var(--danger);
+    color: var(--color-sidebar-muted);
     font-size: 14px;
     font-weight: 600;
     transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
 }
 
 .sidebar__logout:hover {
-    color: var(--danger);
-    background: rgba(220, 53, 69, 0.12);
-    border-color: rgba(220, 53, 69, 0.18);
+    color: var(--color-sidebar-text);
+    background: var(--sidebar-hover);
+    border-color: transparent;
 }
 
 .sidebar__logout:active {
-    background: rgba(220, 53, 69, 0.18);
+    background: var(--sidebar-active);
+}
+
+.sidebar__logout:focus-visible {
+    outline: 2px solid var(--color-sidebar-text);
+    outline-offset: 2px;
 }
 
 .sidebar__logout-icon {
@@ -629,4 +671,149 @@ body[data-sidebar-open] .sidebar__toggle-icon--close {
     height: 100%;
 }
 
+/*
+ * Mobile card layout for data tables.
+ *
+ * Below 760px the fixed-width tables (min-width 800-1260px set in the page
+ * stylesheets) cannot fit, and `overflow-x: auto` pushed the row's only action
+ * off-screen: an admin could not edit or delete, a petugas could not open a
+ * discussion. Each row is restacked as a card instead, with the column name
+ * (from data-label) beside each value, so every field including the actions is
+ * reachable without horizontal scrolling.
+ *
+ * Scoped through the wrapper so it outranks the single-class page rules
+ * regardless of stylesheet order, and limited to `screen` because A4 print is
+ * ~703px wide and would otherwise turn the printed tables into cards.
+ */
+@media screen and (max-width: 760px) {
+    .reports-table-wrapper,
+    .discussion-table-wrapper,
+    .admin-table-wrapper {
+        overflow-x: visible;
+        border: 0;
+        border-radius: 0;
+    }
 
+    .reports-table-wrapper .reports-table,
+    .discussion-table-wrapper .discussion-table,
+    .admin-table-wrapper .admin-table {
+        display: block;
+        width: 100%;
+        min-width: 0;
+        border-collapse: collapse;
+    }
+
+    /* Column names move into each card via data-label. */
+    .reports-table-wrapper .reports-table thead,
+    .discussion-table-wrapper .discussion-table thead,
+    .admin-table-wrapper .admin-table thead {
+        display: none;
+    }
+
+    .reports-table-wrapper .reports-table tbody,
+    .discussion-table-wrapper .discussion-table tbody,
+    .admin-table-wrapper .admin-table tbody {
+        display: block;
+        width: 100%;
+    }
+
+    .reports-table-wrapper .reports-table tbody tr,
+    .discussion-table-wrapper .discussion-table tbody tr,
+    .admin-table-wrapper .admin-table tbody tr {
+        display: block;
+        width: 100%;
+        margin-bottom: 12px;
+        padding: 14px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+    }
+
+    .reports-table-wrapper .reports-table tbody tr:last-child,
+    .discussion-table-wrapper .discussion-table tbody tr:last-child,
+    .admin-table-wrapper .admin-table tbody tr:last-child {
+        margin-bottom: 0;
+    }
+
+    .reports-table-wrapper .reports-table tbody td,
+    .discussion-table-wrapper .discussion-table tbody td,
+    .admin-table-wrapper .admin-table tbody td {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 14px;
+        width: 100%;
+        max-width: none;
+        min-width: 0;
+        padding: 8px 0;
+        border-bottom: 0;
+        text-align: right;
+    }
+
+    /* A hairline between facts, but not above the first one. */
+    .reports-table-wrapper .reports-table tbody td + td,
+    .discussion-table-wrapper .discussion-table tbody td + td,
+    .admin-table-wrapper .admin-table tbody td + td {
+        border-top: 1px solid var(--border-soft);
+    }
+
+    /* The label is generated from the header the cell replaces. */
+    .reports-table-wrapper .reports-table tbody td::before,
+    .discussion-table-wrapper .discussion-table tbody td::before,
+    .admin-table-wrapper .admin-table tbody td::before {
+        content: attr(data-label);
+        flex: 0 0 auto;
+        color: var(--text-muted);
+        font-size: 11px;
+        font-weight: 600;
+        text-align: left;
+    }
+
+    /* A cell that holds a title plus metadata reads better stacked. */
+    .reports-table-wrapper .reports-table tbody .staff-report-cell,
+    .admin-table-wrapper .admin-table tbody td[data-label="Nama"] {
+        display: block;
+        text-align: left;
+    }
+
+    .reports-table-wrapper .reports-table tbody .staff-report-cell::before,
+    .admin-table-wrapper .admin-table tbody td[data-label="Nama"]::before {
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    /* The action row is the card footer: full width, thumb-sized targets. */
+    .reports-table-wrapper .reports-table tbody td[data-label="Aksi"],
+    .discussion-table-wrapper .discussion-table tbody td[data-label="Aksi"],
+    .admin-table-wrapper .admin-table tbody td[data-label="Aksi"] {
+        display: block;
+        padding-top: 12px;
+        text-align: left;
+    }
+
+    .reports-table-wrapper .reports-table tbody td[data-label="Aksi"]::before,
+    .discussion-table-wrapper .discussion-table tbody td[data-label="Aksi"]::before,
+    .admin-table-wrapper .admin-table tbody td[data-label="Aksi"]::before {
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    .admin-table-actions,
+    .student-report-actions {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    /* 44px minimum touch target (was 30px), and keep Hapus away from Ubah. */
+    .admin-table-actions .admin-button,
+    .student-report-actions .student-edit-report,
+    .discussion-open-button,
+    .staff-view-report {
+        min-height: 44px;
+        padding: 10px 14px;
+    }
+
+    .admin-table-actions .admin-button {
+        flex: 1 1 auto;
+    }
+}

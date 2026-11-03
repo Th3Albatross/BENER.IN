@@ -306,12 +306,12 @@
     border-bottom: 1px solid var(--border);
 }
 
+/* 12px grey sentence case; uppercase + tracking reads louder than the data
+   (app-screens.md 7.2). */
 .admin-table th {
     color: var(--text-muted);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    font-size: 12px;
+    font-weight: 600;
     white-space: nowrap;
 }
 
@@ -574,6 +574,11 @@
     .admin-form-actions .admin-button,
     .admin-toolbar .admin-button {
         width: 100%;
+    }
+
+    /* The card action wraps under the title; keep it from hugging the edge. */
+    .admin-card-heading > .admin-button--primary {
+        align-self: flex-start;
     }
 }
 
