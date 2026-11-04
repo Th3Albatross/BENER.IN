@@ -38,6 +38,7 @@
 .report-field-hint { color:var(--color-muted, var(--text-muted)); }
 .report-field-footnote { display: flex; justify-content: space-between; gap: 10px; margin-top: 6px; color:var(--color-muted, var(--text-muted)); font-size: 10px; line-height: 1.5; }
 #reportDescriptionCounter { flex: 0 0 auto; white-space: nowrap; font-variant-numeric: tabular-nums; }
+#reportDescriptionCounter.report-field-counter--over-limit { color:var(--danger); font-weight: 600; }
 
 .report-photo-field { margin-top: 2px; }
 .report-photo-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 7px; }

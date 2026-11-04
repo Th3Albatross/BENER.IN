@@ -41,10 +41,10 @@ class ReportController
             'facilities_id' => ['required', 'integer', 'exists:facilities,id'],
             'location_description' => ['required', 'string', 'max:255'],
             'incident_date' => ['nullable', 'date', 'before_or_equal:today'],
-            'description' => ['required', 'string', 'max:3000'],
+            'description' => ['required', 'string', 'max:5000'],
             'photos' => ['nullable', 'array', 'max:3'],
             'photos.*' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
-        ]);
+        ], $this->messages());
 
         $photos = $request->file('photos', []);
         unset($validated['photos']);
@@ -175,12 +175,12 @@ class ReportController
             'facilities_id' => ['required', 'integer', 'exists:facilities,id'],
             'location_description' => ['required', 'string', 'max:255'],
             'incident_date' => ['nullable', 'date', 'before_or_equal:today'],
-            'description' => ['required', 'string', 'max:3000'],
+            'description' => ['required', 'string', 'max:5000'],
             'photos' => ['nullable', 'array', 'max:3'],
             'photos.*' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'remove_photos' => ['nullable', 'array', 'max:3'],
             'remove_photos.*' => ['required', 'string', 'max:4096'],
-        ]);
+        ], $this->messages());
 
         $newPhotos = $request->file('photos', []);
         $removeTokens = $validated['remove_photos'] ?? [];
@@ -240,5 +240,32 @@ class ReportController
         return redirect()
             ->route('reports.showDetail', ['uuid' => $report->identifier])
             ->with('success', 'Perubahan laporan berhasil disimpan.');
+    }
+
+    /** @return array<string, string> */
+    private function messages(): array
+    {
+        return [
+            'identifier.required' => 'Identitas laporan tidak ditemukan. Muat ulang halaman lalu coba lagi.',
+            'identifier.uuid' => 'Identitas laporan tidak valid. Muat ulang halaman lalu coba lagi.',
+            'identifier.unique' => 'Laporan ini sudah pernah dikirim.',
+            'title.required' => 'Masukkan judul laporan.',
+            'title.max' => 'Judul laporan maksimal 255 karakter.',
+            'categories_id.exists' => 'Kategori yang dipilih tidak ditemukan.',
+            'severity.required' => 'Pilih tingkat urgensi laporan.',
+            'severity.in' => 'Tingkat urgensi yang dipilih tidak valid.',
+            'facilities_id.required' => 'Pilih fasilitas yang bermasalah.',
+            'facilities_id.exists' => 'Fasilitas yang dipilih tidak ditemukan.',
+            'location_description.required' => 'Masukkan detail lokasi masalah.',
+            'location_description.max' => 'Detail lokasi maksimal 255 karakter.',
+            'incident_date.date' => 'Tanggal kejadian tidak valid.',
+            'incident_date.before_or_equal' => 'Tanggal kejadian tidak boleh melebihi hari ini.',
+            'description.required' => 'Masukkan deskripsi masalah.',
+            'description.max' => 'Deskripsi masalah terlalu panjang.',
+            'photos.max' => 'Maksimal 3 foto.',
+            'photos.*.image' => 'Setiap berkas harus berupa gambar.',
+            'photos.*.mimes' => 'Foto harus berformat JPG, JPEG, PNG, atau WEBP.',
+            'photos.*.max' => 'Ukuran setiap foto maksimal 5 MB.',
+        ];
     }
 }

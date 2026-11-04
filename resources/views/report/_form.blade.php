@@ -192,14 +192,14 @@
                             id="reportDescription"
                             name="description"
                             rows="5"
-                            maxlength="3000"
+                            data-maxlength="5000"
                             placeholder="Jelaskan kondisi kerusakan, sejak kapan terjadi, dan dampaknya terhadap kegiatan belajar..."
                             required
                             @error('description') aria-invalid="true" @enderror
                         >{{ old('description', data_get($reportRecord, 'description', '')) }}</textarea>
                         <div class="report-field-footnote">
                             <span>Berikan detail yang jelas agar petugas lebih mudah menindaklanjuti.</span>
-                            <span id="reportDescriptionCounter">{{ strlen(old('description', data_get($reportRecord, 'description', '')) ?? '') }}/3000</span>
+                            <span id="reportDescriptionCounter">{{ mb_strlen(old('description', data_get($reportRecord, 'description', '')) ?? '') }}/5000</span>
                         </div>
                         @error('description')
                             <small class="report-field-error">{{ $message }}</small>
@@ -381,6 +381,8 @@
         const photoMessage = document.getElementById('reportPhotoMessage');
         const description = document.getElementById('reportDescription');
         const descriptionCounter = document.getElementById('reportDescriptionCounter');
+        const descriptionMaxLength = Number(description.dataset.maxlength) || 5000;
+        if (description.getAttribute('aria-invalid') === 'true') description.dataset.serverInvalid = 'true';
         const existingPhotoInputs = Array.from(form.querySelectorAll('[data-remove-existing-photo]'));
         const photoLightbox = document.getElementById('reportPhotoLightbox');
         const photoLightboxImage = document.getElementById('reportPhotoLightboxImage');
@@ -577,8 +579,33 @@
             addPhotos(event.dataTransfer ? event.dataTransfer.files : []);
         });
 
-        description.addEventListener('input', function () {
-            descriptionCounter.textContent = description.value.length + '/3000';
+        function descriptionLength() {
+            return Array.from(description.value).length;
+        }
+
+        // Server enforces the real limit; the field no longer truncates input so
+        // an over-limit description is rejected with a visible error instead of
+        // being silently cut to the maximum length.
+        function updateDescriptionState() {
+            const length = descriptionLength();
+            descriptionCounter.textContent = length + '/' + descriptionMaxLength;
+            const overLimit = length > descriptionMaxLength;
+            descriptionCounter.classList.toggle('report-field-counter--over-limit', overLimit);
+            if (overLimit) {
+                description.setAttribute('aria-invalid', 'true');
+            } else if (description.dataset.serverInvalid !== 'true') {
+                description.removeAttribute('aria-invalid');
+            }
+            return overLimit;
+        }
+
+        description.addEventListener('input', updateDescriptionState);
+
+        form.addEventListener('submit', function (event) {
+            if (!updateDescriptionState()) return;
+            event.preventDefault();
+            description.focus();
+            description.scrollIntoView({ block: 'center', behavior: 'smooth' });
         });
 
         form.addEventListener('reset', function () {
@@ -590,12 +617,12 @@
                 photoInput.value = '';
                 photoMessage.textContent = '';
                 renderPhotos();
-                descriptionCounter.textContent = description.value.length + '/3000';
+                updateDescriptionState();
             }, 0);
         });
 
         renderPhotos();
-        descriptionCounter.textContent = description.value.length + '/3000';
+        updateDescriptionState();
     });
 </script>
 @endpush
