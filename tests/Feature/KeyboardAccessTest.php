@@ -7,8 +7,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Audit follow-ups: a keyboard user can skip the navigation, and sign-out no
- * longer borrows the danger red that means Kritis/Ditolak/Hapus elsewhere.
+ * Audit follow-ups: a keyboard user can skip the navigation, and sign-out uses
+ * a sidebar-tuned red rather than the body --danger token, which is too dark to
+ * read on the always-dark sidebar in light mode.
  */
 class KeyboardAccessTest extends TestCase
 {
@@ -71,17 +72,26 @@ class KeyboardAccessTest extends TestCase
         $this->assertMatchesRegularExpression('/\.skip-link:focus-visible\s*\{/', $css);
     }
 
-    public function test_logout_does_not_use_the_danger_colour(): void
+    public function test_logout_uses_a_red_that_reads_on_the_sidebar(): void
     {
         $css = file_get_contents(resource_path('css/layouts/app.css'));
 
-        preg_match('/\.sidebar__logout\s*\{(.*?)\}/s', $css, $m);
+        // Match the rule that sets the colour; an earlier media query only
+        // adjusts min-height.
+        preg_match_all('/\.sidebar__logout\s*\{(.*?)\}/s', $css, $matches);
+        $rule = collect($matches[1])->first(fn ($body) => str_contains($body, 'color:'));
 
-        $this->assertNotEmpty($m, 'The .sidebar__logout rule is missing.');
-        $this->assertStringNotContainsString(
-            '--danger',
+        $this->assertNotNull($rule, 'The .sidebar__logout colour rule is missing.');
+        $m = [1 => $rule];
+        $this->assertStringContainsString(
+            'var(--sidebar-danger)',
             $m[1],
-            'Sign-out is routine; danger red is reserved for Kritis/Ditolak/Hapus.'
+            'Keluar keeps a red accent.'
+        );
+        $this->assertStringNotContainsString(
+            'var(--danger)',
+            $m[1],
+            'The body --danger is too dark on the dark sidebar; use --sidebar-danger.'
         );
     }
 

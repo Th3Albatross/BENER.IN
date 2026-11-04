@@ -627,8 +627,9 @@ body[data-sidebar-open] .sidebar__toggle-icon--close {
 }
 
 /*
- * Signing out is routine, not destructive. Danger red is reserved for Kritis,
- * Ditolak and Hapus, so the sidebar item uses the muted/normal sidebar ink.
+ * Keluar keeps a red accent as the sign-out affordance. It uses the
+ * sidebar-tuned red token rather than --danger, because the sidebar is dark in
+ * every mode and --danger is too dark to read on it in light mode.
  */
 .sidebar__logout {
     display: flex;
@@ -638,24 +639,24 @@ body[data-sidebar-open] .sidebar__toggle-icon--close {
     padding: 10px 16px;
     border: 1px solid transparent;
     border-radius: var(--radius-sm);
-    color: var(--color-sidebar-muted);
+    color: var(--sidebar-danger);
     font-size: 14px;
     font-weight: 600;
     transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
 }
 
 .sidebar__logout:hover {
-    color: var(--color-sidebar-text);
-    background: var(--sidebar-hover);
-    border-color: transparent;
+    color: var(--sidebar-danger);
+    background: var(--sidebar-danger-soft);
+    border-color: var(--sidebar-danger-soft-strong);
 }
 
 .sidebar__logout:active {
-    background: var(--sidebar-active);
+    background: var(--sidebar-danger-soft-strong);
 }
 
 .sidebar__logout:focus-visible {
-    outline: 2px solid var(--color-sidebar-text);
+    outline: 2px solid var(--sidebar-danger);
     outline-offset: 2px;
 }
 

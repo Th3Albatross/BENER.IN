@@ -27,6 +27,11 @@
     --sidebar-text: #ffffff;
     --sidebar-muted: #8e9297;
     --sidebar-hover: rgb(255 255 255 / 4%);
+    /* The sidebar is dark in every mode, so Keluar uses a red tuned for dark
+       surfaces rather than --danger, which is too dark on light mode. */
+    --sidebar-danger: #f87171;
+    --sidebar-danger-soft: rgb(248 113 113 / 14%);
+    --sidebar-danger-soft-strong: rgb(248 113 113 / 20%);
 
     --text-strong: #2e3338;
     --text: #374151;
@@ -87,6 +92,9 @@
     --sidebar-text: #ffffff;
     --sidebar-muted: #a3a6aa;
     --sidebar-hover: rgb(255 255 255 / 6%);
+    --sidebar-danger: #f87171;
+    --sidebar-danger-soft: rgb(248 113 113 / 16%);
+    --sidebar-danger-soft-strong: rgb(248 113 113 / 22%);
 
     --text-strong: #f2f3f5;
     --text: #dbdee1;
@@ -139,6 +147,9 @@
     --sidebar-text: #ffffff;
     --sidebar-muted: #94979c;
     --sidebar-hover: rgb(255 255 255 / 8%);
+    --sidebar-danger: #f87171;
+    --sidebar-danger-soft: rgb(248 113 113 / 18%);
+    --sidebar-danger-soft-strong: rgb(248 113 113 / 24%);
 
     --text-strong: #f7f8f9;
     --text: #d6d9dd;
@@ -239,6 +250,12 @@ body {
         --warning-fill-fg: #ffffff;
         --info: #3559a8;
         --info-soft: #edf3ff;
+
+        /* Keluar is not printed, but every mode-dependent token needs a light
+           value here so it cannot keep a dark-theme value on the PDF. */
+        --sidebar-danger: #b42318;
+        --sidebar-danger-soft: #fff0f0;
+        --sidebar-danger-soft-strong: #ffe0e0;
 
         /* Borders and shadows only waste ink on paper. */
         --shadow-card: none;
