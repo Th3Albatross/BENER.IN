@@ -11,59 +11,264 @@
 }
 
 /* ------------------------------
-   Stat cards
+   Icons
+   Outline glyphs in a tinted rounded square, matching the sidebar and the
+   settings/report card headers. Used sparingly: page identity and the two
+   blocks that drive an action, not on every card or row.
    ------------------------------ */
-.admin-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-    gap: 16px;
+.admin-card-icon {
+    display: inline-flex;
+    flex: 0 0 36px;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    color: var(--accent);
+    background: var(--accent-soft);
 }
 
-.admin-stat-card {
+.admin-card-icon svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.admin-card-icon--attention {
+    color: var(--warning);
+    background: var(--warning-soft);
+}
+
+/* The icon sits beside the title; the copy keeps its own column. */
+.admin-card-leading {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    align-items: flex-start;
+    gap: 12px;
     min-width: 0;
-    padding: 18px;
-    color: var(--text-strong);
-    text-decoration: none;
+}
+
+/* ------------------------------
+   KPI strip
+   One container split by 1px dividers into five equal columns (app-screens
+   §5: a KPI gets no tile of its own). On a 1440 canvas minus the 250px
+   sidebar and 24px gutters the content is ~=1140px -> 5 x ~226px cells
+   + 4 x 1px dividers ~= 1140px.
+   ------------------------------ */
+.admin-kpi-strip {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    overflow: hidden;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 12px;
-    box-shadow: var(--shadow-card);
-    transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+    box-shadow: 0 2px 7px rgba(25, 35, 45, 0.025);
 }
 
-.admin-stat-card:hover {
-    transform: translateY(-2px);
-    border-color: var(--accent);
-    box-shadow: var(--shadow-raised);
-}
-
-.admin-stat-card:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 3px;
-}
-
-.admin-stat-label {
-    color: var(--text-muted);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.055em;
-}
-
-.admin-stat-value {
+.admin-kpi {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+    padding: 16px 18px;
     color: var(--text-strong);
-    font-size: 30px;
-    font-weight: 700;
+    text-decoration: none;
+    border-left: 1px solid var(--border);
+    transition: background 150ms ease;
+}
+
+/* The accent indicator slides in from the left on hover. */
+.admin-kpi::after {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 180ms ease;
+}
+
+.admin-kpi:hover::after,
+.admin-kpi:focus-visible::after {
+    transform: scaleX(1);
+}
+
+.admin-kpi:first-child {
+    border-left: 0;
+}
+
+.admin-kpi:hover {
+    background: var(--surface-2);
+}
+
+.admin-kpi:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+}
+
+.admin-kpi-label {
+    color: var(--text-muted);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.admin-kpi-value {
+    color: var(--text-strong);
+    font-size: 26px;
+    font-weight: 600;
     line-height: 1.1;
     font-variant-numeric: tabular-nums;
 }
 
-.admin-stat-description {
+.admin-kpi-note {
     color: var(--text-muted);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+/* ------------------------------
+   Kelengkapan & pemakaian data
+   ------------------------------ */
+.admin-health {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 18px;
+}
+
+.admin-coverage {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.admin-coverage-item {
+    display: grid;
+    grid-template-columns: 150px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+}
+
+.admin-coverage-label {
+    color: var(--text);
+    font-size: 12px;
+}
+
+.admin-coverage-track {
+    display: block;
+    height: 8px;
+    overflow: hidden;
+    background: var(--accent-soft);
+    border-radius: 999px;
+}
+
+.admin-coverage-fill {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+    border-radius: 999px;
+    transition: width 260ms ease;
+}
+
+.admin-coverage-item--complete .admin-coverage-fill {
+    background: var(--success);
+}
+
+.admin-coverage-value {
+    color: var(--text-muted);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.admin-attention {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.admin-attention-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 8px;
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid var(--border);
+    border-radius: 7px;
+    transition: background 150ms ease;
+}
+
+.admin-attention li:last-child .admin-attention-item {
+    border-bottom: 0;
+}
+
+.admin-attention-item:hover {
+    background: var(--surface-2);
+}
+
+.admin-attention-item:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.admin-attention-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 30px;
+    padding: 3px 9px;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 999px;
     font-size: 11px;
-    line-height: 1.5;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.admin-attention-label {
+    flex: 1;
+    min-width: 0;
+    color: var(--text-strong);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.admin-attention-cta {
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.admin-attention-cta span {
+    display: inline-block;
+    transition: transform 150ms ease;
+}
+
+.admin-attention-item:hover .admin-attention-cta span {
+    transform: translateX(2px);
+}
+
+/* Empty block that keeps its frame and adds one sentence (skill §11). */
+.admin-empty--frame {
+    padding: 20px;
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
 }
 
 /* ------------------------------
@@ -78,7 +283,8 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 12px;
-    box-shadow: var(--shadow-card);
+    /* Same soft resting shadow as the siswa/petugas cards for depth parity. */
+    box-shadow: 0 2px 7px rgba(25, 35, 45, 0.025);
 }
 
 .admin-card-heading {
@@ -170,6 +376,178 @@
     color: var(--text-muted);
     font-size: 11px;
     line-height: 1.45;
+}
+
+/* ------------------------------
+   List toolbar: filter tabs + search
+   ------------------------------ */
+/* Same surface-2 panel treatment as the siswa/petugas filter bars. */
+.admin-toolbar-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding: 13px 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+}
+
+.admin-tabs {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.admin-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 32px;
+    padding: 6px 12px;
+    color: var(--text-soft);
+    text-decoration: none;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    transition: background 150ms ease, color 150ms ease;
+}
+
+.admin-tab:hover {
+    background: var(--surface-2);
+}
+
+.admin-tab:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.admin-tab--active {
+    color: var(--accent);
+    background: var(--accent-soft);
+}
+
+.admin-tab-count {
+    color: var(--text-muted);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+}
+
+.admin-tab--active .admin-tab-count {
+    color: var(--accent);
+}
+
+/* Sort control: matches the labelled <select> used on the siswa/petugas dashboards. */
+.admin-sort-form {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 8px;
+    /* Compact, right-aligned panel: a full-width band would leave the left
+       half empty (Fasilitas/Kategori have no filter tabs to fill it). */
+    width: fit-content;
+    margin-left: auto;
+    padding: 10px 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+}
+
+.admin-sort-form label {
+    color: var(--text-soft);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Specificity beats the later `.admin-select { width: 100% }` rule. */
+.admin-sort-form .admin-select--inline {
+    width: auto;
+    min-width: 190px;
+    max-width: 240px;
+}
+
+.admin-search-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+}
+
+.admin-search-form .admin-search {
+    width: auto;
+    min-width: 220px;
+    flex: 0 1 260px;
+}
+
+.admin-search-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    clip-path: inset(50%);
+    border: 0;
+}
+
+.admin-search-clear {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+/* ------------------------------
+   Usage bar (Fasilitas / Kategori ranking)
+   ------------------------------ */
+.admin-usage {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.admin-usage-track {
+    display: inline-block;
+    width: 88px;
+    height: 6px;
+    overflow: hidden;
+    background: var(--accent-soft);
+    border-radius: 999px;
+}
+
+.admin-usage-fill {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+    border-radius: 999px;
+    transition: width 260ms ease;
+}
+
+.admin-usage-value {
+    color: var(--text-strong);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Numeric columns: right-aligned tabular figures (app-screens §7.4). */
+.admin-table th.num,
+.admin-table td.num {
+    text-align: right;
+}
+
+.admin-table td.num .admin-usage,
+.admin-table td.num .admin-count-pill {
+    justify-content: flex-end;
+}
+
+/* Full-list screens: keep the header in view while scrolling (§7.8). */
+.admin-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--surface-2);
 }
 
 /* ------------------------------
@@ -291,28 +669,37 @@
 .admin-table-wrapper {
     width: 100%;
     overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 9px;
 }
 
 .admin-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     font-size: 12px;
+}
+
+/* Header band, matching .reports-table thead on the siswa/petugas tables. */
+.admin-table thead {
+    background: var(--surface-2);
 }
 
 .admin-table th,
 .admin-table td {
-    padding: 11px 12px;
+    padding: 13px 12px;
     text-align: left;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--border-soft);
 }
 
 /* 12px grey sentence case; uppercase + tracking reads louder than the data
-   (app-screens.md 7.2). */
+   (app-screens.md 7.2). The stronger rule under the header marks the header band. */
 .admin-table th {
     color: var(--text-muted);
     font-size: 12px;
     font-weight: 600;
     white-space: nowrap;
+    border-bottom-color: var(--border-strong);
 }
 
 .admin-table tbody tr:hover {
@@ -501,6 +888,28 @@
     font-size: 13px;
 }
 
+/* Neutral glyph for an empty state, matching the discussion table's icon. */
+.admin-empty-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin-bottom: 10px;
+    color: var(--text-soft);
+    background: var(--surface-2);
+    border-radius: 10px;
+}
+
+.admin-empty-icon svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
 /* ------------------------------
    Pagination
    ------------------------------ */
@@ -553,12 +962,80 @@
 }
 
 @media (max-width: 640px) {
-    .admin-stats {
+    .admin-kpi-strip {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .admin-stat-value {
+    .admin-kpi {
+        border-left: 1px solid var(--border);
+        border-top: 1px solid var(--border);
+    }
+
+    /* Drop the divider on the first row (cells 1-2) and on the left column. */
+    .admin-kpi:nth-child(1),
+    .admin-kpi:nth-child(2) {
+        border-top: 0;
+    }
+
+    .admin-kpi:nth-child(odd) {
+        border-left: 0;
+    }
+
+    .admin-kpi-value {
         font-size: 24px;
+    }
+
+    .admin-health {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    /* Tabs scroll sideways in their own row rather than wrapping raggedly. */
+    .admin-tabs {
+        flex-wrap: nowrap;
+        max-width: 100%;
+        overflow-x: auto;
+        padding-bottom: 2px;
+    }
+
+    .admin-tab {
+        white-space: nowrap;
+    }
+
+    .admin-sort-form {
+        justify-content: flex-start;
+        width: 100%;
+        margin-left: 0;
+    }
+
+    /* Label on its own row so the select is not squeezed (matches the siswa
+       filter field, which stacks its label above the control). */
+    .admin-sort-form label {
+        flex-basis: 100%;
+    }
+
+    .admin-sort-form .admin-select--inline {
+        width: auto;
+        flex: 1;
+        min-width: 0;
+        max-width: none;
+    }
+
+    .admin-search-form {
+        width: 100%;
+    }
+
+    .admin-search-form .admin-search {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .admin-coverage-item {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .admin-coverage-track {
+        grid-column: 1 / -1;
+        order: 3;
     }
 
     .admin-toolbar {
@@ -605,10 +1082,6 @@
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 18px;
-}
-
-.admin-chart-card:first-child {
-    grid-column: 1 / -1;
 }
 
 .admin-chart-canvas {
@@ -733,9 +1206,6 @@
         grid-template-columns: minmax(0, 1fr);
     }
 
-    .admin-chart-card:first-child {
-        grid-column: auto;
-    }
 }
 
 @media (max-width: 640px) {
@@ -775,7 +1245,11 @@
         print-color-adjust: exact;
     }
 
-    .admin-stat-card,
+    .admin-kpi-strip,
+    .admin-kpi,
+    .admin-health,
+    .admin-coverage-item,
+    .admin-attention-item,
     .admin-card,
     .admin-chart-card { break-inside: avoid; }
     .admin-chart-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }

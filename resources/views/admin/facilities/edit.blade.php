@@ -12,9 +12,12 @@
 <div class="admin-page">
     <section class="admin-card" aria-labelledby="edit-facility-heading">
         <div class="admin-card-heading">
-            <div>
-                <h2 id="edit-facility-heading" class="admin-card-title">{{ $facility->name }}</h2>
-                <p class="admin-card-subtitle">Digunakan oleh {{ $facility->reports()->count() }} laporan.</p>
+            <div class="admin-card-leading">
+                <x-admin-icon name="facilities" class="admin-card-icon" />
+                <div>
+                    <h2 id="edit-facility-heading" class="admin-card-title">{{ $facility->name }}</h2>
+                    <p class="admin-card-subtitle">Digunakan oleh {{ $facility->reports()->count() }} laporan.</p>
+                </div>
             </div>
         </div>
 

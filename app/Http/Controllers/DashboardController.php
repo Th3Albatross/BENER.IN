@@ -211,19 +211,81 @@ class DashboardController
         // Only the top few rows are charted so long tails stay readable.
         $rankingLimit = 6;
 
-        return view('dashboard.admin', [
-            '_counts' => [
-                'users' => User::query()->count(),
-                'petugas' => User::query()->whereIn('role', User::STAFF_ROLES)->count(),
-                // Match the students filter exactly; a whereNotIn() would also
-                // catch any unexpected role value and inflate the count.
-                'students' => User::query()->where('role', 'siswa')->count(),
-                'facilities' => Facility::query()->count(),
-                'categories' => Category::query()->count(),
+        $counts = [
+            'users' => User::query()->count(),
+            'petugas' => User::query()->whereIn('role', User::STAFF_ROLES)->count(),
+            // Match the students filter exactly; a whereNotIn() would also
+            // catch any unexpected role value and inflate the count.
+            'students' => User::query()->where('role', 'siswa')->count(),
+            'facilities' => Facility::query()->count(),
+            'categories' => Category::query()->count(),
+        ];
+
+        $studentsWithNis = User::query()
+            ->where('role', 'siswa')
+            ->whereNotNull('nis')
+            ->where('nis', '!=', '')
+            ->count();
+        $studentsWithClassroom = User::query()
+            ->where('role', 'siswa')
+            ->whereNotNull('classroom')
+            ->where('classroom', '!=', '')
+            ->count();
+        $facilitiesUsed = Facility::query()->whereHas('reports')->count();
+        $categoriesUsed = Category::query()->whereHas('reports')->count();
+
+        $coverage = [
+            $this->coverageRow('Siswa dengan NIS', $studentsWithNis, $counts['students']),
+            $this->coverageRow('Siswa dengan kelas', $studentsWithClassroom, $counts['students']),
+            $this->coverageRow('Fasilitas terpakai', $facilitiesUsed, $counts['facilities']),
+            $this->coverageRow('Kategori terpakai', $categoriesUsed, $counts['categories']),
+        ];
+
+        $dataGaps = collect([
+            [
+                'key' => 'siswa_tanpa_nis',
+                'label' => 'Siswa belum punya NIS',
+                'count' => $counts['students'] - $studentsWithNis,
+                'url' => route('admin.users.index', ['role' => 'siswa']),
+                'cta' => 'Lihat siswa',
             ],
+            [
+                'key' => 'siswa_tanpa_kelas',
+                'label' => 'Siswa belum punya kelas',
+                'count' => $counts['students'] - $studentsWithClassroom,
+                'url' => route('admin.users.index', ['role' => 'siswa']),
+                'cta' => 'Lihat siswa',
+            ],
+            [
+                'key' => 'fasilitas_tanpa_laporan',
+                'label' => 'Fasilitas belum pernah dilaporkan',
+                'count' => $counts['facilities'] - $facilitiesUsed,
+                'url' => route('admin.facilities.index'),
+                'cta' => 'Lihat fasilitas',
+            ],
+            [
+                'key' => 'kategori_tanpa_laporan',
+                'label' => 'Kategori belum pernah dipakai',
+                'count' => $counts['categories'] - $categoriesUsed,
+                'url' => route('admin.categories.index'),
+                'cta' => 'Lihat kategori',
+            ],
+        ])
+            ->filter(fn (array $gap): bool => $gap['count'] > 0)
+            ->sortByDesc('count')
+            ->take(5)
+            ->values()
+            ->all();
+
+        return view('dashboard.admin', [
+            '_counts' => $counts,
+            '_coverage' => $coverage,
+            '_dataGaps' => $dataGaps,
+            '_finding' => $this->adminFinding($dataGaps),
             '_roleChart' => $this->buildRoleChart(),
             '_facilityChart' => $this->topFacilitiesByReports($rankingLimit),
             '_categoryChart' => $this->topCategoriesByReports($rankingLimit),
+            '_studentsByClassroom' => $this->studentsByClassroom($rankingLimit),
             '_recentUsers' => User::query()
                 ->orderByDesc('id')
                 ->limit(5)
@@ -237,6 +299,63 @@ class DashboardController
                 ->limit(5)
                 ->get(['id', 'name']),
         ]);
+    }
+
+    /**
+     * One coverage row (label + counts + percentage) for the completeness strip.
+     *
+     * @return array{label: string, done: int, total: int, pct: int}
+     */
+    private function coverageRow(string $label, int $done, int $total): array
+    {
+        $done = max(0, min($done, $total));
+
+        return [
+            'label' => $label,
+            'done' => $done,
+            'total' => $total,
+            'pct' => $total > 0 ? (int) round(($done / $total) * 100) : 0,
+        ];
+    }
+
+    /**
+     * The single sentence under the page title: the worst master-data gaps.
+     *
+     * @param  array<int, array{label: string, count: int}>  $dataGaps
+     */
+    private function adminFinding(array $dataGaps): string
+    {
+        $parts = collect($dataGaps)
+            ->take(2)
+            ->map(fn (array $gap): string => $gap['count'].' '.mb_strtolower($gap['label']))
+            ->all();
+
+        if ($parts === []) {
+            return 'Semua data induk sekolah sudah lengkap.';
+        }
+
+        return 'Perlu ditindaklanjuti: '.implode(' dan ', $parts).'.';
+    }
+
+    /** @return array<int, array{label: string, total: int}> */
+    private function studentsByClassroom(int $limit): array
+    {
+        return User::query()
+            ->where('role', 'siswa')
+            ->whereNotNull('classroom')
+            ->where('classroom', '!=', '')
+            ->selectRaw('classroom as label, COUNT(*) as total')
+            ->groupBy('classroom')
+            ->orderByDesc('total')
+            ->orderBy('label')
+            ->limit($limit)
+            ->get()
+            ->map(fn ($row): array => [
+                'label' => (string) $row->label,
+                'total' => (int) $row->total,
+            ])
+            ->values()
+            ->all();
     }
 
     /** @return array<int, array{label: string, total: int}> */

@@ -12,9 +12,12 @@
 <div class="admin-page">
     <section class="admin-card" aria-labelledby="create-category-heading">
         <div class="admin-card-heading">
-            <div>
-                <h2 id="create-category-heading" class="admin-card-title">Kategori Baru</h2>
-                <p class="admin-card-subtitle">Kategori membantu petugas mengelompokkan laporan.</p>
+            <div class="admin-card-leading">
+                <x-admin-icon name="categories" class="admin-card-icon" />
+                <div>
+                    <h2 id="create-category-heading" class="admin-card-title">Kategori Baru</h2>
+                    <p class="admin-card-subtitle">Kategori membantu petugas mengelompokkan laporan.</p>
+                </div>
             </div>
         </div>
 

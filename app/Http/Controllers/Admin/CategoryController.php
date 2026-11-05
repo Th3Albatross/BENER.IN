@@ -9,15 +9,23 @@ use Illuminate\Validation\ValidationException;
 
 class CategoryController
 {
-    public function index()
+    public function index(Request $request)
     {
+        $sort = $request->query('sort') === 'reports' ? 'reports' : 'name';
+
         $categories = Category::query()
             ->withCount('reports')
-            ->orderBy('name')
-            ->paginate(15);
+            ->when($sort === 'reports', fn ($query) => $query->orderByDesc('reports_count')->orderBy('name'), fn ($query) => $query->orderBy('name'))
+            ->paginate(15)
+            ->withQueryString();
+
+        $maxReports = max(1, (int) Category::query()->withCount('reports')->get()->max('reports_count'));
 
         return view('admin.categories.index', [
             'categories' => $categories,
+            'sort' => $sort,
+            'maxReports' => $maxReports,
+            'unusedCount' => Category::query()->whereDoesntHave('reports')->count(),
         ]);
     }
 

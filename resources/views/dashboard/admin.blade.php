@@ -6,13 +6,14 @@
 
 @section('title', 'Dashboard Admin')
 @section('page-title', 'Ringkasan Fasilitas')
-@section('page-description', 'Statistik dan ringkasan data fasilitas sekolah.')
+@section('page-description', $_finding ?? 'Statistik dan ringkasan data fasilitas sekolah.')
 
 @section('content')
 @php
     $roleChart = $_roleChart ?? [];
     $facilityChart = $_facilityChart ?? [];
     $categoryChart = $_categoryChart ?? [];
+    $classroomChart = $_studentsByClassroom ?? [];
     $recentUsers = $_recentUsers ?? collect();
     $recentFacilities = $_recentFacilities ?? collect();
     $recentCategories = $_recentCategories ?? collect();
@@ -21,6 +22,7 @@
     $hasRoleData = $roleTotal > 0;
     $hasFacilityData = collect($facilityChart)->sum('total') > 0;
     $hasCategoryData = collect($categoryChart)->sum('total') > 0;
+    $hasClassroomData = collect($classroomChart)->sum('total') > 0;
 
     $roleLabels = ['siswa' => 'Siswa', 'petugas' => 'Petugas', 'admin' => 'Admin'];
     $roleClass = ['siswa' => 'admin-role--siswa', 'petugas' => 'admin-role--petugas', 'admin' => 'admin-role--admin'];
@@ -30,43 +32,39 @@
         'roles' => $roleChart,
         'facilities' => $facilityChart,
         'categories' => $categoryChart,
+        'classrooms' => $classroomChart,
     ];
 @endphp
 
 <div class="admin-widget" data-admin-dashboard>
-    <section class="admin-stats" aria-label="Ringkasan data">
-        <a href="{{ route('admin.users.index') }}" class="admin-stat-card">
-            <span class="admin-stat-label">TOTAL PENGGUNA</span>
-            <span class="admin-stat-value">{{ number_format($_counts['users'], 0, ',', '.') }}</span>
-            <span class="admin-stat-description">Seluruh akun terdaftar</span>
-        </a>
+    @include('dashboard.partials.admin-kpi-strip', ['counts' => $_counts])
 
-        <a href="{{ route('admin.users.index', ['role' => 'petugas']) }}" class="admin-stat-card">
-            <span class="admin-stat-label">PETUGAS</span>
-            <span class="admin-stat-value">{{ number_format($_counts['petugas'], 0, ',', '.') }}</span>
-            <span class="admin-stat-description">Akun yang menangani laporan</span>
-        </a>
-
-        <a href="{{ route('admin.users.index', ['role' => 'siswa']) }}" class="admin-stat-card">
-            <span class="admin-stat-label">SISWA</span>
-            <span class="admin-stat-value">{{ number_format($_counts['students'], 0, ',', '.') }}</span>
-            <span class="admin-stat-description">Akun pelapor fasilitas</span>
-        </a>
-
-        <a href="{{ route('admin.facilities.index') }}" class="admin-stat-card">
-            <span class="admin-stat-label">FASILITAS</span>
-            <span class="admin-stat-value">{{ number_format($_counts['facilities'], 0, ',', '.') }}</span>
-            <span class="admin-stat-description">Fasilitas yang dapat dilaporkan</span>
-        </a>
-
-        <a href="{{ route('admin.categories.index') }}" class="admin-stat-card">
-            <span class="admin-stat-label">KATEGORI</span>
-            <span class="admin-stat-value">{{ number_format($_counts['categories'], 0, ',', '.') }}</span>
-            <span class="admin-stat-description">Kategori laporan tersedia</span>
-        </a>
+    <section class="admin-health" aria-label="Kelengkapan dan pemakaian data">
+        @include('dashboard.partials.admin-coverage', ['coverage' => $_coverage ?? []])
+        @include('dashboard.partials.admin-attention', ['dataGaps' => $_dataGaps ?? []])
     </section>
 
     <section class="admin-chart-grid" aria-label="Statistik data">
+        <article class="admin-card admin-chart-card">
+            <div class="admin-card-heading">
+                <div>
+                    <h2 class="admin-card-title">Siswa per Kelas</h2>
+                    <p class="admin-card-subtitle">Sebaran siswa pada kelas terbesar.</p>
+                </div>
+            </div>
+
+            @if ($hasClassroomData)
+                <div class="admin-chart-canvas">
+                    <canvas id="admin-classroom-chart" role="img" aria-label="Grafik jumlah siswa per kelas"></canvas>
+                </div>
+            @else
+                <div class="admin-empty">
+                    <strong>Belum ada kelas terisi</strong>
+                    Kelas muncul setelah siswa diberi kelas.
+                </div>
+            @endif
+        </article>
+
         <article class="admin-card admin-chart-card">
             <div class="admin-card-heading">
                 <div>
@@ -159,9 +157,7 @@
                         <li class="admin-list-item">
                             <span class="admin-list-copy">
                                 <strong>{{ $user->name }}</strong>
-                                <span>{{ $user->nis ? 'NIS '.$user->nis : 'NIS belum tersedia' }}</span>
-                                <span>{{ $user->classroom ? 'Kelas '.$user->classroom : 'Kelas belum tersedia' }}</span>
-                                <span>{{ $user->email ?: 'Email belum tersedia' }}</span>
+                                <span>{{ $user->isStudent() ? collect([$user->nis ? 'NIS '.$user->nis : null, $user->classroom])->filter()->implode(' · ') ?: 'Identitas belum lengkap' : ($user->email ?: 'Email belum tersedia') }}</span>
                             </span>
                             <span class="admin-role {{ $roleClass[$user->role] ?? 'admin-role--siswa' }}">
                                 {{ $roleLabels[$user->role] ?? ucfirst($user->role) }}

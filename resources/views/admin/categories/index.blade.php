@@ -18,9 +18,22 @@
 
     <section class="admin-card" aria-labelledby="categories-heading">
         <div class="admin-card-heading">
-            <div>
-                <h2 id="categories-heading" class="admin-card-title">Daftar Kategori</h2>
-                <p class="admin-card-subtitle">{{ number_format($categories->total(), 0, ',', '.') }} kategori terdaftar.</p>
+            <div class="admin-card-leading">
+                <x-admin-icon name="categories" class="admin-card-icon" />
+                <div>
+                    <h2 id="categories-heading" class="admin-card-title">Daftar Kategori</h2>
+                    @php
+                        $unused = (int) ($unusedCount ?? 0);
+                        $subtitle = number_format($categories->total(), 0, ',', '.').' kategori terdaftar';
+                    @endphp
+                    <p class="admin-card-subtitle">
+                        @if ($unused > 0)
+                            {{ $subtitle }} &middot; <strong>{{ number_format($unused, 0, ',', '.') }}</strong> belum pernah dilaporkan.
+                        @else
+                            {{ $subtitle }}.
+                        @endif
+                    </p>
+                </div>
             </div>
 
             <a href="{{ route('admin.categories.create') }}" class="admin-button admin-button--primary">
@@ -31,10 +44,17 @@
             </a>
         </div>
 
+        @include('admin.partials.sort-form', [
+            'sort' => $sort ?? 'name',
+            'routeName' => 'admin.categories.index',
+            'id' => 'categories-sort',
+        ])
+
         @if ($categories->isEmpty())
-            <div class="admin-empty">
+            <div class="admin-empty admin-empty--frame">
+                <x-admin-icon name="categories" class="admin-empty-icon" />
                 <strong>Belum ada kategori</strong>
-                Tambahkan kategori agar laporan lebih mudah dikelompokkan.
+                <span>Tambahkan kategori agar laporan lebih mudah dikelompokkan.</span>
             </div>
         @else
             <div class="admin-table-wrapper">
@@ -42,15 +62,28 @@
                     <thead>
                         <tr>
                             <th scope="col">Kategori</th>
-                            <th scope="col">Jumlah laporan</th>
+                            <th scope="col" class="num">Jumlah laporan</th>
+                            <th scope="col" class="num">Pemakaian</th>
                             <th scope="col">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($categories as $category)
                             <tr>
-                                <td data-label="Kategori"><span class="admin-table-primary">{{ $category->name }}</span></td>
-                                <td data-label="Jumlah laporan"><span class="admin-count-pill">{{ number_format($category->reports_count, 0, ',', '.') }}</span></td>
+                                <td data-label="Kategori">
+                                    <span class="admin-table-primary">{{ $category->name }}</span>
+                                    @if ($category->reports_count === 0)
+                                        <span class="admin-table-secondary">Belum pernah dilaporkan</span>
+                                    @endif
+                                </td>
+                                <td data-label="Jumlah laporan" class="num"><span class="admin-count-pill">{{ number_format($category->reports_count, 0, ',', '.') }}</span></td>
+                                <td data-label="Pemakaian" class="num">
+                                    @include('admin.partials.usage-bar', [
+                                        'value' => $category->reports_count,
+                                        'max' => $maxReports ?? 1,
+                                        'label' => 'laporan',
+                                    ])
+                                </td>
                                 <td data-label="Aksi">
                                     <div class="admin-table-actions">
                                         <a href="{{ route('admin.categories.edit', $category) }}" class="admin-button admin-button--secondary admin-button--small">Ubah</a>

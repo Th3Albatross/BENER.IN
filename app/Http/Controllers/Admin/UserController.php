@@ -20,16 +20,62 @@ class UserController
             ? $roleFilter
             : null;
 
-        $users = User::query()
+        $search = trim((string) $request->query('q', ''));
+        $search = mb_substr($search, 0, 255);
+
+        $baseQuery = User::query()
             ->when($roleFilter !== null, fn ($query) => $query->where('role', $roleFilter))
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($inner) use ($search) {
+                    $inner->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('nis', 'like', "%{$search}%")
+                        ->orWhere('classroom', 'like', "%{$search}%");
+                });
+            });
+
+        // Recompute the role tabs under the active search so the counts match
+        // what the table is about to show (skill §11: a count names its filter).
+        $roleTotals = (clone $baseQuery)
+            ->selectRaw('role, COUNT(*) as total')
+            ->groupBy('role')
+            ->pluck('total', 'role');
+
+        $users = (clone $baseQuery)
             ->withCount(['reports', 'responses'])
             ->orderBy('name')
             ->paginate(15)
             ->withQueryString();
 
+        $tabBase = $search !== '' ? ['q' => $search] : [];
+
         return view('admin.users.index', [
             'users' => $users,
             'roleFilter' => $roleFilter,
+            'search' => $search,
+            'roleTabs' => [
+                [
+                    'value' => '',
+                    'label' => 'Semua',
+                    'count' => (int) $roleTotals->sum(),
+                    'href' => route('admin.users.index', $tabBase),
+                    'active' => $roleFilter === null,
+                ],
+                [
+                    'value' => 'siswa',
+                    'label' => 'Siswa',
+                    'count' => (int) $roleTotals->get('siswa', 0),
+                    'href' => route('admin.users.index', $tabBase + ['role' => 'siswa']),
+                    'active' => $roleFilter === 'siswa',
+                ],
+                [
+                    'value' => 'petugas',
+                    'label' => 'Petugas',
+                    'count' => (int) $roleTotals->get('petugas', 0),
+                    'href' => route('admin.users.index', $tabBase + ['role' => 'petugas']),
+                    'active' => $roleFilter === 'petugas',
+                ],
+            ],
         ]);
     }
 

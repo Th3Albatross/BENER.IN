@@ -189,6 +189,7 @@ const initCharts = (payload, isPrint = false) => {
         drawSafely('admin-role-chart', () => renderRoles(payload.roles ?? [], colors, isPrint)),
         drawSafely('admin-facility-chart', () => renderRanking('admin-facility-chart', payload.facilities ?? [], colors, isPrint)),
         drawSafely('admin-category-chart', () => renderRanking('admin-category-chart', payload.categories ?? [], colors, isPrint)),
+        drawSafely('admin-classroom-chart', () => renderRanking('admin-classroom-chart', payload.classrooms ?? [], colors, isPrint)),
     ];
 
     return results.some(Boolean);

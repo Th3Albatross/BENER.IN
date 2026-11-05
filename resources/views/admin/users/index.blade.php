@@ -18,17 +18,21 @@
 
     <section class="admin-card" aria-labelledby="users-heading">
         <div class="admin-card-heading">
-            <div>
-                <h2 id="users-heading" class="admin-card-title">Daftar Pengguna</h2>
-                <p class="admin-card-subtitle">
-                    {{ number_format($users->total(), 0, ',', '.') }} akun terdaftar
-                    @if ($roleFilter)
-                        dengan peran <strong>{{ ucfirst($roleFilter) }}</strong>.
-                        <a href="{{ route('admin.users.index') }}">Tampilkan semua</a>
-                    @else
-                        .
-                    @endif
-                </p>
+            <div class="admin-card-leading">
+                <x-admin-icon name="users" class="admin-card-icon" />
+                <div>
+                    <h2 id="users-heading" class="admin-card-title">Daftar Pengguna</h2>
+                    <p class="admin-card-subtitle">
+                        {{ number_format($users->total(), 0, ',', '.') }} akun
+                        @if ($roleFilter)
+                            dengan peran <strong>{{ ucfirst($roleFilter) }}</strong>
+                        @endif
+                        @if (!empty($search))
+                            {{ $roleFilter ? 'dan ' : '' }}cocok dengan &ldquo;{{ $search }}&rdquo;
+                        @endif
+                        ditampilkan.
+                    </p>
+                </div>
             </div>
 
             <a href="{{ route('admin.users.create') }}" class="admin-button admin-button--primary">
@@ -39,10 +43,24 @@
             </a>
         </div>
 
+        @include('admin.partials.list-toolbar', [
+            'tabs' => $roleTabs ?? [],
+            'search' => $search ?? '',
+            'searchAction' => route('admin.users.index'),
+            'searchPlaceholder' => 'Nama, NIS, kelas, atau email',
+            'hiddenQuery' => $roleFilter ? ['role' => $roleFilter] : [],
+        ])
+
         @if ($users->isEmpty())
-            <div class="admin-empty">
-                <strong>Belum ada pengguna</strong>
-                Tambahkan akun siswa atau petugas untuk memulai.
+            <div class="admin-empty admin-empty--frame">
+                <x-admin-icon name="users" class="admin-empty-icon" />
+                @if (!empty($search) || $roleFilter)
+                    <strong>Tidak ada pengguna yang cocok</strong>
+                    <span>Ubah kata kunci atau <a href="{{ route('admin.users.index') }}">tampilkan semua</a>.</span>
+                @else
+                    <strong>Belum ada pengguna</strong>
+                    <span>Tambahkan akun siswa atau petugas untuk memulai.</span>
+                @endif
             </div>
         @else
             <div class="admin-table-wrapper">
@@ -51,8 +69,8 @@
                         <tr>
                             <th scope="col">Nama</th>
                             <th scope="col">Peran</th>
-                            <th scope="col">Laporan</th>
-                            <th scope="col">Pesan</th>
+                            <th scope="col" class="num">Laporan</th>
+                            <th scope="col" class="num">Pesan</th>
                             <th scope="col">Aksi</th>
                         </tr>
                     </thead>
@@ -61,9 +79,14 @@
                             <tr>
                                 <td data-label="Nama">
                                     <span class="admin-table-primary">{{ $user->name }}</span>
-                                    <span class="admin-table-secondary">{{ $user->nis ? 'NIS '.$user->nis : 'NIS belum tersedia' }}</span>
-                                    <span class="admin-table-secondary">{{ $user->classroom ? 'Kelas '.$user->classroom : 'Kelas belum tersedia' }}</span>
-                                    <span class="admin-table-secondary">{{ $user->email ?: 'Email belum tersedia' }}</span>
+                                    @if ($user->isStudent())
+                                        @php
+                                            $identity = collect([$user->nis ? 'NIS '.$user->nis : null, $user->classroom])->filter()->implode(' · ');
+                                        @endphp
+                                        <span class="admin-table-secondary">{{ $identity !== '' ? $identity : '—' }}</span>
+                                    @else
+                                        <span class="admin-table-secondary">{{ $user->email ?: '—' }}</span>
+                                    @endif
                                 </td>
                                 <td data-label="Peran">
                                     @php
@@ -75,8 +98,8 @@
                                     @endphp
                                     <span class="admin-role {{ $roleClass }}">{{ ucfirst($user->role) }}</span>
                                 </td>
-                                <td data-label="Laporan"><span class="admin-count-pill">{{ number_format($user->reports_count, 0, ',', '.') }}</span></td>
-                                <td data-label="Pesan"><span class="admin-count-pill">{{ number_format($user->responses_count, 0, ',', '.') }}</span></td>
+                                <td data-label="Laporan" class="num"><span class="admin-count-pill">{{ number_format($user->reports_count, 0, ',', '.') }}</span></td>
+                                <td data-label="Pesan" class="num"><span class="admin-count-pill">{{ number_format($user->responses_count, 0, ',', '.') }}</span></td>
                                 <td data-label="Aksi">
                                     @if ($user->isAdmin())
                                         <span class="admin-table-secondary">Tidak dapat diubah</span>

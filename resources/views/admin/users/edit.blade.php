@@ -12,9 +12,12 @@
 <div class="admin-page">
     <section class="admin-card" aria-labelledby="edit-user-heading">
         <div class="admin-card-heading">
-            <div>
-                <h2 id="edit-user-heading" class="admin-card-title">{{ $user->name }}</h2>
-                <p class="admin-card-subtitle">{{ $user->email ?: 'Email belum tersedia' }}</p>
+            <div class="admin-card-leading">
+                <x-admin-icon name="users" class="admin-card-icon" />
+                <div>
+                    <h2 id="edit-user-heading" class="admin-card-title">{{ $user->name }}</h2>
+                    <p class="admin-card-subtitle">{{ $user->email ?: 'Email belum tersedia' }}</p>
+                </div>
             </div>
         </div>
 

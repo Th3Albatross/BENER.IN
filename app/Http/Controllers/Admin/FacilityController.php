@@ -9,15 +9,24 @@ use Illuminate\Validation\ValidationException;
 
 class FacilityController
 {
-    public function index()
+    public function index(Request $request)
     {
+        $sort = $request->query('sort') === 'reports' ? 'reports' : 'name';
+
         $facilities = Facility::query()
             ->withCount('reports')
-            ->orderBy('name')
-            ->paginate(15);
+            ->when($sort === 'reports', fn ($query) => $query->orderByDesc('reports_count')->orderBy('name'), fn ($query) => $query->orderBy('name'))
+            ->paginate(15)
+            ->withQueryString();
+
+        // One scale for every usage bar on the page.
+        $maxReports = max(1, (int) Facility::query()->withCount('reports')->get()->max('reports_count'));
 
         return view('admin.facilities.index', [
             'facilities' => $facilities,
+            'sort' => $sort,
+            'maxReports' => $maxReports,
+            'unusedCount' => Facility::query()->whereDoesntHave('reports')->count(),
         ]);
     }
 

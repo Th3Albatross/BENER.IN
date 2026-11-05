@@ -18,9 +18,22 @@
 
     <section class="admin-card" aria-labelledby="facilities-heading">
         <div class="admin-card-heading">
-            <div>
-                <h2 id="facilities-heading" class="admin-card-title">Daftar Fasilitas</h2>
-                <p class="admin-card-subtitle">{{ number_format($facilities->total(), 0, ',', '.') }} fasilitas terdaftar.</p>
+            <div class="admin-card-leading">
+                <x-admin-icon name="facilities" class="admin-card-icon" />
+                <div>
+                    <h2 id="facilities-heading" class="admin-card-title">Daftar Fasilitas</h2>
+                    @php
+                        $unused = (int) ($unusedCount ?? 0);
+                        $subtitle = number_format($facilities->total(), 0, ',', '.').' fasilitas terdaftar';
+                    @endphp
+                    <p class="admin-card-subtitle">
+                        @if ($unused > 0)
+                            {{ $subtitle }} &middot; <strong>{{ number_format($unused, 0, ',', '.') }}</strong> belum pernah dilaporkan.
+                        @else
+                            {{ $subtitle }}.
+                        @endif
+                    </p>
+                </div>
             </div>
 
             <a href="{{ route('admin.facilities.create') }}" class="admin-button admin-button--primary">
@@ -31,10 +44,17 @@
             </a>
         </div>
 
+        @include('admin.partials.sort-form', [
+            'sort' => $sort ?? 'name',
+            'routeName' => 'admin.facilities.index',
+            'id' => 'facilities-sort',
+        ])
+
         @if ($facilities->isEmpty())
-            <div class="admin-empty">
+            <div class="admin-empty admin-empty--frame">
+                <x-admin-icon name="facilities" class="admin-empty-icon" />
                 <strong>Belum ada fasilitas</strong>
-                Tambahkan fasilitas agar siswa dapat melaporkannya.
+                <span>Tambahkan fasilitas agar siswa dapat melaporkannya.</span>
             </div>
         @else
             <div class="admin-table-wrapper">
@@ -42,15 +62,28 @@
                     <thead>
                         <tr>
                             <th scope="col">Fasilitas</th>
-                            <th scope="col">Jumlah laporan</th>
+                            <th scope="col" class="num">Jumlah laporan</th>
+                            <th scope="col" class="num">Pemakaian</th>
                             <th scope="col">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($facilities as $facility)
                             <tr>
-                                <td data-label="Fasilitas"><span class="admin-table-primary">{{ $facility->name }}</span></td>
-                                <td data-label="Jumlah laporan"><span class="admin-count-pill">{{ number_format($facility->reports_count, 0, ',', '.') }}</span></td>
+                                <td data-label="Fasilitas">
+                                    <span class="admin-table-primary">{{ $facility->name }}</span>
+                                    @if ($facility->reports_count === 0)
+                                        <span class="admin-table-secondary">Belum pernah dilaporkan</span>
+                                    @endif
+                                </td>
+                                <td data-label="Jumlah laporan" class="num"><span class="admin-count-pill">{{ number_format($facility->reports_count, 0, ',', '.') }}</span></td>
+                                <td data-label="Pemakaian" class="num">
+                                    @include('admin.partials.usage-bar', [
+                                        'value' => $facility->reports_count,
+                                        'max' => $maxReports ?? 1,
+                                        'label' => 'laporan',
+                                    ])
+                                </td>
                                 <td data-label="Aksi">
                                     <div class="admin-table-actions">
                                         <a href="{{ route('admin.facilities.edit', $facility) }}" class="admin-button admin-button--secondary admin-button--small">Ubah</a>
