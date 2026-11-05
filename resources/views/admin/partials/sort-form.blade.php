@@ -15,5 +15,5 @@
         <option value="name" @selected($sort === 'name')>Nama</option>
         <option value="reports" @selected($sort === 'reports')>Paling sering dilaporkan</option>
     </select>
-    <button type="submit" class="admin-button admin-button--primary admin-button--small">Terapkan</button>
+    <button type="submit" class="admin-button admin-button--neutral admin-button--small">Terapkan</button>
 </form>

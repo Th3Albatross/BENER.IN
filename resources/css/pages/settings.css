@@ -365,9 +365,9 @@
     justify-content: center;
     min-height: 38px;
     padding: 9px 13px;
-    color:#fff;
-    background:var(--solid);
-    border:1px solid var(--solid);
+    color:var(--accent-fill-fg);
+    background:var(--accent-fill);
+    border:1px solid var(--accent-fill);
     border-radius:7px;
     font: inherit;
     font-size: 12px;
@@ -377,7 +377,7 @@
 }
 
 .settings-submit-button:hover {
-    background:var(--solid-hover);
+    background:var(--accent-fill-hover);
 }
 
 .settings-submit-button:active {

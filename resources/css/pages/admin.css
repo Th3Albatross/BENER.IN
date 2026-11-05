@@ -51,83 +51,13 @@
 }
 
 /* ------------------------------
-   KPI strip
-   One container split by 1px dividers into five equal columns (app-screens
-   §5: a KPI gets no tile of its own). On a 1440 canvas minus the 250px
-   sidebar and 24px gutters the content is ~=1140px -> 5 x ~226px cells
-   + 4 x 1px dividers ~= 1140px.
+   KPI row
+   The admin dashboard reuses the siswa/petugas .stat-card tiles (.dashboard-stats
+   grid) so all three roles share one component; .admin-stats only overrides the
+   column count to fit five cells.
    ------------------------------ */
-.admin-kpi-strip {
-    display: grid;
+.admin-stats {
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    overflow: hidden;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    box-shadow: 0 2px 7px rgba(25, 35, 45, 0.025);
-}
-
-.admin-kpi {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    min-width: 0;
-    padding: 16px 18px;
-    color: var(--text-strong);
-    text-decoration: none;
-    border-left: 1px solid var(--border);
-    transition: background 150ms ease;
-}
-
-/* The accent indicator slides in from the left on hover. */
-.admin-kpi::after {
-    content: '';
-    position: absolute;
-    inset: 0 0 auto 0;
-    height: 2px;
-    background: var(--accent);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 180ms ease;
-}
-
-.admin-kpi:hover::after,
-.admin-kpi:focus-visible::after {
-    transform: scaleX(1);
-}
-
-.admin-kpi:first-child {
-    border-left: 0;
-}
-
-.admin-kpi:hover {
-    background: var(--surface-2);
-}
-
-.admin-kpi:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: -2px;
-}
-
-.admin-kpi-label {
-    color: var(--text-muted);
-    font-size: 12px;
-    line-height: 1.4;
-}
-
-.admin-kpi-value {
-    color: var(--text-strong);
-    font-size: 26px;
-    font-weight: 600;
-    line-height: 1.1;
-    font-variant-numeric: tabular-nums;
-}
-
-.admin-kpi-note {
-    color: var(--text-muted);
-    font-size: 12px;
-    line-height: 1.4;
 }
 
 /* ------------------------------
@@ -279,11 +209,11 @@
     flex-direction: column;
     gap: 18px;
     min-width: 0;
-    padding: 22px;
+    padding: 24px;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 12px;
-    /* Same soft resting shadow as the siswa/petugas cards for depth parity. */
+    /* Same soft resting shadow and padding as the siswa/petugas cards. */
     box-shadow: 0 2px 7px rgba(25, 35, 45, 0.025);
 }
 
@@ -601,8 +531,8 @@
     align-items: center;
     justify-content: center;
     gap: 7px;
-    min-height: 38px;
-    padding: 9px 13px;
+    min-height: 36px;
+    padding: 8px 13px;
     border: 1px solid transparent;
     border-radius: 7px;
     font: inherit;
@@ -619,6 +549,8 @@
     height: 15px;
 }
 
+/* Primary action (Tambah/Simpan) carries the brand blue so it reads as the
+   one thing to do, rather than the neutral grey used for secondary controls. */
 .admin-button--primary {
     color: var(--accent-fill-fg);
     background: var(--accent-fill);
@@ -628,6 +560,20 @@
 .admin-button--primary:hover {
     background: var(--accent-fill-hover);
     border-color: var(--accent-fill-hover);
+}
+
+/* Neutral solid: the filter/apply control, matching the grey "Terapkan"
+   buttons on the siswa/petugas lists. Kept distinct from the blue primary so
+   only create/commit actions carry the brand colour. */
+.admin-button--neutral {
+    color: var(--solid-fg);
+    background: var(--solid);
+    border-color: var(--solid);
+}
+
+.admin-button--neutral:hover {
+    background: var(--solid-hover);
+    border-color: var(--solid-hover);
 }
 
 .admin-button--secondary {
@@ -961,28 +907,15 @@
     pointer-events: none;
 }
 
-@media (max-width: 640px) {
-    .admin-kpi-strip {
+@media (max-width: 1280px) {
+    .admin-stats {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+}
 
-    .admin-kpi {
-        border-left: 1px solid var(--border);
-        border-top: 1px solid var(--border);
-    }
-
-    /* Drop the divider on the first row (cells 1-2) and on the left column. */
-    .admin-kpi:nth-child(1),
-    .admin-kpi:nth-child(2) {
-        border-top: 0;
-    }
-
-    .admin-kpi:nth-child(odd) {
-        border-left: 0;
-    }
-
-    .admin-kpi-value {
-        font-size: 24px;
+@media (max-width: 640px) {
+    .admin-stats {
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .admin-health {
@@ -1245,8 +1178,8 @@
         print-color-adjust: exact;
     }
 
-    .admin-kpi-strip,
-    .admin-kpi,
+    .admin-stats,
+    .stat-card,
     .admin-health,
     .admin-coverage-item,
     .admin-attention-item,

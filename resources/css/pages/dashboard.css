@@ -1102,9 +1102,9 @@
     gap: 7px;
     min-height: 35px;
     padding: 7px 11px;
-    color:#fff;
-    background:var(--solid);
-    border:1px solid var(--solid);
+    color:var(--accent-fill-fg);
+    background:var(--accent-fill);
+    border:1px solid var(--accent-fill);
     border-radius:7px;
     font-size: 11px;
     font-weight: 650;
@@ -1114,8 +1114,8 @@
 }
 
 .student-new-report-button:hover {
-    background:var(--solid-hover);
-    border-color:var(--solid-hover);
+    background:var(--accent-fill-hover);
+    border-color:var(--accent-fill-hover);
 }
 
 .student-new-report-button svg {

@@ -1,6 +1,9 @@
 @extends('layouts.app')
 
 @push('styles')
+    {{-- dashboard.css supplies the shared .stat-card KPI tiles so the admin row
+         is the same component the siswa/petugas dashboards use. --}}
+    @vite('resources/css/pages/dashboard.css')
     @vite('resources/css/pages/admin.css')
 @endpush
 

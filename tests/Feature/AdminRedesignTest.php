@@ -30,15 +30,17 @@ class AdminRedesignTest extends TestCase
         return User::factory()->admin()->create();
     }
 
-    public function test_the_dashboard_shows_a_single_kpi_strip(): void
+    public function test_the_dashboard_reuses_the_shared_stat_card_tiles(): void
     {
         $html = $this->actingAs($this->admin())->get('/dashboard')->assertOk()->getContent();
 
-        $this->assertStringContainsString('admin-kpi-strip', $html);
-        $this->assertSame(5, substr_count($html, 'class="admin-kpi"'), 'Five KPI cells expected.');
+        // Same KPI component as the siswa/petugas dashboards.
+        $this->assertStringContainsString('dashboard-stats admin-stats', $html);
+        $this->assertSame(5, substr_count($html, 'class="stat-card"'), 'Five KPI tiles expected.');
+        $this->assertStringContainsString('stat-card-link', $html);
 
-        // The old five-tile grid is gone.
-        $this->assertStringNotContainsString('admin-stat-card', $html);
+        // The bespoke admin strip is gone.
+        $this->assertStringNotContainsString('admin-kpi', $html);
     }
 
     public function test_the_dashboard_reports_master_data_coverage(): void

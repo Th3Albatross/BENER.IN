@@ -1,8 +1,7 @@
 {{--
-    KPI strip. One container split by 1px dividers into equal columns rather
-    than five separate tiles: the studied screens give a KPI no tile of its own
-    (app-screens.md §5), and the value leads at 26px under a 12px grey label.
-    Props: $counts (users, petugas, students, facilities, categories).
+    KPI row for the admin dashboard. Uses the same tile component as the
+    siswa/petugas dashboards (label, value, description, link with arrow) so the
+    three roles read as one product. Props: $counts.
 --}}
 @php
     $counts = $counts ?? [];
@@ -11,41 +10,47 @@
             'label' => 'Total pengguna',
             'value' => $counts['users'] ?? 0,
             'note' => 'Seluruh akun terdaftar',
+            'link' => 'Kelola pengguna',
             'url' => route('admin.users.index'),
         ],
         [
             'label' => 'Petugas',
             'value' => $counts['petugas'] ?? 0,
-            'note' => 'Menangani laporan',
+            'note' => 'Akun yang menangani laporan',
+            'link' => 'Lihat petugas',
             'url' => route('admin.users.index', ['role' => 'petugas']),
         ],
         [
             'label' => 'Siswa',
             'value' => $counts['students'] ?? 0,
-            'note' => 'Akun pelapor',
+            'note' => 'Akun pelapor fasilitas',
+            'link' => 'Lihat siswa',
             'url' => route('admin.users.index', ['role' => 'siswa']),
         ],
         [
             'label' => 'Fasilitas',
             'value' => $counts['facilities'] ?? 0,
-            'note' => 'Dapat dilaporkan',
+            'note' => 'Fasilitas yang dapat dilaporkan',
+            'link' => 'Kelola fasilitas',
             'url' => route('admin.facilities.index'),
         ],
         [
             'label' => 'Kategori',
             'value' => $counts['categories'] ?? 0,
-            'note' => 'Kelompok laporan',
+            'note' => 'Kategori laporan tersedia',
+            'link' => 'Kelola kategori',
             'url' => route('admin.categories.index'),
         ],
     ];
 @endphp
 
-<section class="admin-kpi-strip" aria-label="Ringkasan data induk">
+<section class="dashboard-stats admin-stats" aria-label="Ringkasan data induk">
     @foreach ($cells as $cell)
-        <a href="{{ $cell['url'] }}" class="admin-kpi">
-            <span class="admin-kpi-label">{{ $cell['label'] }}</span>
-            <span class="admin-kpi-value">{{ number_format($cell['value'], 0, ',', '.') }}</span>
-            <span class="admin-kpi-note">{{ $cell['note'] }}</span>
+        <a href="{{ $cell['url'] }}" class="stat-card">
+            <span class="stat-label">{{ $cell['label'] }}</span>
+            <span class="stat-value">{{ number_format($cell['value'], 0, ',', '.') }}</span>
+            <span class="stat-description">{{ $cell['note'] }}</span>
+            <span class="stat-card-link">{{ $cell['link'] }} <span aria-hidden="true">&rarr;</span></span>
         </a>
     @endforeach
 </section>
