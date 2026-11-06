@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Exception;
+use RuntimeException;
 use Illuminate\Container\Attributes\Singleton;
 
 #[Singleton]
@@ -11,8 +12,27 @@ class ScramblrService {
     private string $_key;
 
     public function __construct() {
-        $this->_key = base64_decode((string)config('services.scramblr.key', ''));
-        $this->_key = !$this->_key ? random_bytes(32) : $this->_key;
+        $configured = (string) config('services.scramblr.key', '');
+        $decoded = base64_decode($configured, true);
+        $this->_key = $decoded === false ? $configured : $decoded;
+
+        if ($this->_key === '') {
+            /*
+             * A random key per process silently breaks every image: the page
+             * renders /blob/{token} scrambled with key A, then a different
+             * PHP-FPM worker fails to decrypt it with key B and answers 401.
+             * That turned a missing SCRAMBLR_KEY into "images never load",
+             * so refuse to start a production worker without a real key.
+             */
+            if (app()->environment('production')) {
+                throw new RuntimeException(
+                    'SCRAMBLR_KEY is not set. Image tokens cannot be verified across requests; '
+                    .'set it with: fly secrets set SCRAMBLR_KEY=<base64 key>'
+                );
+            }
+
+            $this->_key = random_bytes(32);
+        }
     }
 
     public function Scramble(string $text, ?string $key = null): string {

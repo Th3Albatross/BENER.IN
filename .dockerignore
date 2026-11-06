@@ -1,0 +1,21 @@
+.git
+.github
+.env
+.env.*
+.codex
+.claude
+!.env.example
+node_modules
+vendor
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+
+# Runtime data: uploaded reports and profile photos. These live on the Fly
+# volume (/data/persistent). Without this exclusion `COPY . .` bakes whatever
+# is in the developer's local storage/app into the image, so deleted files
+# reappear on every boot and the volume is silently overridden.
+storage/app/private/reports
+storage/app/private/profile-photos
+storage/app/public/*
