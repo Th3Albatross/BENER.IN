@@ -83,8 +83,10 @@ class DatabaseSeederTest extends TestCase
         $this->assertSame(count(CategorySeeder::CATEGORIES), Category::count());
         $this->assertSame(count(FacilitySeeder::FACILITIES), Facility::count());
 
-        $this->assertDatabaseHas('categories', ['name' => 'Kelistrikan']);
-        $this->assertDatabaseHas('facilities', ['name' => 'Perpustakaan']);
+        // Assert against the seeder's own lists rather than hard-coded names,
+        // so renaming the master data does not break this test.
+        $this->assertDatabaseHas('categories', ['name' => CategorySeeder::CATEGORIES[0]]);
+        $this->assertDatabaseHas('facilities', ['name' => FacilitySeeder::FACILITIES[0]]);
     }
 
     public function test_it_seeds_reports_that_reference_real_master_data(): void

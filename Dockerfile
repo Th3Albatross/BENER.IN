@@ -24,6 +24,10 @@ COPY . .
 # Copy compiled Vite assets
 COPY --from=frontend /app/public/build ./public/build
 
+# Never ship the Vite dev-server marker: with it present @vite emits
+# http://localhost:5173 asset URLs and the production CSS/JS never load.
+RUN rm -f public/hot
+
 # Install production PHP dependencies
 RUN composer install \
     --no-dev \

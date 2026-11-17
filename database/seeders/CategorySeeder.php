@@ -12,14 +12,14 @@ class CategorySeeder extends Seeder
 {
     /** @var list<string> */
     public const CATEGORIES = [
-        'Kerusakan Ringan',
-        'Kerusakan Berat',
-        'Kebersihan',
-        'Kelistrikan',
-        'Air dan Sanitasi',
-        'Keamanan',
-        'Furnitur',
-        'Jaringan Internet',
+        'Perabot Kelas',
+        'Peralatan Pembelajaran',
+        'Perangkat Elektronik',
+        'Perlengkapan Ruangan',
+        'Bangunan dan Struktur',
+        'Fasilitas Laboratorium dan Olahraga',
+        'Fasilitas Area Sekolah',
+        'Fasilitas Sanitasi dan Air'
     ];
 
     public function run(): void

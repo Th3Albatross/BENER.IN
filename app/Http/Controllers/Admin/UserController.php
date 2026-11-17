@@ -23,8 +23,13 @@ class UserController
         $search = trim((string) $request->query('q', ''));
         $search = mb_substr($search, 0, 255);
 
-        $baseQuery = User::query()
-            ->when($roleFilter !== null, fn ($query) => $query->where('role', $roleFilter))
+        /*
+         * The tab counts describe each category's own size, so they are computed
+         * from an unfiltered (search-only) base. Applying the active role filter
+         * here would collapse every tab to that role's subset - "Semua" and the
+         * other roles would read as 0 while browsing one role.
+         */
+        $countQuery = User::query()
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($inner) use ($search) {
                     $inner->where('name', 'like', "%{$search}%")
@@ -34,14 +39,13 @@ class UserController
                 });
             });
 
-        // Recompute the role tabs under the active search so the counts match
-        // what the table is about to show (skill §11: a count names its filter).
-        $roleTotals = (clone $baseQuery)
+        $roleTotals = (clone $countQuery)
             ->selectRaw('role, COUNT(*) as total')
             ->groupBy('role')
             ->pluck('total', 'role');
 
-        $users = (clone $baseQuery)
+        $users = (clone $countQuery)
+            ->when($roleFilter !== null, fn ($query) => $query->where('role', $roleFilter))
             ->withCount(['reports', 'responses'])
             ->orderBy('name')
             ->paginate(15)
